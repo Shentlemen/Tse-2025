@@ -55,6 +55,18 @@ dependencies {
     // Apache HTTP Client for REST integrations
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
 
+    // JWT processing (JJWT library)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // Redis client for state management
+    implementation 'redis.clients:jedis:5.1.0'
+
+    // JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0'
+
     // SLF4J Logging (WildFly provides implementation)
     providedCompile 'org.slf4j:slf4j-api:2.0.9'
 

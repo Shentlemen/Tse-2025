@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:www.gub.uy)",
+      "WebSearch",
+      "WebFetch(domain:centroderecursos.agesic.gub.uy)",
+      "WebFetch(domain:auth-testing.iduruguay.gub.uy)",
+      "WebFetch(domain:auth.iduruguay.gub.uy)"
     ],
     "deny": [],
     "ask": []

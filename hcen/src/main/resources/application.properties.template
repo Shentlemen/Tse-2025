@@ -1,0 +1,80 @@
+# ==============================================
+# HCEN Authentication Configuration Template
+# ==============================================
+# Copy this file to application.properties and fill in the values
+
+# ==========================================
+# gub.uy OpenID Connect Configuration
+# ==========================================
+
+# OIDC Endpoints (Testing Environment)
+# For production, replace auth-testing.iduruguay.gub.uy with auth.iduruguay.gub.uy
+gubuy.oidc.issuer=https://auth-testing.iduruguay.gub.uy
+gubuy.oidc.authorization.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/authorize
+gubuy.oidc.token.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/token
+gubuy.oidc.userinfo.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/userinfo
+gubuy.oidc.jwks.uri=https://auth-testing.iduruguay.gub.uy/oidc/v1/jwks
+gubuy.oidc.endsession.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/logout
+
+# OAuth 2.0 Client Credentials
+# Obtain these from AGESIC by registering your application
+gubuy.oidc.client.mobile.id=hcen-mobile-app
+gubuy.oidc.client.web.patient.id=hcen-web-patient
+gubuy.oidc.client.web.patient.secret=CHANGE_ME_WEB_PATIENT_SECRET
+gubuy.oidc.client.web.admin.id=hcen-web-admin
+gubuy.oidc.client.web.admin.secret=CHANGE_ME_WEB_ADMIN_SECRET
+
+# OAuth 2.0 Scopes
+# Scopes requested from gub.uy
+gubuy.oidc.scopes=openid personal_info document profile
+
+# Authentication Context Class Reference (ACR) Values
+# NID 2 and NID 3 are recommended for HCEN (sensitive health data)
+gubuy.oidc.acr.values=urn:iduruguay:nid:2 urn:iduruguay:nid:3
+
+# ==========================================
+# HCEN JWT Configuration
+# ==========================================
+
+# JWT Issuer (your HCEN instance URL)
+jwt.issuer=https://hcen.uy
+
+# JWT Time-to-Live (in seconds)
+jwt.access.token.ttl=3600
+jwt.refresh.token.ttl=2592000
+
+# JWT Signing Algorithm (HS256 or RS256)
+# RS256 is recommended for production
+jwt.algorithm=RS256
+
+# JWT Secret (for HS256 only - must be at least 32 characters)
+# Not used if jwt.algorithm=RS256
+jwt.secret=CHANGE_ME_CHANGE_ME_CHANGE_ME_CHANGE_ME_32CHARS_MIN
+
+# JWT Signing Key Path (for RS256 only)
+# Path to RSA private key in PKCS#8 format
+jwt.signing.key.path=/opt/hcen/keys/jwt-private.pem
+
+# ==========================================
+# Redis Configuration
+# ==========================================
+
+redis.host=localhost
+redis.port=6379
+redis.password=
+redis.database=0
+redis.timeout=2000
+
+# Redis Connection Pool
+redis.pool.max.total=20
+redis.pool.max.idle=10
+redis.pool.min.idle=5
+
+# ==========================================
+# MongoDB Configuration (for audit logs)
+# ==========================================
+
+mongodb.uri=mongodb://localhost:27017
+mongodb.database=hcen_audit
+mongodb.collection.auth_events=authentication_events
+mongodb.collection.audit_logs=audit_logs
