@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id 'jacoco'
 }
 
 group = 'uy.gub.hcen'
@@ -102,10 +103,6 @@ tasks.named('test') {
 }
 
 // Jacoco for code coverage
-plugins.withType(JavaPlugin) {
-    apply plugin: 'jacoco'
-}
-
 jacoco {
     toolVersion = "0.8.11"
 }

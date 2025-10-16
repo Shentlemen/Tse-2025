@@ -1,20 +1,19 @@
 package uy.gub.hcen.auth.service;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.SignatureException;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import uy.gub.hcen.auth.config.JwtConfiguration;
-import uy.gub.hcen.auth.exception.InvalidTokenException;
-import uy.gub.hcen.auth.exception.TokenExpiredException;
-
+import java.security.SignatureException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import io.jsonwebtoken.*;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import uy.gub.hcen.auth.config.JwtConfiguration;
+import uy.gub.hcen.auth.exception.InvalidTokenException;
+import uy.gub.hcen.auth.exception.TokenExpiredException;
 
 /**
  * Service for generating and validating HCEN-issued JWT tokens.
@@ -102,10 +101,9 @@ public class JwtTokenService {
      */
     public Claims validateToken(String token) {
         try {
-            return Jwts.parserBuilder()
+            return Jwts.parser()
                     .setSigningKey(jwtConfig.getSigningKey())
                     .requireIssuer(jwtConfig.getIssuer())
-                    .build()
                     .parseClaimsJws(token)
                     .getBody();
 
