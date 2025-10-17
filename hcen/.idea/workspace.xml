@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../hcen-2/AUTH_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/AUTH_QUICKSTART.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/gradlew.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/api/rest/HealthCheckResource.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/JwtConfiguration.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/OidcConfiguration.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/RedisConfiguration.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/ErrorResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/LoginInitiateRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/LoginInitiateResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/SessionInfoResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/TokenRefreshRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/TokenResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/UserInfoDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/AuthenticationException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/InvalidStateException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/InvalidTokenException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/OAuthException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/TokenExpiredException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/service/StateManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/util/PkceUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/util/StateUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/config/MongoDBConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/META-INF/beans.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/application.properties.template" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/mongodb.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/IMPLEMENTATION_COMPLETE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/config/MongoDBConfiguration.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/entity/RefreshToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/JwtAuthenticationFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyTokenResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/repository/RefreshTokenRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/AuthenticationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/MongoIndexesInitializer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/webapp/login-admin.jsp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/webapp/login-patient.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/tse-2025.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/tse-2025.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GUB_UY.md" beforeDir="false" afterPath="$PROJECT_DIR$/../GUB_UY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docs/GUB_UY.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/GUB_UY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AUTH_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/AUTH_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AUTH_QUICKSTART.md" beforeDir="false" afterPath="$PROJECT_DIR$/AUTH_QUICKSTART.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties.template" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/db/migration/V001__create_refresh_tokens_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/db/migration/V001__create_refresh_tokens_table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/beans.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/beans.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jboss-web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/jboss-web.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/index.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/index.jsp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="hcen" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="hcen" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="hcen" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="347nAL6tNzSAe8xEtq8L1oRrD84" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
+    "Gradle.Build hcen.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.hcen [build].executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunDashboard">
+    <option name="configurationStatuses">
+      <map>
+        <entry key="JBossConfiguration">
+          <value>
+            <map>
+              <entry key="JBoss/WildFly 37.0.0.Final" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager" selected="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final">
+    <configuration name="hcen [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="JBoss/WildFly 37.0.0.Final" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="COMMON_VM_ARGUMENTS" value="-Djboss.server.default.config=standalone-full.xml -Dmp.openapi.extensions.smallrye.openapi.ui.enable=true -Djboss.bind.address=0.0.0.0" />
+      <option name="UPDATING_POLICY" value="restart-server" />
+      <deployment>
+        <artifact name="Gradle : fing.hcen : hcen-1.0-SNAPSHOT.war">
+          <settings />
+        </artifact>
+      </deployment>
+      <server-settings>
+        <option name="BINDING_SET_NAME" value="" />
+        <option name="SERVER" />
+        <option name="DOMAIN" value="false" />
+        <option name="SERVER_GROUP" value="main-server-group" />
+        <option name="USERNAME" value="" />
+        <option name="CREDENTIAL_ALIAS" />
+      </server-settings>
+      <predefined_log_file enabled="true" id="JBoss" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="53671" />
+      </RunnerSettings>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Debug">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Run">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="Gradle : fing.hcen : hcen-1.0-SNAPSHOT.war" />
+        </option>
+      </method>
+    </configuration>
+    <configuration name="docker-compose-postgres.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose-postgres.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
+      <item itemvalue="Gradle.hcen [build]" />
+      <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
+        <item itemvalue="Gradle.hcen [build]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="" />
+      <created>1760573790588</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1760573790588</updated>
+      <workItem from="1760573792319" duration="5489000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

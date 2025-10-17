@@ -43,7 +43,7 @@ public class JwtTokenService {
      * @return Signed JWT access token
      */
     public String generateAccessToken(String ci, String inusId, String role,
-                                       Map<String, Object> additionalClaims) {
+                                       Map<String, Object> additionalClaims ) {
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(jwtConfig.getAccessTokenTtl());
 
@@ -102,7 +102,7 @@ public class JwtTokenService {
      */
     public Claims validateToken(String token) {
         try {
-            return Jwts.parserBuilder()
+            return Jwts.parser()
                     .setSigningKey(jwtConfig.getSigningKey())
                     .requireIssuer(jwtConfig.getIssuer())
                     .build()

@@ -1698,25 +1698,41 @@ REDIS_PORT=6379
 REDIS_PASSWORD=<secure-password>
 ```
 
-#### 3. PostgreSQL Schema
+#### 3. MongoDB Collections
 
-```sql
--- Refresh tokens table
-CREATE TABLE refresh_tokens (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    token_hash VARCHAR(128) UNIQUE NOT NULL,
-    user_ci VARCHAR(20) NOT NULL,
-    client_type VARCHAR(20) NOT NULL,
-    device_id VARCHAR(128),
-    issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-    revoked_at TIMESTAMP,
-    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (user_ci) REFERENCES inus_users(ci) ON DELETE CASCADE
-);
+**refresh_tokens Collection**:
+```javascript
+// Document schema
+{
+  "_id": ObjectId("..."),
+  "tokenHash": "sha256:...",
+  "userCi": "12345678",
+  "clientType": "MOBILE",
+  "deviceId": "device-123",
+  "issuedAt": ISODate("2025-10-15T10:00:00Z"),
+  "expiresAt": ISODate("2025-11-14T10:00:00Z"),
+  "revokedAt": null,
+  "isRevoked": false
+}
 
-CREATE INDEX idx_refresh_tokens_user_ci ON refresh_tokens(user_ci);
-CREATE INDEX idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
+// Indexes
+db.refresh_tokens.createIndex({ "tokenHash": 1 }, { unique: true })
+db.refresh_tokens.createIndex({ "userCi": 1 })
+db.refresh_tokens.createIndex({ "expiresAt": 1 })
+db.refresh_tokens.createIndex({ "isRevoked": 1 })
+
+// TTL index for automatic cleanup
+db.refresh_tokens.createIndex(
+  { "expiresAt": 1 },
+  { expireAfterSeconds: 0 }
+)
+```
+
+**authentication_sessions Collection**:
+```javascript
+db.authentication_sessions.createIndex({ "sessionId": 1 }, { unique: true })
+db.authentication_sessions.createIndex({ "userCi": 1 })
+db.authentication_sessions.createIndex({ "expiresAt": 1 }, { expireAfterSeconds: 0 })
 ```
 
 #### 4. Redis Configuration
@@ -1742,6 +1758,9 @@ dependencies {
 
     // Redis client
     implementation 'redis.clients:jedis:5.1.0'
+
+    // MongoDB driver
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.0'
 
     // JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.3'
