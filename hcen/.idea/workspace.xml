@@ -4,73 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../hcen-2/AUTH_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/AUTH_QUICKSTART.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/gradlew" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/gradlew.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/api/rest/HealthCheckResource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/JwtConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/OidcConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/config/RedisConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/ErrorResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/LoginInitiateRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/LoginInitiateResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/SessionInfoResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/TokenRefreshRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/TokenResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/dto/UserInfoDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/AuthenticationException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/InvalidStateException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/InvalidTokenException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/OAuthException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/exception/TokenExpiredException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/service/StateManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/util/PkceUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/auth/util/StateUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/config/MongoDBConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/META-INF/beans.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/application.properties.template" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/mongodb.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/IMPLEMENTATION_COMPLETE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/config/MongoDBConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/entity/RefreshToken.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/JwtAuthenticationFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyTokenResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/repository/RefreshTokenRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/AuthenticationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/MongoIndexesInitializer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/login-admin.jsp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/webapp/login-patient.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/tse-2025.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/tse-2025.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GUB_UY.md" beforeDir="false" afterPath="$PROJECT_DIR$/../GUB_UY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../docs/GUB_UY.md" beforeDir="false" afterPath="$PROJECT_DIR$/../docs/GUB_UY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTH_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/AUTH_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTH_QUICKSTART.md" beforeDir="false" afterPath="$PROJECT_DIR$/AUTH_QUICKSTART.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/settings.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/dto/CallbackRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/META-INF/persistence.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties.template" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties.template" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/db/migration/V001__create_refresh_tokens_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/resources/db/migration/V001__create_refresh_tokens_table.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/beans.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/beans.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jboss-web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/jboss-web.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/index.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../hcen-2/src/main/webapp/index.jsp" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add two factor login">
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,6 +83,9 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.26436782",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -187,6 +126,7 @@
       <method v="2" />
     </configuration>
     <configuration name="JBoss/WildFly 37.0.0.Final" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/hcen/" />
       <option name="COMMON_VM_ARGUMENTS" value="-Djboss.server.default.config=standalone-full.xml -Dmp.openapi.extensions.smallrye.openapi.ui.enable=true -Djboss.bind.address=0.0.0.0" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
@@ -293,11 +233,40 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1760573790588</updated>
-      <workItem from="1760573792319" duration="5489000" />
+      <workItem from="1760573792319" duration="7844000" />
     </task>
+    <task id="LOCAL-00001" summary="feat: add two factor login">
+      <option name="closed" value="true" />
+      <created>1760667940881</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1760667940881</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat: add two factor login">
+      <option name="closed" value="true" />
+      <created>1760667957538</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1760667957538</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: add two factor login">
+      <option name="closed" value="true" />
+      <created>1760668698354</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1760668698354</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat: add two factor login" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add two factor login" />
   </component>
 </project>

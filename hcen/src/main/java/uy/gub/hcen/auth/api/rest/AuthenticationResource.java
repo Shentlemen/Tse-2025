@@ -44,10 +44,9 @@ public class AuthenticationResource {
     /**
      * POST /auth/login/initiate
      *
-     * Initiates OAuth 2.0 authorization flow.
+     * Initiates OAuth 2.0 authorization flow (for API/mobile clients).
      *
-     * For mobile clients: Returns JSON with authorization URL
-     * For web clients: Can redirect directly or return URL
+     * Returns JSON with authorization URL
      *
      * @param request Login initiation request
      * @return 200 OK with authorization URL
@@ -60,8 +59,7 @@ public class AuthenticationResource {
 
             LoginInitiateResponse response = authService.initiateLogin(request);
 
-            // For web clients, we could optionally return a 302 redirect instead
-            // For now, return JSON for all clients for consistency
+            // For API clients, return JSON with authorization URL
             return Response.ok(response).build();
 
         } catch (AuthenticationException e) {
@@ -73,6 +71,65 @@ public class AuthenticationResource {
             logger.error("Unexpected error during login initiation", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred"))
+                    .build();
+        }
+    }
+
+    /**
+     * GET /auth/login/initiate
+     *
+     * Initiates OAuth 2.0 authorization flow (for web clients).
+     *
+     * Redirects browser directly to gub.uy authorization endpoint
+     *
+     * @param clientType Client type (WEB_PATIENT or WEB_ADMIN)
+     * @return 302 redirect to gub.uy authorization endpoint
+     */
+    @GET
+    @Path("/login/initiate")
+    public Response initiateLoginWeb(@QueryParam("clientType") String clientType) {
+        try {
+            // Validate clientType
+            if (clientType == null || clientType.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("<html><body><h1>Error</h1><p>Missing clientType parameter</p></body></html>")
+                        .type(MediaType.TEXT_HTML)
+                        .build();
+            }
+
+            logger.info("Login initiation requested (GET) for client type: {}", clientType);
+
+            // Create request object
+            LoginInitiateRequest request = new LoginInitiateRequest();
+            request.setClientType(uy.gub.hcen.auth.config.OidcConfiguration.ClientType.valueOf(clientType));
+            //TODO: Remove this hardcoded value
+            request.setRedirectUri("http://localhost:8080");
+
+            // Get authorization URL from service
+            LoginInitiateResponse response = authService.initiateLogin(request);
+
+            // Redirect browser to gub.uy authorization endpoint
+            return Response.status(Response.Status.FOUND)
+                    .location(java.net.URI.create(response.getAuthorizationUrl()))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid client type: {}", clientType, e);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("<html><body><h1>Error</h1><p>Invalid clientType: " + clientType + "</p></body></html>")
+                    .type(MediaType.TEXT_HTML)
+                    .build();
+        } catch (AuthenticationException e) {
+            logger.error("Login initiation failed", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("<html><body><h1>Error</h1><p>Login initiation failed: " + e.getMessage() + "</p></body></html>")
+                    .type(MediaType.TEXT_HTML)
+                    .build();
+        } catch (Exception e) {
+            logger.error("Unexpected error during login initiation", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("<html><body><h1>Error</h1><p>An unexpected error occurred</p></body></html>")
+                    .type(MediaType.TEXT_HTML)
                     .build();
         }
     }
