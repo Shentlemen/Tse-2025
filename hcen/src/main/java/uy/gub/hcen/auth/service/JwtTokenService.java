@@ -1,6 +1,5 @@
 package uy.gub.hcen.auth.service;
 
-import java.security.SignatureException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,12 +56,12 @@ public class JwtTokenService {
         }
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuer(jwtConfig.getIssuer())
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiration))
-                .setId(UUID.randomUUID().toString())  // Unique token ID (for revocation)
-                .signWith(jwtConfig.getSigningKey(), jwtConfig.getAlgorithm())
+                .claims(claims)
+                .issuer(jwtConfig.getIssuer())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiration))
+                .id(UUID.randomUUID().toString())  // Unique token ID (for revocation)
+                .signWith(jwtConfig.getSigningKey())
                 .compact();
     }
 
@@ -80,14 +79,14 @@ public class JwtTokenService {
         Instant expiration = now.plusSeconds(jwtConfig.getRefreshTokenTtl());
 
         return Jwts.builder()
-                .setSubject(ci)
+                .subject(ci)
                 .claim("inusId", inusId)
                 .claim("tokenType", "refresh")
-                .setIssuer(jwtConfig.getIssuer())
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiration))
-                .setId(UUID.randomUUID().toString())
-                .signWith(jwtConfig.getSigningKey(), jwtConfig.getAlgorithm())
+                .issuer(jwtConfig.getIssuer())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiration))
+                .id(UUID.randomUUID().toString())
+                .signWith(jwtConfig.getSigningKey())
                 .compact();
     }
 
@@ -101,11 +100,28 @@ public class JwtTokenService {
      */
     public Claims validateToken(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(jwtConfig.getSigningKey())
+            JwtParserBuilder parserBuilder = Jwts.parser();
+
+            // Cast key to appropriate type for verification
+            java.security.Key key = jwtConfig.getSigningKey();
+
+            // For HMAC (HS256), use SecretKey
+            if (key instanceof javax.crypto.SecretKey) {
+                parserBuilder.verifyWith((javax.crypto.SecretKey) key);
+            }
+            // For RSA (RS256), we would need PublicKey but config only has PrivateKey
+            // Since we're using HS256 in development, this branch shouldn't execute
+            else {
+                LOGGER.severe("Unsupported key type for JWT verification: " + key.getClass().getName());
+                throw new InvalidTokenException("JWT verification key type not supported. " +
+                    "Please configure HS256 algorithm or provide proper key configuration.");
+            }
+
+            return parserBuilder
                     .requireIssuer(jwtConfig.getIssuer())
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
         } catch (ExpiredJwtException e) {
             LOGGER.warning("Token expired: " + e.getClaims().getId());
@@ -119,7 +135,7 @@ public class JwtTokenService {
             LOGGER.warning("Malformed JWT token: " + e.getMessage());
             throw new InvalidTokenException("Malformed JWT token");
 
-        } catch (SignatureException e) {
+        } catch (io.jsonwebtoken.security.SignatureException e) {
             LOGGER.warning("Invalid JWT signature: " + e.getMessage());
             throw new InvalidTokenException("Invalid token signature");
 
