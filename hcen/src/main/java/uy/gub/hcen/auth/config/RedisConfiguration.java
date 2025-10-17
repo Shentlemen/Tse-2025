@@ -79,8 +79,15 @@ public class RedisConfiguration {
         }
     }
 
+    /**
+     * Produces JedisPool instance for CDI injection.
+     *
+     * Uses @Dependent scope because JedisPool has final methods and cannot be proxied.
+     * The pool is managed by this configuration bean's lifecycle (@PreDestroy).
+     *
+     * @return JedisPool instance
+     */
     @Produces
-    @ApplicationScoped
     public JedisPool getJedisPool() {
         return jedisPool;
     }

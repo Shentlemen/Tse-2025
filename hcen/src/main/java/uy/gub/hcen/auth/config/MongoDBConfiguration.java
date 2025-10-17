@@ -149,12 +149,13 @@ public class MongoDBConfiguration {
     }
 
     /**
-     * Produces MongoDatabase bean for CDI injection
+     * Get MongoDatabase instance (not a CDI producer - use MongoDBConfig.getDatabase() instead)
+     *
+     * NOTE: This method is NOT a CDI producer to avoid ambiguous dependency injection.
+     * MongoDatabase is produced by uy.gub.hcen.config.MongoDBConfig.getDatabase()
      *
      * @return MongoDatabase instance for HCEN database
      */
-    @Produces
-    @ApplicationScoped
     public MongoDatabase getMongoDatabase() {
         if (mongoClient == null) {
             throw new IllegalStateException("MongoClient not initialized");

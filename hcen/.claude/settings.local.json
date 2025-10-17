@@ -7,7 +7,9 @@
       "Bash(./gradlew build:*)",
       "Bash(.gradlew.bat clean build -x test)",
       "Bash(gradlew clean build:*)",
-      "Bash(./gradlew clean:*)"
+      "Bash(./gradlew clean:*)",
+      "Bash(jar -tf:*)",
+      "Bash(unzip:*)"
     ],
     "deny": [],
     "ask": []
