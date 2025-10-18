@@ -9,7 +9,9 @@
       "Bash(gradlew clean build:*)",
       "Bash(./gradlew clean:*)",
       "Bash(jar -tf:*)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(if not exist \"C:\\Users\\agust\\fing\\tse\\tse-2025\\hcen\\src\\main\\java\\uy\\gub\\hcen\\cache\" mkdir \"C:\\Users\\agust\\fing\\tse\\tse-2025\\hcen\\src\\main\\java\\uy\\gub\\hcen\\cache\")",
+      "Bash(run-migrations.bat)"
     ],
     "deny": [],
     "ask": []

@@ -5,138 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add two factor login">
-      <change afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.vscode/extensions.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.vscode/settings.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/src/main/webapp/index.jsp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/target/demo.war" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/target/demo/WEB-INF/web.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/target/demo/index.jsp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../demo/target/maven-archiver/pom.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/checksums/checksums.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/checksums/md5-checksums.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/checksums/sha1-checksums.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/dependencies-accessors/dependencies-accessors.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/executionHistory/executionHistory.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/executionHistory/executionHistory.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/fileChanges/last-build.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/8.5/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileChanges/last-build.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/9.0.0/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gradle/vcs-1/gc.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/TUTORIAL_SOAP_PRESTADOR_SALUD.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/mvnw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/mvnw.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/nb-configuration.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/Servlet/SaludServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/example/prestador/NuevoServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/example/prestador/SvHistoriaclinica.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/example/prestador/TestServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/newpackage/TestServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/index.jsp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/Servlet/SaludServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/NuevoServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/SvHistoriaclinica.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/TestServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/newpackage/TestServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/javadoc-bundle-options/element-list" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-archiver/pom.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-javadoc-plugin-stale-data.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador-javadoc.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador-sources.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/Servlet/SaludServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/NuevoServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/SvHistoriaclinica.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/TestServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/newpackage/TestServlet.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/web.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/index.jsp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/SaludServlet.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/class-use/SaludServlet.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-summary.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-tree.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-use.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allclasses-index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allclasses.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allpackages-index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/SvHistoriaclinica.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/class-use/SvHistoriaclinica.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-summary.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-tree.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-use.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/constant-values.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/deprecated-list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/element-list" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/help-doc.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/index-all.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/external/jquery/jquery.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_55_fbf9ee_1x400.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_65_dadada_1x400.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_75_dadada_1x400.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_75_e6e6e6_1x400.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_95_fef1ec_1x400.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_highlight-soft_75_cccccc_1x100.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_222222_256x240.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_2e83ff_256x240.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_454545_256x240.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_888888_256x240.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_cd0a0a_256x240.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-3.5.1.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.structure.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.structure.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils-ie.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils-ie.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip/dist/jszip.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip/dist/jszip.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/member-search-index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/member-search-index.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/TestServlet.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/class-use/TestServlet.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-summary.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-tree.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-use.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/overview-summary.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/overview-tree.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/package-search-index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/package-search-index.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/resources/glass.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/resources/x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/script.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/search.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/serialized-form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/stylesheet.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/type-search-index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/type-search-index.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/api/rest/HealthCheckResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/api/rest/HealthCheckResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/JwtTokenService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../provider/.gitkeep" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.5/dependencies-accessors/gc.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose-postgres.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-postgres.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -364,7 +241,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1760573790588</updated>
-      <workItem from="1760573792319" duration="8778000" />
+      <workItem from="1760573792319" duration="9304000" />
+      <workItem from="1760710045022" duration="6392000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -398,7 +276,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760670302309</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="feat: add two factor login">
+      <option name="closed" value="true" />
+      <created>1760671428762</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1760671428762</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
