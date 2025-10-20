@@ -1,20 +1,18 @@
 package uy.gub.hcen.auth.service;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.SignatureException;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import uy.gub.hcen.auth.config.JwtConfiguration;
-import uy.gub.hcen.auth.exception.InvalidTokenException;
-import uy.gub.hcen.auth.exception.TokenExpiredException;
-
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import io.jsonwebtoken.*;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import uy.gub.hcen.auth.config.JwtConfiguration;
+import uy.gub.hcen.auth.exception.InvalidTokenException;
+import uy.gub.hcen.auth.exception.TokenExpiredException;
 
 /**
  * Service for generating and validating HCEN-issued JWT tokens.
@@ -43,7 +41,7 @@ public class JwtTokenService {
      * @return Signed JWT access token
      */
     public String generateAccessToken(String ci, String inusId, String role,
-                                       Map<String, Object> additionalClaims) {
+                                       Map<String, Object> additionalClaims ) {
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(jwtConfig.getAccessTokenTtl());
 
@@ -58,12 +56,12 @@ public class JwtTokenService {
         }
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuer(jwtConfig.getIssuer())
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiration))
-                .setId(UUID.randomUUID().toString())  // Unique token ID (for revocation)
-                .signWith(jwtConfig.getSigningKey(), jwtConfig.getAlgorithm())
+                .claims(claims)
+                .issuer(jwtConfig.getIssuer())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiration))
+                .id(UUID.randomUUID().toString())  // Unique token ID (for revocation)
+                .signWith(jwtConfig.getSigningKey())
                 .compact();
     }
 
@@ -81,14 +79,14 @@ public class JwtTokenService {
         Instant expiration = now.plusSeconds(jwtConfig.getRefreshTokenTtl());
 
         return Jwts.builder()
-                .setSubject(ci)
+                .subject(ci)
                 .claim("inusId", inusId)
                 .claim("tokenType", "refresh")
-                .setIssuer(jwtConfig.getIssuer())
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expiration))
-                .setId(UUID.randomUUID().toString())
-                .signWith(jwtConfig.getSigningKey(), jwtConfig.getAlgorithm())
+                .issuer(jwtConfig.getIssuer())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiration))
+                .id(UUID.randomUUID().toString())
+                .signWith(jwtConfig.getSigningKey())
                 .compact();
     }
 
@@ -102,12 +100,28 @@ public class JwtTokenService {
      */
     public Claims validateToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(jwtConfig.getSigningKey())
+            JwtParserBuilder parserBuilder = Jwts.parser();
+
+            // Cast key to appropriate type for verification
+            java.security.Key key = jwtConfig.getSigningKey();
+
+            // For HMAC (HS256), use SecretKey
+            if (key instanceof javax.crypto.SecretKey) {
+                parserBuilder.verifyWith((javax.crypto.SecretKey) key);
+            }
+            // For RSA (RS256), we would need PublicKey but config only has PrivateKey
+            // Since we're using HS256 in development, this branch shouldn't execute
+            else {
+                LOGGER.severe("Unsupported key type for JWT verification: " + key.getClass().getName());
+                throw new InvalidTokenException("JWT verification key type not supported. " +
+                    "Please configure HS256 algorithm or provide proper key configuration.");
+            }
+
+            return parserBuilder
                     .requireIssuer(jwtConfig.getIssuer())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
         } catch (ExpiredJwtException e) {
             LOGGER.warning("Token expired: " + e.getClaims().getId());
@@ -121,7 +135,7 @@ public class JwtTokenService {
             LOGGER.warning("Malformed JWT token: " + e.getMessage());
             throw new InvalidTokenException("Malformed JWT token");
 
-        } catch (SignatureException e) {
+        } catch (io.jsonwebtoken.security.SignatureException e) {
             LOGGER.warning("Invalid JWT signature: " + e.getMessage());
             throw new InvalidTokenException("Invalid token signature");
 

@@ -1,0 +1,61 @@
+-J-Duser.language=
+-J-Duser.country=
+@options
+@packages
+-classpath
+'C:/Users/user/.m2/repository/jakarta/servlet/jakarta.servlet-api/6.0.0/jakarta.servlet-api-6.0.0.jar;C:/Users/user/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.1/jakarta.xml.ws-api-4.0.1.jar;C:/Users/user/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar;C:/Users/user/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar;C:/Users/user/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.1/jakarta.xml.soap-api-3.0.1.jar'
+-encoding
+'UTF-8'
+-protected
+-source
+'11'
+-sourcepath
+'C:/Users/user/Desktop/tse-2025/prestador_de_salud/prestador/src/main/java;C:/Users/user/Desktop/tse-2025/prestador_de_salud/prestador/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2025. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/user/Desktop/tse-2025/prestador_de_salud/prestador/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'prestador Maven Webapp 1.0.0 API'
+-linkoffline
+'https://docs.oracle.com/en/java/javase/11/docs/api' 'C:/Users/user/Desktop/tse-2025/prestador_de_salud/prestador/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'prestador Maven Webapp 1.0.0 API'
+com.example.prestador
+newpackage
+Servlet
+C:\Users\user\.m2\repository\jakarta\servlet\jakarta.servlet-api\6.0.0\jakarta.servlet-api-6.0.0.jar = 1756776968287
+C:\Users\user\.m2\repository\jakarta\xml\ws\jakarta.xml.ws-api\4.0.1\jakarta.xml.ws-api-4.0.1.jar = 1760050936605
+C:\Users\user\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.1\jakarta.xml.bind-api-4.0.1.jar = 1760285488373
+C:\Users\user\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar = 1760652009036
+C:\Users\user\.m2\repository\jakarta\xml\soap\jakarta.xml.soap-api\3.0.1\jakarta.xml.soap-api-3.0.1.jar = 1760050937107
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\src\main\java = 1760651342629
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\generated-sources\annotations = 1760652017395
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\allclasses-index.html = 1760652061147
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\allclasses.html = 1760652061161
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\allpackages-index.html = 1760652061151
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\constant-values.html = 1760652061040
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\deprecated-list.html = 1760652061158
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\element-list = 1760652060991
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\help-doc.html = 1760652061176
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\index-all.html = 1760652061138
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\index.html = 1760652061168
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\member-search-index.js = 1760652061132
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\member-search-index.zip = 1760652061134
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\overview-summary.html = 1760652061171
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\overview-tree.html = 1760652061108
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\package-search-index.js = 1760652061123
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\package-search-index.zip = 1760652061126
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\script.js = 1760652061182
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\search.js = 1760652061186
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\serialized-form.html = 1760652061060
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\stylesheet.css = 1760652061180
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\type-search-index.js = 1760652061128
+C:\Users\user\Desktop\tse-2025\prestador_de_salud\prestador\target\reports\apidocs\type-search-index.zip = 1760652061130

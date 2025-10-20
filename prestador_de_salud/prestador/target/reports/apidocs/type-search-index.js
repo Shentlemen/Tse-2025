@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"Servlet","l":"SaludServlet"},{"p":"com.example.prestador","l":"SvHistoriaclinica"},{"p":"newpackage","l":"TestServlet"}]

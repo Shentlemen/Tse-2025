@@ -9,6 +9,8 @@ import jakarta.ws.rs.core.Response;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import javax.annotation.processing.Generated;
+
 /**
  * Health check endpoint to verify application is running
  */
@@ -27,4 +29,5 @@ public class HealthCheckResource {
 
         return Response.ok(health).build();
     }
+    
 }

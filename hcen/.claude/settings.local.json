@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gradlew.bat clean build:*)",
+      "Bash(./gradlew clean build:*)",
+      "Bash(./gradlew compileJava:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(.gradlew.bat clean build -x test)",
+      "Bash(gradlew clean build:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(jar -tf:*)",
+      "Bash(unzip:*)",
+      "Bash(if not exist \"C:\\Users\\agust\\fing\\tse\\tse-2025\\hcen\\src\\main\\java\\uy\\gub\\hcen\\cache\" mkdir \"C:\\Users\\agust\\fing\\tse\\tse-2025\\hcen\\src\\main\\java\\uy\\gub\\hcen\\cache\")",
+      "Bash(run-migrations.bat)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

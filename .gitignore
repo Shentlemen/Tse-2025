@@ -3,6 +3,9 @@
 build/
 bin/
 
+# Maven
+/prestador_de_salud/mavenproject1/target/
+
 # IDE
 .idea/
 *.iml
