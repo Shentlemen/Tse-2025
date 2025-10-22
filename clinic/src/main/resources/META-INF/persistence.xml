@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="clinicPU" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        
+        <!-- Entidades de la clínica -->
+        <class>uy.gub.clinic.entity.Clinic</class>
+        <class>uy.gub.clinic.entity.Professional</class>
+        <class>uy.gub.clinic.entity.Patient</class>
+        <class>uy.gub.clinic.entity.ClinicalDocument</class>
+        <class>uy.gub.clinic.entity.Specialty</class>
+        <class>uy.gub.clinic.entity.AccessRequest</class>
+        <class>uy.gub.clinic.entity.User</class>
+        
+        <jta-data-source>java:jboss/datasources/ClinicDS</jta-data-source>
+        
+        <properties>
+            <!-- Configuración de Hibernate -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/clinic_db"/>
+            <property name="jakarta.persistence.jdbc.user" value="clinic_user"/>
+            <property name="jakarta.persistence.jdbc.password" value="clinic_pass"/>
+            
+            <!-- Configuración de Hibernate -->
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            
+            <!-- Configuración de conexión -->
+            <property name="hibernate.connection.pool_size" value="10"/>
+            <property name="hibernate.connection.autocommit" value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>

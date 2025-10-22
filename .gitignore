@@ -1,1 +1,23 @@
+# Gradle
+.gradle/
+build/
+bin/
+
+# Maven
 /prestador_de_salud/mavenproject1/target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
