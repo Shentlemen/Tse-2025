@@ -2,10 +2,10 @@ package uy.gub.hcen.policy.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import uy.gub.hcen.config.RedisConfiguration;
+import uy.gub.hcen.config.qualifier.CachePool;
 
 import java.util.logging.Logger;
 
@@ -33,7 +33,7 @@ public class PolicyCacheService {
     private static final Logger LOGGER = Logger.getLogger(PolicyCacheService.class.getName());
 
     @Inject
-    @Named("cachePool")
+    @CachePool
     private JedisPool cachePool;
 
     /**

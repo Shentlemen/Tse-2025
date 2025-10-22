@@ -4,6 +4,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ public class RateLimitService {
     private static final String KEY_PREFIX = "ratelimit:";
 
     @Inject
+    @StatePool
     private JedisPool jedisPool;
 
     /**

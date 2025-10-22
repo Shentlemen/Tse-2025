@@ -7,6 +7,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class OAuthStateManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
+    @StatePool
     private JedisPool jedisPool;
 
     /**

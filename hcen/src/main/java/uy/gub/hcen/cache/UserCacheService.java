@@ -7,6 +7,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import uy.gub.hcen.config.qualifier.CachePool;
 
 import java.util.Optional;
 import java.util.logging.Level;
@@ -42,6 +43,7 @@ public class UserCacheService {
             .registerModule(new JavaTimeModule()); // Support for LocalDateTime serialization
 
     @Inject
+    @CachePool
     private JedisPool jedisPool;
 
     /**

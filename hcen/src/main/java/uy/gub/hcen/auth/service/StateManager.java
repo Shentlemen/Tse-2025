@@ -6,9 +6,10 @@ import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import uy.gub.hcen.auth.config.OidcConfiguration.ClientType;
-import uy.gub.hcen.auth.config.RedisConfiguration;
 import uy.gub.hcen.auth.exception.InvalidStateException;
 import uy.gub.hcen.auth.util.StateUtil;
+import uy.gub.hcen.config.RedisConfiguration;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class StateManager {
     private static final Logger LOGGER = Logger.getLogger(StateManager.class.getName());
 
     @Inject
+    @StatePool
     private JedisPool jedisPool;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
