@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: duplicate dependency and database seeder">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: implement hcen core services">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.MD" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/AuthenticationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/AuthenticationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/StateManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/StateManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -270,7 +273,7 @@
       <updated>1760573790588</updated>
       <workItem from="1760573792319" duration="9304000" />
       <workItem from="1760710045022" duration="12885000" />
-      <workItem from="1761155060979" duration="2136000" />
+      <workItem from="1761155060979" duration="6198000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -336,7 +339,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761094028857</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="feat: implement hcen core services">
+      <option name="closed" value="true" />
+      <created>1761176580972</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1761176580972</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -357,6 +368,7 @@
     <MESSAGE value="feat: add two factor login" />
     <MESSAGE value="feat: add hcen flows for different actors" />
     <MESSAGE value="fix: duplicate dependency and database seeder" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: duplicate dependency and database seeder" />
+    <MESSAGE value="feat: implement hcen core services" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: implement hcen core services" />
   </component>
 </project>

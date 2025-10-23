@@ -119,6 +119,35 @@ public class StateManager {
     }
 
     /**
+     * Peeks at state data without consuming it.
+     *
+     * @param state The state parameter
+     * @return State data if valid, null otherwise
+     */
+    public Map<String, Object> peekState(String state) {
+        if (state == null || state.trim().isEmpty()) {
+            return null;
+        }
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            String key = RedisConfiguration.KeyPatterns.oauthState(state);
+            String value = jedis.get(key);
+
+            if (value == null) {
+                return null;
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> stateData = objectMapper.readValue(value, Map.class);
+            return stateData;
+
+        } catch (Exception e) {
+            LOGGER.warning("Failed to peek state: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Deletes a state from Redis (in case of error).
      *
      * @param state The state to delete

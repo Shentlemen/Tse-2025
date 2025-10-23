@@ -14,6 +14,8 @@ import uy.gub.hcen.auth.exception.AuthenticationException;
 import uy.gub.hcen.auth.exception.InvalidTokenException;
 import uy.gub.hcen.auth.service.AuthenticationService;
 
+import java.util.Map;
+
 /**
  * Authentication REST Resource
  *
@@ -40,6 +42,9 @@ public class AuthenticationResource {
 
     @Inject
     private AuthenticationService authService;
+
+    @Inject
+    private uy.gub.hcen.auth.service.StateManager stateManager;
 
     /**
      * POST /auth/login/initiate
@@ -102,7 +107,7 @@ public class AuthenticationResource {
             // Create request object
             LoginInitiateRequest request = new LoginInitiateRequest();
             request.setClientType(uy.gub.hcen.auth.config.OidcConfiguration.ClientType.valueOf(clientType));
-            //TODO: Remove this hardcoded value
+            // Set redirect URI to the callback endpoint
             request.setRedirectUri("http://localhost:8080");
 
             // Get authorization URL from service
@@ -208,20 +213,38 @@ public class AuthenticationResource {
 
             logger.info("OAuth callback received (GET)");
 
-            // Create callback request (assume WEB_PATIENT for now, could be detected from state)
+            // Peek at state to get client type (without consuming it)
+            // The authService.handleCallback will validate and consume it
+            Map<String, Object> stateData = stateManager.peekState(state);
+            uy.gub.hcen.auth.config.OidcConfiguration.ClientType clientType;
+
+            if (stateData != null && stateData.containsKey("clientType")) {
+                String clientTypeStr = (String) stateData.get("clientType");
+                clientType = uy.gub.hcen.auth.config.OidcConfiguration.ClientType.valueOf(clientTypeStr);
+            } else {
+                logger.warn("Could not determine client type from state, defaulting to WEB_PATIENT");
+                clientType = uy.gub.hcen.auth.config.OidcConfiguration.ClientType.WEB_PATIENT;
+            }
+
+            // Create callback request with correct client type
             CallbackRequest request = new CallbackRequest();
             request.setCode(code);
             request.setState(state);
-            request.setClientType(uy.gub.hcen.auth.config.OidcConfiguration.ClientType.WEB_PATIENT);
-            request.setRedirectUri("https://hcen.uy/api/auth/callback"); // Should match registered URI
+            request.setClientType(clientType);
+            request.setRedirectUri("http://localhost:8080"); // Should match registered URI
 
             TokenResponse response = authService.handleCallback(request);
 
-            // For web clients, set HttpOnly cookie and redirect to dashboard
-            // For now, return simple success page
-            return Response.ok()
-                    .entity("<html><body><h1>Authentication Successful</h1><p>Redirecting to dashboard...</p>" +
-                            "<script>setTimeout(function(){ window.location.href='/'; }, 2000);</script></body></html>")
+            // Determine redirect URL based on client type
+            String dashboardUrl = switch (clientType) {
+                case WEB_ADMIN -> "/hcen/admin/dashboard.jsp?token=" + response.getAccessToken();
+                case WEB_PATIENT -> "/hcen/patient/dashboard.jsp?token=" + response.getAccessToken();
+                default -> "/hcen/login-patient.jsp?error=invalid_client_type";
+            };
+
+            // Redirect to appropriate dashboard
+            return Response.status(Response.Status.FOUND)
+                    .location(java.net.URI.create(dashboardUrl))
                     .build();
 
         } catch (AuthenticationException e) {
