@@ -18,7 +18,9 @@
       "Bash(docker exec hcen-postgres sh -c \"ls -la / | grep migrations\")",
       "Bash(docker exec hcen-postgres sh -c \"/run-migrations.sh\")",
       "Bash(MSYS_NO_PATHCONV=1 docker exec hcen-postgres sh /run-migrations.sh)",
-      "Bash(docker exec hcen-postgres sh -c \"sed -i ''s/\\r$//'' /run-migrations.sh && chmod +x /run-migrations.sh\")"
+      "Bash(docker exec hcen-postgres sh -c \"sed -i ''s/\\r$//'' /run-migrations.sh && chmod +x /run-migrations.sh\")",
+      "Read(//c/Users/agust/fing/tse/tse-2025/**)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
