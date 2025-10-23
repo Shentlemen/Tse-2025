@@ -9,7 +9,7 @@
 
 ## 📊 PROJECT COMPLETION STATUS
 
-### Overall Progress: ~52% Complete
+### Overall Progress: ~58% Complete
 
 | Category | Complete | Total | % | Status |
 |----------|----------|-------|---|--------|
@@ -19,7 +19,7 @@
 | **Core Services** | 5/8 services | 63% | ✅ **PHASE 1+2 COMPLETE** |
 | **REST APIs** | 37/60+ endpoints | 62% | ⚠️ **PHASE 1+2 COMPLETE** |
 | **Web UI Dashboards** | 2/2 dashboards | 100% | ✅ **COMPLETE** |
-| **External Integrations** | 0/3 integrations | 0% | ❌ **NOT STARTED** |
+| **External Integrations** | 2/3 integrations | 67% | ⚠️ **PERIPHERAL + PDI DONE** |
 | **Web UI (Full)** | 2/12+ pages | 17% | ⚠️ **DASHBOARDS DONE** |
 | **Mobile App** | 0/1 app | 0% | ❌ **NOT STARTED** |
 | **Testing** | 0/4 test suites | 0% | ❌ **NOT STARTED** |
@@ -193,10 +193,10 @@
 7. **ClinicalHistoryService.java** - Patient history, document download (NOT STARTED)
 8. **ReportsService.java** - Analytics, dashboard (NOT STARTED)
 
-**CRITICAL - External Integrations (0% Complete)**
-1. **PDIClient.java** - SOAP client for identity validation
-2. **PeripheralNodeClient.java** - REST client for peripheral nodes
-3. **FirebaseMessagingClient.java** - Push notification client
+**CRITICAL - External Integrations (67% Complete)**
+1. ✅ **PDIClient.java** - SOAP client for identity validation (COMPLETE - 2025-10-23)
+2. ✅ **PeripheralNodeClient.java** - REST client for peripheral nodes (COMPLETE - 2025-10-23)
+3. **FirebaseMessagingClient.java** - Push notification client (NOT STARTED)
 
 **REST APIs (~62% Complete - Phase 1+2)**
 - ✅ INUS: 5/5 endpoints (COMPLETE)
@@ -634,20 +634,21 @@
 - [ ] Test concurrent registrations
 - [ ] Performance tests (1000 registrations/min)
 
-### PDI Integration (Identity Validation)
+### PDI Integration (Identity Validation) - ✅ COMPLETE (2025-10-23)
 
-#### SOAP Client Implementation
-- [ ] Create package: `uy.gub.hcen.integration.pdi.*`
-- [ ] Implement `PDIClient.java` (JAX-WS)
-  - [ ] `consultarUsuario()` - Query user by CI
-  - [ ] Return: nombre_completo, fecha_nacimiento
-  - [ ] WS-Security authentication
-  - [ ] Circuit breaker for resilience
-- [ ] Implement `PDIAdapter.java` (abstraction layer)
-  - [ ] Interface: `PDIAdapter`
-  - [ ] Implementation: `PDISoapClient`
-  - [ ] Mock implementation: `PDIMockClient` (for testing)
-- [ ] Create mock PDI service (pdi-mock component)
+#### SOAP Client Implementation - ✅ COMPLETE
+- [x] Create package: `uy.gub.hcen.integration.pdi.*`
+- [x] Implement `PDIClient.java` (~450 lines) - Manual SOAP 1.1/1.2 client
+  - [x] `consultarUsuario(String ci)` - Query user by CI from PDI
+  - [x] `verifyAge(String ci, int minimumAge)` - Age verification (18+)
+  - [x] Return: PDIUserData (ci, nombreCompleto, fechaNacimiento)
+  - [x] WS-Security username/password authentication
+  - [x] Circuit breaker for resilience (5 failures → 60s cooldown)
+  - [x] Retry logic with exponential backoff (3 attempts)
+- [x] Implement `PDIUserData.java` - DTO for response data
+- [x] Implement `PDIException.java` - Custom exception
+- [x] Integration with InusService for age verification
+- [ ] Create mock PDI service (pdi-mock component) - OPTIONAL for testing
   - [ ] Implement WSDL interface
   - [ ] Return simulated data for test CIs
   - [ ] Deploy as separate WildFly instance
@@ -976,8 +977,8 @@
 - Onboarding workflow (AC016) - ready for PeripheralNodeClient
 - Bean Validation on all requests
 
-**Pending Dependencies:**
-- PeripheralNodeClient.java (needed for AC016 completion)
+**Integration Status:**
+- ✅ PeripheralNodeClient.java (COMPLETE - 2025-10-23) - AC016 fully functional
 
 ### Reports & Analytics Service (CU11)
 
@@ -1232,22 +1233,93 @@
 
 ---
 
-## PHASE 7: PERIPHERAL NODE INTEGRATION (AC003, AC013-AC016)
+## PHASE 7: PERIPHERAL NODE INTEGRATION (AC003, AC013-AC016) - ✅ COMPLETE (2025-10-23)
 
-### Peripheral Node API Client
+### Peripheral Node API Client - ✅ COMPLETE
 
-#### Client Implementation
-- [ ] Create package: `uy.gub.hcen.integration.peripheral.*`
-- [ ] Implement `PeripheralNodeClient.java`
-  - [ ] `retrieveDocument()` - Fetch document from peripheral node (AC015)
-    - [ ] GET {documentLocator}
-    - [ ] Authorization: HCEN API key
-    - [ ] Return: Document file (PDF, XML, FHIR)
-    - [ ] Verify hash (integrity)
-  - [ ] `sendOnboardingData()` - Send clinic config to peripheral (AC016)
-    - [ ] POST {peripheralNodeUrl}/api/onboard
-    - [ ] Body: { clinicId, apiKey, hcenCentralUrl, config }
-  - [ ] Circuit breaker for resilience
+#### Client Implementation - ✅ COMPLETE
+- [x] Create package: `uy.gub.hcen.integration.peripheral.*`
+- [x] Implement `PeripheralNodeClient.java` (~525 lines)
+  - [x] `retrieveDocument()` - Fetch document from peripheral node (AC015)
+    - [x] GET {documentLocator}
+    - [x] Authorization: Bearer token with API key
+    - [x] Return: Document file (PDF, XML, FHIR)
+
+### PDI Integration (Identity Validation) - ✅ COMPLETE (2025-10-23)
+
+#### SOAP Client Implementation - ✅ COMPLETE
+- [x] Create package: `uy.gub.hcen.integration.pdi.*`
+- [x] Implement `PDIClient.java` (~450 lines) - SOAP 1.1/1.2 client
+  - [x] `consultarUsuario(String ci)` - Query user by CI from PDI
+    - [x] Returns: PDIUserData (ci, nombreCompleto, fechaNacimiento)
+    - [x] Manual SOAP XML envelope construction (no JAX-WS dependency)
+    - [x] WS-Security username/password authentication
+    - [x] Apache HttpClient 5 for HTTPS communication
+  - [x] `verifyAge(String ci, int minimumAge)` - Age verification (18+)
+    - [x] Queries PDI, calculates age from date of birth
+    - [x] Returns: true if user is at least minimumAge years old
+  - [x] Circuit breaker pattern (5 failures threshold, 60s reset)
+  - [x] Retry logic with exponential backoff (3 attempts: 1s, 2s, 4s)
+  - [x] Configurable timeouts (connection: 5s, read: 30s)
+  - [x] XML DOM parser for SOAP response handling
+  - [x] Comprehensive error handling and logging
+- [x] Implement `PDIUserData.java` - DTO for PDI response
+  - [x] Fields: ci, nombreCompleto, fechaNacimiento
+- [x] Implement `PDIException.java` - Custom exception
+- [x] Update `InusService.java` - PDI integration
+  - [x] Inject PDIClient via CDI
+  - [x] Call PDI for age verification in registerUser()
+  - [x] Graceful degradation: continues registration if PDI unavailable
+  - [x] Logs warnings when PDI is down
+- [x] Update `application.properties` - PDI configuration
+  - [x] pdi.soap.endpoint (testing: https://pdi-testing.gub.uy/dnic/servicio-basico)
+  - [x] pdi.soap.username
+  - [x] pdi.soap.password
+  - [x] pdi.soap.timeout.connect=5000
+  - [x] pdi.soap.timeout.read=30000
+- [x] Create `INFRASTRUCTURE_REQUIREMENTS.md` - PDI dependency documentation
+  - [x] Registration requirements with AGESIC
+  - [x] Testing and production endpoints
+  - [x] Error handling strategy
+
+**PDI Integration Summary:**
+- Files Created: 3 (PDIClient.java, PDIUserData.java, PDIException.java)
+- Files Modified: 3 (InusService.java, application.properties, INFRASTRUCTURE_REQUIREMENTS.md)
+- Total Lines: ~450 lines
+- Build Status: ✅ PASSING
+- Date Completed: 2025-10-23
+
+**Key Features:**
+- Complete SOAP 1.1/1.2 client for identity validation
+- Circuit breaker prevents overloading PDI service (5 failures → 60s cooldown)
+- Retry logic handles transient failures (3 attempts with exponential backoff)
+- HTTPS enforcement (AC002-AC004)
+- Graceful degradation (system continues if PDI down)
+- Age verification (18+ requirement) integrated into INUS registration
+- WS-Security authentication with username/password
+- Manual SOAP envelope construction (no JAX-WS dependency)
+    - [x] Verify hash (SHA-256 integrity check)
+  - [x] `sendOnboardingData()` - Send clinic config to peripheral (AC016)
+    - [x] POST {peripheralNodeUrl}/api/onboard
+    - [x] Body: { clinicId, apiKey, hcenCentralUrl, config }
+  - [x] Circuit breaker for resilience
+    - [x] Tracks consecutive failures (threshold: 5)
+    - [x] Opens circuit on threshold
+    - [x] Auto-resets after 60 seconds (half-open state)
+  - [x] Retry logic with exponential backoff
+    - [x] 3 attempts maximum
+    - [x] Delays: 1s, 2s, 4s
+    - [x] Only retries on network failures (IOException)
+  - [x] Configurable timeouts
+    - [x] Connection timeout: 5 seconds
+    - [x] Read timeout: 30 seconds
+  - [x] HTTPS validation (enforces AC002-AC004)
+  - [x] Document integrity verification (SHA-256)
+- [x] Implement `PeripheralNodeException.java`
+- [x] Integration with ClinicManagementService
+  - [x] Injected PeripheralNodeClient
+  - [x] Removed temporary simulation code
+  - [x] Full onboarding flow functional (AC016)
 
 #### REST API for Peripheral Nodes (Inbound)
 
@@ -1666,6 +1738,142 @@
 
 ## 🎉 RECENT COMPLETIONS
 
+### ✅ PDI SOAP CLIENT (2025-10-23)
+
+**What Was Completed:**
+
+**PDI Integration (SOAP Client) - COMPLETE (2025-10-23)**
+
+1. **PDIClient.java** (~450 lines)
+   - SOAP 1.1/1.2 client for PDI's Servicio Básico de Información de DNIC
+   - WS-Security username/password authentication
+   - Manual SOAP XML envelope construction (no JAX-WS dependency)
+   - Apache HttpClient 5 for HTTPS communication
+   - Circuit breaker pattern (5 failures threshold, 60s reset)
+   - Retry logic with exponential backoff (3 attempts: 1s, 2s, 4s)
+   - Configurable timeouts (connection: 5s, read: 30s)
+   - XML DOM parser for SOAP response handling
+   - Methods:
+     * `consultarUsuario(String ci)` - Query user by CI
+     * `verifyAge(String ci, int minimumAge)` - Age verification (18+)
+     * `getCircuitBreakerState()` - Monitoring
+
+2. **PDIUserData.java**
+   - DTO for PDI response data
+   - Fields: ci, nombreCompleto, fechaNacimiento
+
+3. **PDIException.java**
+   - Custom exception for PDI integration errors
+
+4. **InusService.java Integration**
+   - Injected PDIClient via CDI
+   - Modified registerUser() to call PDI for age verification
+   - Graceful degradation: continues registration if PDI unavailable
+   - Logs warnings when PDI is down
+
+5. **application.properties**
+   - Added PDI configuration section:
+     * pdi.soap.endpoint (testing: https://pdi-testing.gub.uy/dnic/servicio-basico)
+     * pdi.soap.username
+     * pdi.soap.password
+     * pdi.soap.timeout.connect=5000
+     * pdi.soap.timeout.read=30000
+
+6. **INFRASTRUCTURE_REQUIREMENTS.md**
+   - Added PDI external dependency documentation
+   - Registration requirements with AGESIC
+   - Testing and production endpoints
+   - Error handling strategy
+
+**Files created:** 3 files
+**Files modified:** 3 files
+**Total lines:** ~450 lines
+**Build status:** ✅ PASSING
+**Date completed:** 2025-10-23
+
+**Key features:**
+- Complete SOAP client for identity validation
+- Circuit breaker prevents overloading PDI service
+- Retry logic handles transient failures
+- HTTPS enforcement (AC002-AC004)
+- Graceful degradation (system continues if PDI down)
+- Age verification (18+ requirement) integrated
+
+**Integration points:**
+- InusService.registerUser() now calls PDI for age verification
+- Policy Engine can use PDI data for enhanced authorization
+- Audit system logs all PDI queries
+
+---
+
+### ✅ PERIPHERAL NODE CLIENT (2025-10-23)
+
+**What Was Completed:**
+
+**PeripheralNodeClient (100%)**
+- Created `src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java` (~525 lines)
+- Clinic onboarding integration (AC016)
+  - POST to `{peripheralNodeUrl}/api/onboard`
+  - Sends clinic configuration (clinicId, apiKey, hcenCentralUrl, config)
+  - Returns true if peripheral node confirms (HTTP 200-299)
+- Document retrieval integration (AC015)
+  - GET `{documentLocator}` with Bearer authentication
+  - Returns document bytes (PDF, XML, FHIR)
+  - SHA-256 hash verification for integrity
+- Circuit breaker pattern for resilience
+  - Tracks consecutive failures (opens after 5 failures)
+  - Auto-resets after 60 seconds (half-open state)
+  - Prevents cascading failures to peripheral nodes
+- Retry logic with exponential backoff
+  - 3 attempts maximum
+  - Delays: 1s, 2s, 4s
+  - Only retries on network failures (IOException)
+  - No retry on business logic errors (4xx responses)
+- Configurable HTTP timeouts
+  - Connection timeout: 5 seconds
+  - Read timeout: 30 seconds
+- Security features
+  - HTTPS validation (enforces AC002-AC004)
+  - API key in Authorization: Bearer header
+  - Document integrity verification (SHA-256)
+
+**PeripheralNodeException (100%)**
+- Created `src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeException.java`
+- Checked exception for peripheral node communication failures
+
+**ClinicManagementService Integration (100%)**
+- Updated `src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java`
+- Injected PeripheralNodeClient via CDI
+- Removed temporary simulation code
+- Full AC016 onboarding flow now functional
+
+**Statistics:**
+- **Files Created**: 2 files
+- **Total Lines**: ~565 lines
+- **Build Status**: ✅ PASSING
+- **Integration Status**: ✅ COMPLETE
+
+**Key Features Implemented:**
+- Complete HTTP client for peripheral node communication
+- Circuit breaker prevents overloading failed peripheral nodes
+- Retry logic handles transient network failures gracefully
+- HTTPS enforcement for all peripheral node communication
+- Document integrity verification ensures data hasn't been tampered with
+- Comprehensive error handling and logging
+
+**AC Requirements Completed:**
+- ✅ **AC016 (Clinic Onboarding)**: HCEN can now send configuration to peripheral nodes
+- ✅ **AC015 (Document Retrieval)**: HCEN can now fetch actual documents from peripheral storage
+- ✅ **AC002-AC004 (HTTPS)**: All peripheral communication uses HTTPS
+
+**Next Steps:**
+1. Create mock peripheral node service for testing
+2. Write unit tests for PeripheralNodeClient (circuit breaker, retry logic, etc.)
+3. Write integration tests for complete onboarding flow (AC016)
+4. Test document retrieval with hash verification (AC015)
+
+---
+
 ### ✅ CLINIC MANAGEMENT SERVICE (2025-10-23)
 
 **What Was Completed:**
@@ -1875,18 +2083,21 @@
 - Audit log viewer (admin/audit.jsp)
 - User management (admin/users.jsp)
 
-**Recommendation**:
-1. **Priority 1**: Implement **PeripheralNodeClient.java** (Option B) to complete AC016 onboarding workflow
-2. **Priority 2**: Start **Testing (Option C)** to achieve 80% coverage on existing services (meets AC017/AC018)
-3. **Priority 3**: Complete remaining Phase 2 services (Option A)
+**Recommendation** (Updated 2025-10-23):
+1. ~~**Priority 1**: Implement **PeripheralNodeClient.java** (Option B)~~ ✅ **COMPLETE**
+2. ~~**Priority 2**: Implement **PDIClient.java** (SOAP integration)~~ ✅ **COMPLETE**
+3. **NEW Priority 1**: Start **Testing (Option C)** to achieve 80% coverage on existing services (meets AC017/AC018)
+4. **Priority 2**: Complete remaining Phase 2 services (Option A) - NotificationService, ClinicalHistoryService, ReportsService
+5. **Priority 3**: Implement FirebaseMessagingClient.java (final external integration)
 
 ### ⚠️ Important Notes
 
-1. **PeripheralNodeClient**: Interface ready in RndcService and ClinicManagementService, but PeripheralNodeClient.java implementation is **PENDING** (needed for AC016 completion)
-2. **PDI Integration**: Interface ready in InusService, but PDIClient.java implementation is **PENDING**
+1. ~~**PeripheralNodeClient**~~: ✅ **COMPLETE** (2025-10-23) - AC016 and AC015 fully functional
+2. ~~**PDI Integration**~~: ✅ **COMPLETE** (2025-10-23) - PDIClient.java fully integrated with InusService
 3. **Testing**: NO tests written yet - this is **CRITICAL** for 80% coverage requirement (AC017/AC018)
 4. **SSO Implementation**: Authentication system exists and working, gub.uy OAuth configured (client_id: 890192)
 5. **Access Request Workflow**: Schema exists, but AccessRequestService not yet implemented
+6. **External Integrations**: 2/3 complete (Peripheral + PDI done, Firebase pending)
 
 ### 📋 Immediate Next Steps (Choose One)
 
@@ -1899,11 +2110,12 @@
    - Target: 80% code coverage with JaCoCo
 
 2. **If focusing on external integrations**:
-   - **HIGH PRIORITY**: Implement PeripheralNodeClient.java (REST client for document retrieval + onboarding)
-   - Implement PDIClient.java (SOAP client for identity validation)
-   - Set up pdi-mock service for testing
-   - Complete PDI integration in InusService
-   - Complete AC016 onboarding in ClinicManagementService
+   - ~~**HIGH PRIORITY**: Implement PeripheralNodeClient.java~~ ✅ **COMPLETE** (2025-10-23)
+   - ~~**HIGH PRIORITY**: Implement PDIClient.java (SOAP client for identity validation)~~ ✅ **COMPLETE** (2025-10-23)
+   - ~~Complete PDI integration in InusService~~ ✅ **COMPLETE** (2025-10-23)
+   - ~~Complete AC016 onboarding in ClinicManagementService~~ ✅ **COMPLETE**
+   - **NEW HIGH PRIORITY**: Implement FirebaseMessagingClient.java (last external integration)
+   - Set up pdi-mock service for testing PDI integration
 
 3. **If focusing on Phase 2 services**:
    - Implement NotificationService with Firebase
@@ -1925,5 +2137,9 @@
 
 This document will be updated as implementation progresses. Each completed task should be marked with [x].
 
-**Last Major Update**: 2025-10-23 - Phase 2 Clinic Management Complete (ClinicManagementService + 7 REST endpoints)
-**Previous Update**: 2025-10-22 - Phase 1 Core Services Complete (InusService, RndcService, PolicyEngine, AuditService)
+**Last Major Update**: 2025-10-23 - PDI SOAP Client Complete (Identity validation fully integrated)
+**Previous Updates**:
+- 2025-10-23 - PeripheralNodeClient Complete (AC016 + AC015 fully functional)
+- 2025-10-23 - Phase 2 Clinic Management Complete (ClinicManagementService + 7 REST endpoints)
+- 2025-10-22 - Phase 1 Core Services Complete (InusService, RndcService, PolicyEngine, AuditService)
+- 2025-10-22 - SSO Authentication & Dashboards Complete

@@ -310,7 +310,7 @@ public class PeripheralNodeClient {
                     } else {
                         String responseBody = EntityUtils.toString(response.getEntity());
                         logger.error("Document retrieval failed: status={}, body={}", statusCode, responseBody);
-                        throw new PeripheralNodeException("Document retrieval failed: " + responseBody);
+                        throw new IOException("Document retrieval failed with status " + statusCode + ": " + responseBody);
                     }
                 });
 

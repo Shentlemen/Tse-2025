@@ -2,6 +2,49 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ CRITICAL DEVELOPMENT GUIDELINES ⚠️
+
+### 1. Documentation Updates
+**ALWAYS update TODO.md after implementing changes using an agent.**
+- After completing any feature, service, or API endpoint
+- Use the `general-purpose` agent to update TODO.md
+- Document: files created, lines of code, features implemented, build status
+- Update progress metrics (overall completion %, services count, endpoints count)
+
+### 2. Implementation Scope - HCEN Central ONLY
+**ONLY implement code for the HCEN Central component. DO NOT implement:**
+- ❌ PDI Mock (pdi-mock component)
+- ❌ Mobile App (mobile/ directory)
+- ❌ Peripheral Multi-tenant Component (clinic/ directory)
+- ❌ Health Provider Reference Implementation (provider/ directory)
+
+**Focus EXCLUSIVELY on:**
+- ✅ HCEN Central backend (`hcen/src/main/java/uy/gub/hcen/*`)
+- ✅ HCEN Central web UI (`hcen/src/main/webapp/*`)
+- ✅ Integration clients that HCEN uses to communicate with external systems
+- ✅ REST APIs that HCEN exposes for peripheral nodes to call
+
+### 3. Communication Protocols
+**ALWAYS respect the communication protocols defined in the problem definition.**
+- Review `docs/arquitectura-grupo9-tse.pdf` for protocol specifications
+- Follow defined patterns:
+  - gub.uy: OAuth 2.0 / OpenID Connect
+  - PDI: SOAP Web Services
+  - Peripheral Nodes: REST/HTTP with API key authentication
+  - Firebase: Cloud Messaging API
+- Use HTTPS for ALL external communications (AC002-AC004)
+
+### 4. Communication Pattern Decisions
+**ALWAYS ask for confirmation/clarification when deciding on communication patterns:**
+- ❓ Two-way vs. one-way communication
+- ❓ Request-response vs. message broker (asynchronous)
+- ❓ Polling vs. push notifications
+- ❓ Synchronous vs. asynchronous processing
+
+**Example**: "Should the document registration from peripheral nodes be synchronous (wait for RNDC confirmation) or asynchronous (fire-and-forget with callback)?"
+
+---
+
 ## Project Overview
 
 **hcen.uy** (Historia Clínica Electrónica Nacional) is Uruguay's National Electronic Health Record system - a distributed platform enabling secure, traceable sharing of clinical information among patients, healthcare professionals, and clinics. This is a TSE 2025 university project simulating a real national health information exchange infrastructure.

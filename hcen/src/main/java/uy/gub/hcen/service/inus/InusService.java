@@ -70,6 +70,9 @@ public class InusService {
     @Inject
     private UserCacheService userCacheService;
 
+    @Inject
+    private uy.gub.hcen.integration.pdi.PDIClient pdiClient;
+
     // ================================================================
     // User Registration (AC013)
     // ================================================================
@@ -82,12 +85,15 @@ public class InusService {
      * 1. Validates CI format
      * 2. Checks for duplicate registration (idempotent behavior)
      * 3. Calculates age and sets age verification status
-     * 4. Generates unique INUS ID
-     * 5. Persists user to database
-     * 6. Caches user profile
-     * 7. Logs registration event
+     * 4. Verifies age with PDI (Plataforma de Datos e Integración) if available
+     * 5. Generates unique INUS ID
+     * 6. Persists user to database
+     * 7. Caches user profile
+     * 8. Logs registration event
      * <p>
-     * Future Enhancement: Integrate with PDI for identity validation
+     * PDI Integration: This method calls the PDI SOAP service to verify the user's
+     * age against the government's authoritative identity database. If PDI is unavailable,
+     * the system gracefully degrades to local age calculation to prevent blocking registrations
      *
      * @param ci          Cédula de Identidad (national ID number)
      * @param firstName   User's first name
@@ -125,6 +131,32 @@ public class InusService {
             // Calculate age and determine age verification status
             int age = calculateAge(dateOfBirth);
             boolean ageVerified = age >= MINIMUM_AGE;
+
+            // Verify age with PDI (Plataforma de Datos e Integración)
+            // This calls the external government identity service to validate the user's age
+            // If PDI is unavailable, we gracefully degrade and rely on local age calculation
+            try {
+                LOGGER.log(Level.INFO, "Verifying age with PDI for CI: {0}", normalizedCi);
+                boolean pdiAgeVerified = pdiClient.verifyAge(normalizedCi, MINIMUM_AGE);
+
+                if (pdiAgeVerified) {
+                    LOGGER.log(Level.INFO, "PDI confirmed age verification for CI: {0}", normalizedCi);
+                    ageVerified = true; // PDI confirmation overrides local calculation
+                } else if (ageVerified) {
+                    // Local calculation says user is 18+, but PDI says no
+                    // Trust PDI as authoritative source
+                    LOGGER.log(Level.WARNING,
+                            "Age verification mismatch - local calculation says 18+, PDI says no. Trusting PDI for CI: {0}",
+                            normalizedCi);
+                    ageVerified = false;
+                }
+            } catch (Exception e) {
+                // PDI integration failed - log warning but continue with local age calculation
+                // This ensures user registration is not blocked if PDI is temporarily unavailable
+                LOGGER.log(Level.WARNING,
+                        "PDI age verification failed for CI: " + normalizedCi + " - using local age calculation. Error: " + e.getMessage());
+                // ageVerified already set from local calculation above
+            }
 
             // Generate unique INUS ID
             String inusId = generateInusId();

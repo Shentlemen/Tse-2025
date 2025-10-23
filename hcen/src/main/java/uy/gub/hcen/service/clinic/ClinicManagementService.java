@@ -12,6 +12,8 @@ import uy.gub.hcen.rndc.repository.RndcRepository;
 import uy.gub.hcen.audit.entity.AuditLog.ActionOutcome;
 import uy.gub.hcen.audit.entity.AuditLog.EventType;
 import uy.gub.hcen.service.audit.AuditService;
+import uy.gub.hcen.integration.peripheral.PeripheralNodeClient;
+import uy.gub.hcen.integration.peripheral.PeripheralNodeException;
 import uy.gub.hcen.service.clinic.dto.*;
 import uy.gub.hcen.service.clinic.exception.ClinicNotFoundException;
 import uy.gub.hcen.service.clinic.exception.ClinicRegistrationException;
@@ -83,9 +85,8 @@ public class ClinicManagementService {
     @Inject
     private RndcRepository rndcRepository;
 
-    // TODO: Inject PeripheralNodeClient when implemented
-    // @Inject
-    // private PeripheralNodeClient peripheralNodeClient;
+    @Inject
+    private PeripheralNodeClient peripheralNodeClient;
 
     // ================================================================
     // Clinic Registration (CU10)
@@ -447,15 +448,11 @@ public class ClinicManagementService {
             // Build onboarding request
             OnboardingRequest onboardingRequest = buildOnboardingRequest(clinic);
 
-            // TODO: Send onboarding request to peripheral node
-            // boolean peripheralConfirmed = peripheralNodeClient.sendOnboardingData(
-            //         clinic.getPeripheralNodeUrl(),
-            //         onboardingRequest
-            // );
-
-            // TEMPORARY: Simulate successful onboarding (remove when PeripheralNodeClient is implemented)
-            boolean peripheralConfirmed = true;
-            logger.warn("TEMPORARY: Simulating successful peripheral node onboarding (PeripheralNodeClient not yet implemented)");
+            // Send onboarding request to peripheral node (AC016)
+            boolean peripheralConfirmed = peripheralNodeClient.sendOnboardingData(
+                    clinic.getPeripheralNodeUrl(),
+                    onboardingRequest
+            );
 
             if (peripheralConfirmed) {
                 // Activate clinic (sets status to ACTIVE and onboardedAt timestamp)
@@ -507,6 +504,9 @@ public class ClinicManagementService {
                 throw new OnboardingException("Peripheral node did not confirm successful onboarding");
             }
 
+        } catch (PeripheralNodeException e) {
+            logger.error("Peripheral node communication failed for clinic: {}", clinicId, e);
+            throw new OnboardingException("Failed to communicate with peripheral node: " + e.getMessage(), e);
         } catch (OnboardingException e) {
             throw e;
         } catch (Exception e) {

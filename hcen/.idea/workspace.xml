@@ -4,13 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add admin hcen pages and sso configs">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add admin hcen clinic management and peripheral nodes client">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.MD" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,33 +76,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Batch.migrate.executor&quot;: &quot;Run&quot;,
-    &quot;Batch.run-migrations.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose-postgres.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build hcen.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.hcen [build].executor&quot;: &quot;Run&quot;,
-    &quot;JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/agust/fing/tse/tse-2025/hcen&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.26436782&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Batch.migrate.executor": "Run",
+    "Batch.run-migrations.executor": "Run",
+    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
+    "Gradle.Build hcen.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.hcen [build].executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.26436782",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>
@@ -271,7 +276,7 @@
       <updated>1760573790588</updated>
       <workItem from="1760573792319" duration="9304000" />
       <workItem from="1760710045022" duration="12885000" />
-      <workItem from="1761155060979" duration="8966000" />
+      <workItem from="1761155060979" duration="11759000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -353,7 +358,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761181268512</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="feat: add admin hcen clinic management and peripheral nodes client">
+      <option name="closed" value="true" />
+      <created>1761231890251</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1761231890251</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -376,6 +389,7 @@
     <MESSAGE value="fix: duplicate dependency and database seeder" />
     <MESSAGE value="feat: implement hcen core services" />
     <MESSAGE value="feat: add admin hcen pages and sso configs" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add admin hcen pages and sso configs" />
+    <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add admin hcen clinic management and peripheral nodes client" />
   </component>
 </project>
