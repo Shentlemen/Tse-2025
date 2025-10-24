@@ -22,7 +22,8 @@
       "Read(//c/Users/agust/fing/tse/tse-2025/**)",
       "Bash(ls:*)",
       "Bash(cat:*)",
-      "Bash(./gradlew.bat:*)"
+      "Bash(./gradlew.bat:*)",
+      "Bash(./gradlew wildFlyDeploy:*)"
     ],
     "deny": [],
     "ask": []

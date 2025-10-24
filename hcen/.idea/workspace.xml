@@ -4,11 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: polish sso gub.uy response, implement admin UI">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: setup redirection after SSO">
+      <change afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/dashboard.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/dashboard.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/entity/AuditLog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/entity/AuditLog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/clinics.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/clinics.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/login-admin.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/login-admin.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/login-patient.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/login-patient.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +48,12 @@
                 <item name="hcen" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="hcen" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -84,8 +95,10 @@
     "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
     "Gradle.Build hcen.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
+    "Gradle.hcen [buildDependents].executor": "Run",
     "Gradle.hcen [build].executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
+    "Gradle.hcen [clean].executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -106,6 +119,7 @@
   },
   "keyToStringList": {
     "DatabaseDriversLRU": [
+      "postgresql",
       "mongo"
     ]
   }
@@ -123,7 +137,7 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final">
+  <component name="RunManager" selected="Gradle.hcen [build]">
     <configuration name="migrate" type="BatchConfigurationType" factoryName="Batch" temporary="true">
       <module name="hcen" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -146,18 +160,62 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="hcen [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildDependents" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <configuration name="hcen [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
             <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="hcen [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -241,27 +299,21 @@
         </option>
       </method>
     </configuration>
-    <configuration name="docker-compose-postgres.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
-      <deployment type="docker-compose.yml">
-        <settings>
-          <option name="sourceFilePath" value="docker-compose-postgres.yml" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Batch.migrate" />
       <item itemvalue="Batch.run-migrations" />
-      <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
+      <item itemvalue="Gradle.hcen [buildDependents]" />
+      <item itemvalue="Gradle.hcen [clean]" />
       <item itemvalue="Gradle.hcen [build]" />
       <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.hcen [build]" />
+        <item itemvalue="Gradle.hcen [buildDependents]" />
+        <item itemvalue="Gradle.hcen [clean]" />
         <item itemvalue="Batch.migrate" />
         <item itemvalue="Batch.run-migrations" />
-        <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
-        <item itemvalue="Gradle.hcen [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -282,7 +334,7 @@
       <updated>1760573790588</updated>
       <workItem from="1760573792319" duration="9304000" />
       <workItem from="1760710045022" duration="12885000" />
-      <workItem from="1761155060979" duration="22629000" />
+      <workItem from="1761155060979" duration="30178000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -388,7 +440,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761329627097</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="feat: setup redirection after SSO">
+      <option name="closed" value="true" />
+      <created>1761330854427</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1761330854427</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -414,7 +474,8 @@
     <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
     <MESSAGE value="feat: add peripheral node client and pdi client integration" />
     <MESSAGE value="feat: polish sso gub.uy response, implement admin UI" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: polish sso gub.uy response, implement admin UI" />
+    <MESSAGE value="feat: setup redirection after SSO" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: setup redirection after SSO" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -429,6 +490,15 @@
           <line>234</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/converter/JsonbConverter.java</url>
+          <line>51</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NoClassDefFoundError" package="java.lang" />
+          <option name="timeStamp" value="20" />
+        </breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

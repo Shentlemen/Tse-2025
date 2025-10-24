@@ -536,7 +536,8 @@
         </div>
     </div>
 
-    <script>
+    <script type="text/javascript">
+    //<![CDATA[
         // API Configuration
         const API_BASE = '/hcen/api';
 
@@ -587,7 +588,7 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || `Error ${response.status}`);
+                    throw new Error(error.message || 'Error ' + response.status);
                 }
 
                 return await response.json();
@@ -619,13 +620,13 @@
             const city = document.getElementById('filterCity').value.trim();
             const size = document.getElementById('pageSize').value;
 
-            let endpoint = `/admin/clinics?page=${page}&size=${size}`;
+            let endpoint = '/admin/clinics?page=' + page + '&size=' + size;
 
             if (status) {
-                endpoint += `&status=${status}`;
+                endpoint += '&status=' + status;
             }
             if (city) {
-                endpoint += `&city=${encodeURIComponent(city)}`;
+                endpoint += '&city=' + encodeURIComponent(city);
             }
 
             try {
@@ -660,30 +661,25 @@
                 return;
             }
 
-            tbody.innerHTML = clinics.map(clinic => `
-                <tr>
-                    <td><strong>${escapeHtml(clinic.clinicName)}</strong></td>
-                    <td>${escapeHtml(clinic.city)}</td>
-                    <td>${escapeHtml(clinic.phoneNumber)}</td>
-                    <td>${escapeHtml(clinic.email)}</td>
-                    <td>${renderStatusBadge(clinic.status)}</td>
-                    <td>
-                        <button class="action-btn" onclick="viewClinic('${clinic.clinicId}')" title="Ver detalles">
-                            👁️ Ver
-                        </button>
-                        ${clinic.status === 'PENDING_ONBOARDING' ? `
-                        <button class="action-btn" onclick="onboardClinic('${clinic.clinicId}')" title="Onboardear">
-                            🚀 Onboard
-                        </button>
-                        ` : ''}
-                        ${clinic.status === 'ACTIVE' ? `
-                        <button class="action-btn danger" onclick="deactivateClinic('${clinic.clinicId}')" title="Desactivar">
-                            ❌ Desactivar
-                        </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = clinics.map(clinic => {
+                let html = '<tr>';
+                html += '<td><strong>' + escapeHtml(clinic.clinicName) + '</strong></td>';
+                html += '<td>' + escapeHtml(clinic.city) + '</td>';
+                html += '<td>' + escapeHtml(clinic.phoneNumber) + '</td>';
+                html += '<td>' + escapeHtml(clinic.email) + '</td>';
+                html += '<td>' + renderStatusBadge(clinic.status) + '</td>';
+                html += '<td>';
+                html += '<button class="action-btn" onclick="viewClinic(\'' + clinic.clinicId + '\')" title="Ver detalles">👁️ Ver</button>';
+                if (clinic.status === 'PENDING_ONBOARDING') {
+                    html += '<button class="action-btn" onclick="onboardClinic(\'' + clinic.clinicId + '\')" title="Onboardear">🚀 Onboard</button>';
+                }
+                if (clinic.status === 'ACTIVE') {
+                    html += '<button class="action-btn danger" onclick="deactivateClinic(\'' + clinic.clinicId + '\')" title="Desactivar">❌ Desactivar</button>';
+                }
+                html += '</td>';
+                html += '</tr>';
+                return html;
+            }).join('');
         }
 
         /**
@@ -691,24 +687,17 @@
          */
         function renderEmptyState(message) {
             const tbody = document.getElementById('clinicsTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🏥</div>
-                            <div class="empty-state-title">${message}</div>
-                            <div class="empty-state-text">
-                                ${message.includes('filtros') ? 'Intenta ajustar los filtros de búsqueda.' : 'Registra la primera clínica para comenzar.'}
-                            </div>
-                            ${!message.includes('filtros') ? `
-                            <a href="/hcen/admin/clinic-register.jsp" class="btn">
-                                ➕ Registrar Primera Clínica
-                            </a>
-                            ` : ''}
-                        </div>
-                    </td>
-                </tr>
-            `;
+            let html = '<tr><td colspan="6"><div class="empty-state">';
+            html += '<div class="empty-state-icon">🏥</div>';
+            html += '<div class="empty-state-title">' + message + '</div>';
+            html += '<div class="empty-state-text">';
+            html += message.includes('filtros') ? 'Intenta ajustar los filtros de búsqueda.' : 'Registra la primera clínica para comenzar.';
+            html += '</div>';
+            if (!message.includes('filtros')) {
+                html += '<a href="/hcen/admin/clinic-register.jsp" class="btn">➕ Registrar Primera Clínica</a>';
+            }
+            html += '</div></td></tr>';
+            tbody.innerHTML = html;
             document.getElementById('pagination').style.display = 'none';
         }
 
@@ -723,7 +712,7 @@
             };
 
             const config = statusMap[status] || { class: 'badge-pending', text: status };
-            return `<span class="badge ${config.class}">${config.text}</span>`;
+            return '<span class="badge ' + config.class + '">' + config.text + '</span>';
         }
 
         /**
@@ -741,7 +730,7 @@
             }
 
             paginationDiv.style.display = 'flex';
-            paginationInfo.textContent = `Página ${currentPage + 1} de ${totalPages} (${totalElements} resultados)`;
+            paginationInfo.textContent = 'Página ' + (currentPage + 1) + ' de ' + totalPages + ' (' + totalElements + ' resultados)';
 
             prevBtn.disabled = currentPage === 0;
             nextBtn.disabled = currentPage >= totalPages - 1;
@@ -804,7 +793,7 @@
          * View clinic details
          */
         function viewClinic(clinicId) {
-            window.location.href = `/hcen/admin/clinic-detail.jsp?id=${clinicId}`;
+            window.location.href = '/hcen/admin/clinic-detail.jsp?id=' + clinicId;
         }
 
         /**
@@ -816,7 +805,7 @@
             }
 
             try {
-                const result = await apiCall(`/admin/clinics/${clinicId}/onboard`, {
+                const result = await apiCall('/admin/clinics/' + clinicId + '/onboard', {
                     method: 'POST'
                 });
 
@@ -840,7 +829,7 @@
             }
 
             try {
-                await apiCall(`/admin/clinics/${clinicId}`, {
+                await apiCall('/admin/clinics/' + clinicId, {
                     method: 'DELETE'
                 });
 
@@ -882,6 +871,7 @@
             loadClinics(0);
             loadStatistics();
         });
+    //]]>
     </script>
 </body>
 </html>

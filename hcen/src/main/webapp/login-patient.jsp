@@ -51,8 +51,8 @@
         }
 
         .logo {
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto;
             background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
             border-radius: 20px;
@@ -273,7 +273,7 @@
         <!-- Logo -->
         <div class="logo-container">
             <div class="logo">
-                <span class="logo-text">HC</span>
+                <span class="logo-text">HCEN</span>
             </div>
         </div>
 

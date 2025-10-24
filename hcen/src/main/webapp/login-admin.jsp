@@ -102,8 +102,21 @@
 
         .logo {
             width: 140px;
-            height: auto;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+            height: 140px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #8B0000 0%, #cc3300 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
 
         h1 {
@@ -152,6 +165,11 @@
             font-size: 13px;
             color: #666666;
             line-height: 1.5;
+        }
+
+        .button-icon {
+            width: 24px;
+            height: 24px;
         }
 
         .login-button {
@@ -337,7 +355,9 @@
         </div>
 
         <div class="logo-container">
-            <img src="/hcen/assets/logo-hcen.png" alt="HCEN - Historia Clínica Electrónica Nacional" class="logo">
+            <div class="logo">
+                <span class="logo-text">HCEN</span>
+            </div>
         </div>
 
         <h1>Portal Administrativo</h1>
@@ -352,7 +372,9 @@
         </div>
 
         <button class="login-button" onclick="initiateLogin()" id="loginButton">
-            <span class="login-button-icon">🇺🇾</span>
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="currentColor"/>
+            </svg>
             <span>Ingresar con ID Uruguay</span>
         </button>
 
