@@ -21,7 +21,8 @@
       "Bash(docker exec hcen-postgres sh -c \"sed -i ''s/\\r$//'' /run-migrations.sh && chmod +x /run-migrations.sh\")",
       "Read(//c/Users/agust/fing/tse/tse-2025/**)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(./gradlew.bat:*)"
     ],
     "deny": [],
     "ask": []

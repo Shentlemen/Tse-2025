@@ -583,9 +583,14 @@
          * Navigate to page
          */
         function navigateTo(url) {
-            alert('Esta función estará disponible próximamente.\n\nURL: ' + url);
-            // Uncomment when pages are ready:
-            // window.location.href = url;
+            // Check if page is implemented
+            const implementedPages = ['/hcen/admin/clinics'];
+
+            if (implementedPages.some(page => url.includes(page))) {
+                window.location.href = url + '.jsp';
+            } else {
+                alert('Esta función estará disponible próximamente.\n\nURL: ' + url);
+            }
         }
 
         /**
