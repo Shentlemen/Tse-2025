@@ -4,26 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add peripheral node client and pdi client integration">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/checksums/md5-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/checksums/sha1-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/dependencies-accessors/dependencies-accessors.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/dependencies-accessors/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/executionHistory/executionHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/executionHistory/executionHistory.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileHashes/resourceHashesCache.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/gc.properties" beforeDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: polish sso gub.uy response, implement admin UI">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties.template" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/api/rest/AuthenticationResource.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/dashboard.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/dashboard.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -101,7 +85,7 @@
     "Gradle.Build hcen.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
     "Gradle.hcen [build].executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -119,6 +103,11 @@
     "project.structure.side.proportion": "0.26436782",
     "settings.editor.selected.configurable": "preferences.lookFeel",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mongo"
+    ]
   }
 }]]></component>
   <component name="RunDashboard">
@@ -293,7 +282,7 @@
       <updated>1760573790588</updated>
       <workItem from="1760573792319" duration="9304000" />
       <workItem from="1760710045022" duration="12885000" />
-      <workItem from="1761155060979" duration="21498000" />
+      <workItem from="1761155060979" duration="22629000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -391,7 +380,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761253277525</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="feat: polish sso gub.uy response, implement admin UI">
+      <option name="closed" value="true" />
+      <created>1761329627097</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1761329627097</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -416,7 +413,8 @@
     <MESSAGE value="feat: add admin hcen pages and sso configs" />
     <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
     <MESSAGE value="feat: add peripheral node client and pdi client integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add peripheral node client and pdi client integration" />
+    <MESSAGE value="feat: polish sso gub.uy response, implement admin UI" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: polish sso gub.uy response, implement admin UI" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -430,11 +428,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java</url>
           <line>234</line>
           <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java</url>
-          <line>262</line>
-          <option name="timeStamp" value="19" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

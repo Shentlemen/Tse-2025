@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.hcen.auth.dto.*;
@@ -14,6 +15,7 @@ import uy.gub.hcen.auth.exception.AuthenticationException;
 import uy.gub.hcen.auth.exception.InvalidTokenException;
 import uy.gub.hcen.auth.service.AuthenticationService;
 
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -45,6 +47,9 @@ public class AuthenticationResource {
 
     @Inject
     private uy.gub.hcen.auth.service.StateManager stateManager;
+
+    @Context
+    private UriInfo uriInfo;
 
     /**
      * POST /auth/login/initiate
@@ -235,16 +240,27 @@ public class AuthenticationResource {
 
             TokenResponse response = authService.handleCallback(request);
 
-            // Determine redirect URL based on client type
-            String dashboardUrl = switch (clientType) {
-                case WEB_ADMIN -> "/hcen/admin/dashboard.jsp?token=" + response.getAccessToken();
-                case WEB_PATIENT -> "/hcen/patient/dashboard.jsp?token=" + response.getAccessToken();
-                default -> "/hcen/login-patient.jsp?error=invalid_client_type";
+            // Build absolute redirect URI based on client type
+            // We need to use the base URI to avoid relative path issues
+            String baseUri = uriInfo.getBaseUri().toString(); // e.g., "http://localhost:8080/hcen/api/"
+
+            // Extract the application context path (remove "/api/" from base URI)
+            String contextPath = baseUri.replace("/api/", "/");
+
+            String dashboardPath = switch (clientType) {
+                case WEB_ADMIN -> "admin/dashboard.jsp?token=" + response.getAccessToken();
+                case WEB_PATIENT -> "patient/dashboard.jsp?token=" + response.getAccessToken();
+                default -> "login-patient.jsp?error=invalid_client_type";
             };
+
+            // Build absolute URI: http://localhost:8080/hcen/admin/dashboard.jsp?token=...
+            URI redirectUri = URI.create(contextPath + dashboardPath);
+
+            logger.debug("Redirecting to: {}", redirectUri);
 
             // Redirect to appropriate dashboard
             return Response.status(Response.Status.FOUND)
-                    .location(java.net.URI.create(dashboardUrl))
+                    .location(redirectUri)
                     .build();
 
         } catch (AuthenticationException e) {

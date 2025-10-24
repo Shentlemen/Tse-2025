@@ -523,35 +523,41 @@
          */
         async function loadStatistics() {
             try {
-                // For now, show placeholder data since statistics endpoints are not implemented
-                // TODO: Implement actual API endpoints for statistics
-
-                // Simulate loading delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // Display mock data
-                document.getElementById('totalUsers').textContent = '0';
-                document.getElementById('totalDocuments').textContent = '0';
-                document.getElementById('totalPolicies').textContent = '0';
-                document.getElementById('totalClinics').textContent = '0';
-
-                // When actual endpoints are ready:
-                /*
+                // Fetch statistics from backend API
                 const stats = await apiCall('/admin/statistics');
+
                 if (stats) {
-                    document.getElementById('totalUsers').textContent = stats.totalUsers || '0';
-                    document.getElementById('totalDocuments').textContent = stats.totalDocuments || '0';
-                    document.getElementById('totalPolicies').textContent = stats.totalPolicies || '0';
-                    document.getElementById('totalClinics').textContent = stats.totalClinics || '0';
+                    // Update statistics display
+                    document.getElementById('totalUsers').textContent = formatNumber(stats.totalUsers || 0);
+                    document.getElementById('totalDocuments').textContent = formatNumber(stats.totalDocuments || 0);
+                    document.getElementById('totalPolicies').textContent = formatNumber(stats.totalPolicies || 0);
+                    document.getElementById('totalClinics').textContent = formatNumber(stats.totalClinics || 0);
+
+                    console.log('Statistics loaded successfully:', stats);
+                } else {
+                    // Fallback to zeros if no data returned
+                    document.getElementById('totalUsers').textContent = '0';
+                    document.getElementById('totalDocuments').textContent = '0';
+                    document.getElementById('totalPolicies').textContent = '0';
+                    document.getElementById('totalClinics').textContent = '0';
                 }
-                */
             } catch (error) {
                 console.error('Error loading statistics:', error);
-                document.getElementById('totalUsers').textContent = 'Error';
-                document.getElementById('totalDocuments').textContent = 'Error';
-                document.getElementById('totalPolicies').textContent = 'Error';
-                document.getElementById('totalClinics').textContent = 'Error';
+
+                // Show error state
+                document.getElementById('totalUsers').textContent = '—';
+                document.getElementById('totalDocuments').textContent = '—';
+                document.getElementById('totalPolicies').textContent = '—';
+                document.getElementById('totalClinics').textContent = '—';
             }
+        }
+
+        /**
+         * Format number with thousands separator
+         */
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0';
+            return num.toLocaleString('es-UY');
         }
 
         /**
