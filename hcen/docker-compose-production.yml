@@ -1,0 +1,280 @@
+version: '3.8'
+
+# ==============================================
+# HCEN Production Stack - Docker Compose
+# ==============================================
+# Complete production deployment with:
+# - HCEN Central (WildFly + WAR)
+# - PostgreSQL (INUS, RNDC, Policies)
+# - MongoDB (Audit Logs)
+# - Redis (Sessions, JWKS Cache)
+# - Nginx (Reverse Proxy, SSL Termination)
+#
+# Usage:
+#   docker-compose -f docker-compose-production.yml up -d
+#
+# IMPORTANT: Configure secrets in .env file
+# DO NOT commit .env to version control
+# ==============================================
+
+services:
+  # ==============================================
+  # PostgreSQL Database
+  # ==============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: hcen-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-hcen}
+      POSTGRES_USER: ${DB_USER:-hcen}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d:ro
+    networks:
+      - hcen-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hcen} -d ${DB_NAME:-hcen}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ==============================================
+  # MongoDB (Audit Logs)
+  # ==============================================
+  mongodb:
+    image: mongo:7.0
+    container_name: hcen-mongodb-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD required}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-hcen}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - hcen-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ==============================================
+  # Redis (Session Store, JWKS Cache)
+  # ==============================================
+  redis:
+    image: redis:7-alpine
+    container_name: hcen-redis-prod
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD required}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hcen-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ==============================================
+  # HCEN Central Application (WildFly)
+  # ==============================================
+  hcen:
+    image: ${CI_REGISTRY_IMAGE:-hcen}:${IMAGE_TAG:-latest}
+    container_name: hcen-app-prod
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: production
+
+      # Database Configuration
+      JDBC_DATABASE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-hcen}
+      DB_USER: ${DB_USER:-hcen}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      DB_POOL_MIN_SIZE: ${DB_POOL_MIN_SIZE:-5}
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-20}
+
+      # MongoDB Configuration
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      MONGODB_DATABASE: ${MONGO_DB:-hcen}
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # gub.uy OIDC Configuration
+      GUBUY_OIDC_ISSUER: ${GUBUY_OIDC_ISSUER}
+      GUBUY_OIDC_AUTH_ENDPOINT: ${GUBUY_OIDC_AUTH_ENDPOINT}
+      GUBUY_OIDC_TOKEN_ENDPOINT: ${GUBUY_OIDC_TOKEN_ENDPOINT}
+      GUBUY_OIDC_USERINFO_ENDPOINT: ${GUBUY_OIDC_USERINFO_ENDPOINT}
+      GUBUY_OIDC_JWKS_URI: ${GUBUY_OIDC_JWKS_URI}
+      GUBUY_CLIENT_WEB_PATIENT_ID: ${GUBUY_CLIENT_WEB_PATIENT_ID}
+      GUBUY_CLIENT_WEB_PATIENT_SECRET: ${GUBUY_CLIENT_WEB_PATIENT_SECRET}
+      GUBUY_CLIENT_WEB_ADMIN_ID: ${GUBUY_CLIENT_WEB_ADMIN_ID}
+      GUBUY_CLIENT_WEB_ADMIN_SECRET: ${GUBUY_CLIENT_WEB_ADMIN_SECRET}
+      GUBUY_CLIENT_MOBILE_ID: ${GUBUY_CLIENT_MOBILE_ID}
+
+      # JWT Configuration
+      JWT_ISSUER: ${JWT_ISSUER:-https://hcen.uy}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
+      JWT_SIGNING_KEY_PATH: /opt/hcen/keys/jwt-private.pem
+      JWT_PUBLIC_KEY_PATH: /opt/hcen/keys/jwt-public.pem
+
+      # PDI Configuration
+      PDI_SOAP_ENDPOINT: ${PDI_SOAP_ENDPOINT}
+      PDI_SOAP_USERNAME: ${PDI_SOAP_USERNAME}
+      PDI_SOAP_PASSWORD: ${PDI_SOAP_PASSWORD}
+
+      # Application Configuration
+      APP_BASE_URL: ${APP_BASE_URL:-https://hcen.uy}
+      APP_ENVIRONMENT: production
+
+      # Logging
+      LOG_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-INFO}
+      LOG_LEVEL_HCEN: ${LOG_LEVEL_HCEN:-INFO}
+
+      # JVM Options
+      JAVA_OPTS: -Xms${JVM_MIN_HEAP:-1g} -Xmx${JVM_MAX_HEAP:-2g} -XX:MaxMetaspaceSize=${JVM_METASPACE:-512m}
+
+    ports:
+      - "${HCEN_PORT:-8080}:8080"
+      - "${HCEN_MGMT_PORT:-9990}:9990"
+
+    volumes:
+      # Mount production config (override application.properties)
+      - ./config/application-production.properties:/opt/hcen/config/application.properties:ro
+      # Mount JWT keys
+      - ./keys:/opt/hcen/keys:ro
+      # Mount SSL certificates (if needed)
+      - ./ssl:/opt/hcen/ssl:ro
+      # Mount logs (persistent)
+      - hcen_logs:/opt/hcen/logs
+
+    networks:
+      - hcen-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9990/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+        reservations:
+          memory: 2G
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # ==============================================
+  # Nginx Reverse Proxy (SSL Termination)
+  # ==============================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: hcen-nginx-prod
+    restart: always
+    depends_on:
+      - hcen
+    ports:
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+    networks:
+      - hcen-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+networks:
+  hcen-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+    name: hcen_postgres_data_prod
+  mongodb_data:
+    driver: local
+    name: hcen_mongodb_data_prod
+  mongodb_config:
+    driver: local
+    name: hcen_mongodb_config_prod
+  redis_data:
+    driver: local
+    name: hcen_redis_data_prod
+  hcen_logs:
+    driver: local
+    name: hcen_logs_prod
+  nginx_cache:
+    driver: local
+    name: hcen_nginx_cache_prod
+  nginx_logs:
+    driver: local
+    name: hcen_nginx_logs_prod

@@ -590,7 +590,7 @@
          */
         function navigateTo(url) {
             // Check if page is implemented
-            const implementedPages = ['/hcen/admin/clinics'];
+            const implementedPages = ['/hcen/admin/clinics', '/hcen/admin/users'];
 
             if (implementedPages.some(page => url.includes(page))) {
                 window.location.href = url + '.jsp';
