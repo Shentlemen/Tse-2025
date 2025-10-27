@@ -97,17 +97,12 @@ docker_build_and_push:
     - until docker info; do sleep 1; done
   script:
     - ls -l hcen/build/libs
-    # Verify GitLab registry variables are set (they should be auto-populated if registry is enabled)
     - echo "Registry: $CI_REGISTRY"
     - echo "Registry Image: $CI_REGISTRY_IMAGE"
     - echo "Building image ${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-    # Login to GitLab Container Registry
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    # Build Docker image with multiple tags
     - docker build -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" -t "${CI_REGISTRY_IMAGE}:latest" hcen/
-    # Verify images were built
     - docker images
-    # Push both tags to registry
     - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
     - docker push "${CI_REGISTRY_IMAGE}:latest"
     - echo "Successfully pushed ${CI_REGISTRY_IMAGE}:${IMAGE_TAG} and ${CI_REGISTRY_IMAGE}:latest"
