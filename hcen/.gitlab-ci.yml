@@ -92,14 +92,15 @@ docker_build_and_push:
     - until docker info; do sleep 1; done
   script:
     - ls -l hcen/build/libs
-    - echo "Registry: $CI_REGISTRY"
-    - echo "Registry Image: $CI_REGISTRY_IMAGE"
-    - echo "Building image ${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+    - echo "Registry:$CI_REGISTRY"
+    - echo "Registry Image:$CI_REGISTRY_IMAGE"
+    - echo "Building image $CI_REGISTRY_IMAGE:$IMAGE_TAG"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" -t "${CI_REGISTRY_IMAGE}:latest" hcen/
+    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:latest" hcen/
     - docker images
-    - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-    - echo "Successfully pushed ${CI_REGISTRY_IMAGE}:${IMAGE_TAG} and ${CI_REGISTRY_IMAGE}:latest"
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+    - echo "Successfully pushed images"
   only:
     - main
     - develop
