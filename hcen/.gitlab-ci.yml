@@ -20,10 +20,6 @@ variables:
   # VZ_NODE_ID         -> numeric node id of the custom Docker container (or use VZ_NODE_GROUP instead)
   # VZ_TOKEN           -> session token; OR provide VZ_USER and VZ_PASSWORD to let script obtain one
   # Optional: VZ_NODE_GROUP (e.g. cp) if you prefer redeploying group instead of a single node
-
-# OpenShift legacy section removed. Now deploying via Virtuozzo (Jelastic) custom Docker container.
-# Flow: build/test/package -> docker_build (construct WildFly image with WAR) -> push (to GitLab Registry) -> deploy_virtuozzo (API redeploy with new tag).
-
 cache:
   paths:
     - hcen/.gradle/wrapper
