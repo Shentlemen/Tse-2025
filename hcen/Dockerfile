@@ -19,7 +19,9 @@ LABEL maintainer="TSE 2025 Group 9" \
       description="HCEN - Historia Clínica Electrónica Nacional"
 
 # Copy WAR from Gradle build output
-# GitLab CI pipeline builds WAR at build/libs/*.war
+# When building from repo root: docker build hcen/
+# When building from hcen dir: docker build .
+# GitLab CI builds from repo root, so paths are relative to hcen/
 ARG WAR_PATH=build/libs
 COPY ${WAR_PATH}/*.war /opt/jboss/wildfly/standalone/deployments/hcen.war
 

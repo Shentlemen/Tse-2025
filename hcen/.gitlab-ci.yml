@@ -11,7 +11,7 @@ stages:
 
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/hcen/.gradle"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
   DOCKER_DRIVER: overlay2
   # GitLab Registry built-ins (CI_REGISTRY, CI_REGISTRY_IMAGE, CI_REGISTRY_USER, CI_REGISTRY_PASSWORD) are provided automatically when registry enabled.
@@ -27,8 +27,15 @@ variables:
 
 cache:
   paths:
-    - .gradle/wrapper
-    - .gradle/caches
+    - hcen/.gradle/wrapper
+    - hcen/.gradle/caches
+
+# Default settings for all jobs
+default:
+  before_script:
+    - cd hcen
+    - pwd
+    - ls -la
 
 build:
   stage: build
@@ -38,8 +45,8 @@ build:
     - ./gradlew assemble
   artifacts:
     paths:
-      - build/libs/*.war
-      - build/classes/
+      - hcen/build/libs/*.war
+      - hcen/build/classes/
     expire_in: 1 hour
 
 test:
@@ -52,9 +59,9 @@ test:
     when: always
     reports:
       junit:
-        - build/test-results/test/**/TEST-*.xml
+        - hcen/build/test-results/test/**/TEST-*.xml
     paths:
-      - build/reports/tests/test/
+      - hcen/build/reports/tests/test/
     expire_in: 1 week
 
 package:
@@ -65,7 +72,7 @@ package:
     - ./gradlew war
   artifacts:
     paths:
-      - build/libs/*.war
+      - hcen/build/libs/*.war
     expire_in: 1 month
   only:
     - main
@@ -83,17 +90,19 @@ docker_build:
     - package
   variables:
     DOCKER_TLS_CERTDIR: ""  # disable TLS for dind
+  before_script:
+    - cd "$CI_PROJECT_DIR" # stay at repo root for docker build
+    - ls -la
   script:
-    - cd "$CI_PROJECT_DIR" # ensure root
-    - ls -l build/libs
+    - ls -l hcen/build/libs
     - echo "Building image $CI_REGISTRY_IMAGE:$IMAGE_TAG"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:latest" .
+    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:latest" hcen/
     - docker images | grep "$CI_REGISTRY_IMAGE" || true
   artifacts:
     name: docker_build_$CI_COMMIT_SHORT_SHA
     paths:
-      - Dockerfile
+      - hcen/Dockerfile
     expire_in: 1 week
   only:
     - main
@@ -127,10 +136,13 @@ deploy_virtuozzo:
   variables:
     # allow override of tag (e.g. manual redeploy older tag)
     DEPLOY_IMAGE_TAG: "$IMAGE_TAG"
+  before_script:
+    - cd "$CI_PROJECT_DIR" # start at repo root
+    - ls -la
   script:
     - echo "Starting Virtuozzo redeploy of tag $DEPLOY_IMAGE_TAG"
-    - chmod +x scripts/vz-deploy.sh
-    - ./scripts/vz-deploy.sh "$DEPLOY_IMAGE_TAG"
+    - chmod +x hcen/scripts/vz-deploy.sh
+    - ./hcen/scripts/vz-deploy.sh "$DEPLOY_IMAGE_TAG"
   environment:
     name: production
     url: https://$VZ_ENV_NAME.$VZ_API_HOST  # Adjust if platform gives different domain pattern
