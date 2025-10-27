@@ -91,9 +91,8 @@ docker_build_and_push:
     DOCKER_TLS_CERTDIR: ""  # disable TLS for dind
     DOCKER_HOST: tcp://docker:2375  # explicitly set Docker daemon host
   before_script:
-    - cd "$CI_PROJECT_DIR" # stay at repo root for docker build
+    - cd "$CI_PROJECT_DIR"
     - ls -la
-    # Wait for Docker daemon to be ready
     - until docker info; do sleep 1; done
   script:
     - ls -l hcen/build/libs
