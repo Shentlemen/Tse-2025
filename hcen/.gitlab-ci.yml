@@ -84,8 +84,8 @@ docker_build_and_push:
   dependencies:
     - package
   variables:
-    DOCKER_TLS_CERTDIR: ""  # disable TLS for dind
-    DOCKER_HOST: tcp://docker:2375  # explicitly set Docker daemon host
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
   before_script:
     - cd "$CI_PROJECT_DIR"
     - ls -la
@@ -99,7 +99,6 @@ docker_build_and_push:
     - docker build -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" -t "${CI_REGISTRY_IMAGE}:latest" hcen/
     - docker images
     - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-    - docker push "${CI_REGISTRY_IMAGE}:latest"
     - echo "Successfully pushed ${CI_REGISTRY_IMAGE}:${IMAGE_TAG} and ${CI_REGISTRY_IMAGE}:latest"
   only:
     - main
