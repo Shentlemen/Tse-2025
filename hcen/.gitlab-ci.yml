@@ -30,43 +30,42 @@ cache:
     - .gradle/wrapper
     - .gradle/caches
 
-before_script:
-  - cd pr1/pr1
-  - chmod +x ./gradlew
-
 build:
   stage: build
   image: eclipse-temurin:24-jdk
   script:
+    - chmod +x ./gradlew
     - ./gradlew assemble
   artifacts:
     paths:
-      - pr1/pr1/build/libs/*.war
-      - pr1/pr1/build/classes/
+      - build/libs/*.war
+      - build/classes/
     expire_in: 1 hour
 
 test:
   stage: test
   image: eclipse-temurin:24-jdk
   script:
+    - chmod +x ./gradlew
     - ./gradlew test
   artifacts:
     when: always
     reports:
       junit:
-        - pr1/pr1/build/test-results/test/**/TEST-*.xml
+        - build/test-results/test/**/TEST-*.xml
     paths:
-      - pr1/pr1/build/reports/tests/test/
+      - build/reports/tests/test/
     expire_in: 1 week
 
 package:
   stage: package
   image: eclipse-temurin:24-jdk
   script:
+    - chmod +x ./gradlew
     - ./gradlew war
   artifacts:
     paths:
-      - pr1/pr1/build/libs/*.war
+      - build/libs/*.war
     expire_in: 1 month
   only:
     - main
@@ -86,7 +85,7 @@ docker_build:
     DOCKER_TLS_CERTDIR: ""  # disable TLS for dind
   script:
     - cd "$CI_PROJECT_DIR" # ensure root
-    - ls -l pr1/pr1/build/libs
+    - ls -l build/libs
     - echo "Building image $CI_REGISTRY_IMAGE:$IMAGE_TAG"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:latest" .
