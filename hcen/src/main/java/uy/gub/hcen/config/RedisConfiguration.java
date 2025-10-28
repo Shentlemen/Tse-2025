@@ -4,10 +4,12 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Named;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import uy.gub.hcen.config.qualifier.CachePool;
+import uy.gub.hcen.config.qualifier.SessionPool;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,24 +145,13 @@ public class RedisConfiguration {
     }
 
     /**
-     * Produces the main JedisPool instance for general use.
-     * Defaults to cache pool (database 1).
-     *
-     * @return JedisPool instance
-     */
-    @Produces
-    public JedisPool getJedisPool() {
-        return cachePool;
-    }
-
-    /**
      * Produces JedisPool for session storage (Database 0).
      * Used for JWT session data with 1 hour TTL.
      *
      * @return JedisPool for session storage
      */
     @Produces
-    @Named("sessionPool")
+    @SessionPool
     public JedisPool getSessionPool() {
         return sessionPool;
     }
@@ -172,7 +163,7 @@ public class RedisConfiguration {
      * @return JedisPool for cache storage
      */
     @Produces
-    @Named("cachePool")
+    @CachePool
     public JedisPool getCachePool() {
         return cachePool;
     }
@@ -184,7 +175,7 @@ public class RedisConfiguration {
      * @return JedisPool for state storage
      */
     @Produces
-    @Named("statePool")
+    @StatePool
     public JedisPool getStatePool() {
         return statePool;
     }

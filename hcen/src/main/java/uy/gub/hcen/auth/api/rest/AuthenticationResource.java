@@ -7,12 +7,16 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.hcen.auth.dto.*;
 import uy.gub.hcen.auth.exception.AuthenticationException;
 import uy.gub.hcen.auth.exception.InvalidTokenException;
 import uy.gub.hcen.auth.service.AuthenticationService;
+
+import java.net.URI;
+import java.util.Map;
 
 /**
  * Authentication REST Resource
@@ -40,6 +44,12 @@ public class AuthenticationResource {
 
     @Inject
     private AuthenticationService authService;
+
+    @Inject
+    private uy.gub.hcen.auth.service.StateManager stateManager;
+
+    @Context
+    private UriInfo uriInfo;
 
     /**
      * POST /auth/login/initiate
@@ -102,7 +112,7 @@ public class AuthenticationResource {
             // Create request object
             LoginInitiateRequest request = new LoginInitiateRequest();
             request.setClientType(uy.gub.hcen.auth.config.OidcConfiguration.ClientType.valueOf(clientType));
-            //TODO: Remove this hardcoded value
+            // Set redirect URI to the callback endpoint
             request.setRedirectUri("http://localhost:8080");
 
             // Get authorization URL from service
@@ -208,20 +218,49 @@ public class AuthenticationResource {
 
             logger.info("OAuth callback received (GET)");
 
-            // Create callback request (assume WEB_PATIENT for now, could be detected from state)
+            // Peek at state to get client type (without consuming it)
+            // The authService.handleCallback will validate and consume it
+            Map<String, Object> stateData = stateManager.peekState(state);
+            uy.gub.hcen.auth.config.OidcConfiguration.ClientType clientType;
+
+            if (stateData != null && stateData.containsKey("clientType")) {
+                String clientTypeStr = (String) stateData.get("clientType");
+                clientType = uy.gub.hcen.auth.config.OidcConfiguration.ClientType.valueOf(clientTypeStr);
+            } else {
+                logger.warn("Could not determine client type from state, defaulting to WEB_PATIENT");
+                clientType = uy.gub.hcen.auth.config.OidcConfiguration.ClientType.WEB_PATIENT;
+            }
+
+            // Create callback request with correct client type
             CallbackRequest request = new CallbackRequest();
             request.setCode(code);
             request.setState(state);
-            request.setClientType(uy.gub.hcen.auth.config.OidcConfiguration.ClientType.WEB_PATIENT);
-            request.setRedirectUri("https://hcen.uy/api/auth/callback"); // Should match registered URI
+            request.setClientType(clientType);
+            request.setRedirectUri("http://localhost:8080"); // Should match registered URI
 
             TokenResponse response = authService.handleCallback(request);
 
-            // For web clients, set HttpOnly cookie and redirect to dashboard
-            // For now, return simple success page
-            return Response.ok()
-                    .entity("<html><body><h1>Authentication Successful</h1><p>Redirecting to dashboard...</p>" +
-                            "<script>setTimeout(function(){ window.location.href='/'; }, 2000);</script></body></html>")
+            // Build absolute redirect URI based on client type
+            // We need to use the base URI to avoid relative path issues
+            String baseUri = uriInfo.getBaseUri().toString(); // e.g., "http://localhost:8080/hcen/api/"
+
+            // Extract the application context path (remove "/api/" from base URI)
+            String contextPath = baseUri.replace("/api/", "/");
+
+            String dashboardPath = switch (clientType) {
+                case WEB_ADMIN -> "admin/dashboard.jsp?token=" + response.getAccessToken();
+                case WEB_PATIENT -> "patient/dashboard.jsp?token=" + response.getAccessToken();
+                default -> "login-patient.jsp?error=invalid_client_type";
+            };
+
+            // Build absolute URI: http://localhost:8080/hcen/admin/dashboard.jsp?token=...
+            URI redirectUri = URI.create(contextPath + dashboardPath);
+
+            logger.debug("Redirecting to: {}", redirectUri);
+
+            // Redirect to appropriate dashboard
+            return Response.status(Response.Status.FOUND)
+                    .location(redirectUri)
                     .build();
 
         } catch (AuthenticationException e) {

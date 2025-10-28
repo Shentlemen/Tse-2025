@@ -160,7 +160,7 @@ public class AuditLog {
      * Additional contextual details in JSON format
      * Stores flexible context like: reason, previous value, new value, error message, etc.
      */
-    @Column(name = "details", columnDefinition = "jsonb")
+    @Column(name = "details")
     private String details;
 
     // =========================================================================

@@ -4,16 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add two factor login">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose-postgres.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose-postgres.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="chore: add pipeline">
+      <change beforePath="$PROJECT_DIR$/.gitlab-ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.gitlab-ci.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +41,12 @@
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
               </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="hcen" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
+              </path>
             </expand>
             <select />
           </tree_state>
@@ -60,6 +58,16 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
     <option name="RESET_MODE" value="SOFT" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.jsonwebtoken/jjwt-api/0.12.3/486e6433fe11fba42dbfa74b0d6996745b6eaa4e/jjwt-api-0.12.3-sources.jar!/io/jsonwebtoken/JwtParserBuilder.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/jakarta.ws.rs/jakarta.ws.rs-api/4.0.0/8e6ca677ca06834a5822cddcb088dff917792f8a/jakarta.ws.rs-api-4.0.0-sources.jar!/jakarta/ws/rs/ApplicationPath.java" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="HttpClientEndpointsTabState">
+    <option name="cachedRequestData" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;d1dc589317f115a649d44ce525005aad2bf6c0ca&quot; value=&quot;###&amp;#10;GET http://localhost:8080/hcen/api/auth/callback?&amp;#10;    code={{$random.alphanumeric(8)}}&amp;amp;&amp;#10;    state={{$random.alphanumeric(8)}}&amp;amp;&amp;#10;    error={{$random.alphanumeric(8)}}&amp;amp;&amp;#10;    error_description={{$random.alphanumeric(8)}}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+  </component>
+  <component name="HttpClientOnboardingState"><![CDATA[{
+  "isOnboardingCommentShown": true
+}]]></component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -72,31 +80,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.docker-compose-postgres.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build hcen.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.hcen [build].executor&quot;: &quot;Run&quot;,
-    &quot;JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/agust/fing/tse/tse-2025/hcen&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.26436782&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Batch.migrate.executor": "Run",
+    "Batch.run-migrations.executor": "Run",
+    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
+    "Gradle.Build hcen.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.hcen [buildDependents].executor": "Run",
+    "Gradle.hcen [build].executor": "Run",
+    "Gradle.hcen [clean].executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.26436782",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql",
+      "mongo"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>
@@ -111,18 +130,84 @@
     </option>
   </component>
   <component name="RunManager" selected="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final">
+    <configuration name="migrate" type="BatchConfigurationType" factoryName="Batch" temporary="true">
+      <module name="hcen" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="migrate.bat" />
+      <option name="PARAMETERS" value="" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run-migrations" type="BatchConfigurationType" factoryName="Batch" temporary="true">
+      <module name="hcen" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="run-migrations.bat" />
+      <option name="PARAMETERS" value="" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="hcen [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildDependents" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <configuration name="hcen [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
             <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="hcen [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -206,23 +291,21 @@
         </option>
       </method>
     </configuration>
-    <configuration name="docker-compose-postgres.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
-      <deployment type="docker-compose.yml">
-        <settings>
-          <option name="sourceFilePath" value="docker-compose-postgres.yml" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
+      <item itemvalue="Batch.migrate" />
+      <item itemvalue="Batch.run-migrations" />
+      <item itemvalue="Gradle.hcen [buildDependents]" />
+      <item itemvalue="Gradle.hcen [clean]" />
       <item itemvalue="Gradle.hcen [build]" />
       <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Docker.docker-compose-postgres.yml: Compose Deployment" />
         <item itemvalue="Gradle.hcen [build]" />
+        <item itemvalue="Gradle.hcen [buildDependents]" />
+        <item itemvalue="Gradle.hcen [clean]" />
+        <item itemvalue="Batch.migrate" />
+        <item itemvalue="Batch.run-migrations" />
       </list>
     </recent_temporary>
   </component>
@@ -242,7 +325,8 @@
       <option name="presentableId" value="Default" />
       <updated>1760573790588</updated>
       <workItem from="1760573792319" duration="9304000" />
-      <workItem from="1760710045022" duration="6392000" />
+      <workItem from="1760710045022" duration="12885000" />
+      <workItem from="1761155060979" duration="41160000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -284,7 +368,143 @@
       <option name="project" value="LOCAL" />
       <updated>1760671428762</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat: add hcen flows for different actors">
+      <option name="closed" value="true" />
+      <created>1760749589877</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1760749589877</updated>
+    </task>
+    <task id="LOCAL-00007" summary="fix: duplicate dependency and database seeder">
+      <option name="closed" value="true" />
+      <created>1761094019829</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1761094019829</updated>
+    </task>
+    <task id="LOCAL-00008" summary="fix: duplicate dependency and database seeder">
+      <option name="closed" value="true" />
+      <created>1761094028857</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1761094028857</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feat: implement hcen core services">
+      <option name="closed" value="true" />
+      <created>1761176580972</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1761176580972</updated>
+    </task>
+    <task id="LOCAL-00010" summary="feat: add admin hcen pages and sso configs">
+      <option name="closed" value="true" />
+      <created>1761181268512</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1761181268512</updated>
+    </task>
+    <task id="LOCAL-00011" summary="feat: add admin hcen clinic management and peripheral nodes client">
+      <option name="closed" value="true" />
+      <created>1761231890251</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1761231890251</updated>
+    </task>
+    <task id="LOCAL-00012" summary="feat: add peripheral node client and pdi client integration">
+      <option name="closed" value="true" />
+      <created>1761253277525</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1761253277525</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat: polish sso gub.uy response, implement admin UI">
+      <option name="closed" value="true" />
+      <created>1761329627097</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1761329627097</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: setup redirection after SSO">
+      <option name="closed" value="true" />
+      <created>1761330854427</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1761330854427</updated>
+    </task>
+    <task id="LOCAL-00015" summary="feat: create clinic flow">
+      <option name="closed" value="true" />
+      <created>1761338553537</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1761338553537</updated>
+    </task>
+    <task id="LOCAL-00016" summary="feat: create clinic flow">
+      <option name="closed" value="true" />
+      <created>1761338569528</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1761338569528</updated>
+    </task>
+    <task id="LOCAL-00017" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761523191868</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1761523191868</updated>
+    </task>
+    <task id="LOCAL-00018" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761523372641</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1761523372641</updated>
+    </task>
+    <task id="LOCAL-00019" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761524369220</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1761524369221</updated>
+    </task>
+    <task id="LOCAL-00020" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761525267526</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1761525267526</updated>
+    </task>
+    <task id="LOCAL-00021" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761525466006</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1761525466006</updated>
+    </task>
+    <task id="LOCAL-00022" summary="chore: add pipeline">
+      <option name="closed" value="true" />
+      <created>1761525568915</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1761525568915</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -303,6 +523,36 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: add two factor login" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add two factor login" />
+    <MESSAGE value="feat: add hcen flows for different actors" />
+    <MESSAGE value="fix: duplicate dependency and database seeder" />
+    <MESSAGE value="feat: implement hcen core services" />
+    <MESSAGE value="feat: add admin hcen pages and sso configs" />
+    <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
+    <MESSAGE value="feat: add peripheral node client and pdi client integration" />
+    <MESSAGE value="feat: polish sso gub.uy response, implement admin UI" />
+    <MESSAGE value="feat: setup redirection after SSO" />
+    <MESSAGE value="feat: create clinic flow" />
+    <MESSAGE value="chore: add pipeline" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: add pipeline" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/service/AuthenticationService.java</url>
+          <line>138</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/integration/gubuy/GubUyOidcClient.java</url>
+          <line>234</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NoClassDefFoundError" package="java.lang" />
+          <option name="timeStamp" value="20" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

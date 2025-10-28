@@ -142,21 +142,24 @@ public class AuthenticationService {
             String userCi = extractUserCi(idTokenClaims);
 
             // 5. Create or update user in INUS
-            UserInfoDTO userInfo = createOrUpdateInusUser(userCi, idTokenClaims);
+            UserInfoDTO userInfo = createOrUpdateInusUser(userCi, idTokenClaims, request.getClientType());
 
-            // 6. Generate HCEN JWT tokens
-            String accessToken = jwtService.generateAccessToken(userCi, userInfo.getInusId(), "PATIENT", Map.of());
+            // 6. Determine role based on client type
+            String role = determineRole(request.getClientType());
+
+            // 7. Generate HCEN JWT tokens
+            String accessToken = jwtService.generateAccessToken(userCi, userInfo.getInusId(), role, Map.of());
             String refreshToken = jwtService.generateRefreshToken(userCi, userInfo.getInusId());
 
-            // 7. Store refresh token in MongoDB
+            // 8. Store refresh token in MongoDB
             storeRefreshToken(refreshToken, userCi, request.getClientType(), request.getDeviceId());
 
-            // 8. Log authentication event
+            // 9. Log authentication event
             logAuthenticationEvent(userCi, request.getClientType(), true, null);
 
-            logger.info("Authentication successful for user: {}", userCi);
+            logger.info("Authentication successful for user: {} with role: {}", userCi, role);
 
-            // 9. Return response
+            // 10. Return response
             return new TokenResponse(accessToken, refreshToken, 3600, userInfo);
 
         } catch (InvalidStateException | OAuthException e) {
@@ -207,7 +210,10 @@ public class AuthenticationService {
             String userCi = token.getUserCi();
             String inusId = getInusIdForUser(userCi);
 
-            String newAccessToken = jwtService.generateAccessToken(userCi, inusId, "PATIENT", Map.of());
+            // Determine role based on client type stored in refresh token
+            String role = determineRole(token.getClientType());
+
+            String newAccessToken = jwtService.generateAccessToken(userCi, inusId, role, Map.of());
             String newRefreshToken = jwtService.generateRefreshToken(userCi, inusId);
 
             // 6. Store new refresh token
@@ -287,13 +293,28 @@ public class AuthenticationService {
     }
 
     /**
+     * Determines user role based on client type
+     *
+     * @param clientType Client type
+     * @return Role string (ADMIN or PATIENT)
+     */
+    private String determineRole(ClientType clientType) {
+        return switch (clientType) {
+            case WEB_ADMIN -> "ADMIN";
+            case WEB_PATIENT, MOBILE -> "PATIENT";
+            default -> "PATIENT";
+        };
+    }
+
+    /**
      * Creates or updates INUS user from gub.uy claims
      *
      * @param userCi User's CI
      * @param claims ID token claims
+     * @param clientType Client type for role determination
      * @return UserInfoDTO
      */
-    private UserInfoDTO createOrUpdateInusUser(String userCi, Map<String, Object> claims) {
+    private UserInfoDTO createOrUpdateInusUser(String userCi, Map<String, Object> claims, ClientType clientType) {
         try {
             MongoCollection<Document> collection = mongoDatabase.getCollection("inus_users");
 
@@ -340,7 +361,9 @@ public class AuthenticationService {
                 collection.insertOne(newUser);
             }
 
-            return new UserInfoDTO(userCi, inusId, firstName, lastName, "PATIENT");
+            // Return UserInfoDTO with role based on client type
+            String role = determineRole(clientType);
+            return new UserInfoDTO(userCi, inusId, firstName, lastName, role);
 
         } catch (Exception e) {
             logger.error("Failed to create/update INUS user", e);

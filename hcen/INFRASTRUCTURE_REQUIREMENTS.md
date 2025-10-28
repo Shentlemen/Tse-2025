@@ -35,7 +35,62 @@ All clients authenticate through gub.uy (ID Uruguay) and receive HCEN-issued JWT
 
 ## External Dependencies
 
-### 1. gub.uy (ID Uruguay) - OpenID Connect Provider
+### 1. PDI (Plataforma de Datos e Integración) - Identity Validation Service
+
+**Purpose**: Government identity validation service for age verification during INUS registration
+
+**Service**: DNIC Servicio Básico de Información (Basic Information Service)
+
+**Protocol**: SOAP 1.1/1.2 over HTTPS
+
+**Registration Required**: Yes
+- Contact AGESIC to register HCEN as a PDI client
+- Provide: Application description, technical contact, purpose of integration
+- Receive: WS-Security username and password credentials
+
+**Testing Environment**:
+- Endpoint: `https://pdi-testing.gub.uy/dnic/servicio-basico`
+- WSDL: `https://pdi-testing.gub.uy/dnic/servicio-basico?wsdl`
+- Authentication: WS-Security UsernameToken
+- Timeout: Connection 5s, Read 30s
+
+**Production Environment**:
+- Replace `pdi-testing` with `pdi` in endpoint URL
+- Use production credentials
+- Verify SSL certificate
+
+**Operations**:
+
+1. **ConsultarUsuario** (Query User)
+   - Input: CI (Cédula de Identidad)
+   - Output: Full name, date of birth
+   - Use Case: Age verification (18+ requirement) during INUS registration
+
+**Error Handling**:
+- **Graceful Degradation**: If PDI is unavailable, HCEN falls back to local age calculation
+- **Circuit Breaker**: Automatic fail-fast after 5 consecutive failures (60-second reset timeout)
+- **Retry Logic**: 3 attempts with exponential backoff (1s, 2s, 4s) for network failures
+
+**Security**:
+- HTTPS/TLS required (AC002-AC004)
+- WS-Security username/password authentication
+- No sensitive data logged (CI numbers masked in logs)
+
+**Integration Point**:
+- `InusService.registerUser()` - Called during user registration to verify age
+
+**Configuration Properties**:
+```properties
+pdi.soap.endpoint=https://pdi-testing.gub.uy/dnic/servicio-basico
+pdi.soap.username=hcen-client
+pdi.soap.password=CHANGE_ME_SECURE_PASSWORD
+pdi.soap.timeout.connect=5000
+pdi.soap.timeout.read=30000
+```
+
+---
+
+### 2. gub.uy (ID Uruguay) - OpenID Connect Provider
 
 **Purpose**: National authentication system for Uruguayan citizens
 
@@ -576,6 +631,7 @@ $env:JWT_SIGNING_KEY_PATH="C:\opt\hcen\keys\jwt-private-pkcs8.pem"
 ### Pre-Deployment
 
 - [ ] Register OAuth clients with AGESIC (gub.uy)
+- [ ] Register PDI client with AGESIC (for identity validation)
 - [ ] Obtain SSL certificates for hcen.uy and subdomains
 - [ ] Generate JWT signing keys
 - [ ] Set up MongoDB database and create collections
@@ -583,9 +639,10 @@ $env:JWT_SIGNING_KEY_PATH="C:\opt\hcen\keys\jwt-private-pkcs8.pem"
 - [ ] Set up Redis with password authentication
 - [ ] Configure WildFly HTTPS listener
 - [ ] Configure CORS settings
-- [ ] Update application.properties with production values
+- [ ] Update application.properties with production values (including PDI credentials)
 - [ ] Set environment variables (Windows system variables)
 - [ ] Configure firewalls and network security
+- [ ] Test PDI connectivity and SOAP service availability
 
 ### Deployment
 
@@ -598,14 +655,19 @@ $env:JWT_SIGNING_KEY_PATH="C:\opt\hcen\keys\jwt-private-pkcs8.pem"
 ### Post-Deployment
 
 - [ ] Test OAuth flow with gub.uy testing environment
+- [ ] Test PDI identity validation with test CI numbers
+- [ ] Verify PDI circuit breaker and graceful degradation
 - [ ] Verify JWT token generation and validation
 - [ ] Test mobile app authentication
 - [ ] Test patient portal authentication
 - [ ] Test admin portal authentication
+- [ ] Test INUS user registration with PDI age verification
 - [ ] Verify audit logging to MongoDB
 - [ ] Monitor WildFly logs for errors
+- [ ] Monitor PDI integration errors and circuit breaker state
 - [ ] Set up monitoring (Prometheus/Grafana)
 - [ ] Configure alerting for authentication failures
+- [ ] Configure alerting for PDI service unavailability
 - [ ] Document rollback procedure
 
 ### Production Cutover

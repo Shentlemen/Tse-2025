@@ -43,7 +43,7 @@ CREATE TABLE audit.audit_logs (
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Additional context (JSONB for flexible structure)
-    details JSONB,
+    details VARCHAR(1000),
 
     -- Constraints
     CONSTRAINT chk_action_outcome CHECK (action_outcome IN ('SUCCESS', 'FAILURE', 'DENIED'))

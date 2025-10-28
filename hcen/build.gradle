@@ -64,8 +64,8 @@ dependencies {
     // Transaction
     providedCompile 'jakarta.transaction:jakarta.transaction-api:2.0.1'
 
-    // PostgreSQL Driver (runtime dependency)
-    runtimeOnly 'org.postgresql:postgresql:42.7.0'
+    // PostgreSQL Driver (compile-time for PGobject in converters, runtime for JDBC)
+    providedCompile 'org.postgresql:postgresql:42.7.0'
 
     // MongoDB Driver (for NoSQL audit logs, refresh tokens, and INUS data)
     implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
@@ -85,6 +85,11 @@ dependencies {
     // JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0'
+
+    // Add Jackson Databind for Hibernate's JSON support
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.7.0'
+
 
     // SLF4J Logging (WildFly provides implementation)
     providedCompile 'org.slf4j:slf4j-api:2.0.9'

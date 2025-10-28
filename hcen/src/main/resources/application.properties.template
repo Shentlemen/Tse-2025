@@ -9,7 +9,7 @@
 
 # OIDC Endpoints (Testing Environment)
 # For production, replace auth-testing.iduruguay.gub.uy with auth.iduruguay.gub.uy
-gubuy.oidc.issuer=https://auth-testing.iduruguay.gub.uy
+gubuy.oidc.issuer=https://auth-testing.iduruguay.gub.uy/oidc/v1
 gubuy.oidc.authorization.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/authorize
 gubuy.oidc.token.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/token
 gubuy.oidc.userinfo.endpoint=https://auth-testing.iduruguay.gub.uy/oidc/v1/userinfo

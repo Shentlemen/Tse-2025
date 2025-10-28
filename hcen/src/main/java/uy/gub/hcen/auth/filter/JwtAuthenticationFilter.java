@@ -14,6 +14,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import uy.gub.hcen.auth.dto.ErrorResponse;
 import uy.gub.hcen.auth.service.JwtTokenService;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.security.Principal;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
     private JwtTokenService jwtService;
 
     @Inject
+    @StatePool
     private JedisPool jedisPool;
 
     /**

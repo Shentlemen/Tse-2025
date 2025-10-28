@@ -6,9 +6,10 @@ import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import uy.gub.hcen.auth.config.OidcConfiguration.ClientType;
-import uy.gub.hcen.auth.config.RedisConfiguration;
 import uy.gub.hcen.auth.exception.InvalidStateException;
 import uy.gub.hcen.auth.util.StateUtil;
+import uy.gub.hcen.config.RedisConfiguration;
+import uy.gub.hcen.config.qualifier.StatePool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class StateManager {
     private static final Logger LOGGER = Logger.getLogger(StateManager.class.getName());
 
     @Inject
+    @StatePool
     private JedisPool jedisPool;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -113,6 +115,35 @@ public class StateManager {
         try (Jedis jedis = jedisPool.getResource()) {
             String key = RedisConfiguration.KeyPatterns.oauthState(state);
             return jedis.exists(key);
+        }
+    }
+
+    /**
+     * Peeks at state data without consuming it.
+     *
+     * @param state The state parameter
+     * @return State data if valid, null otherwise
+     */
+    public Map<String, Object> peekState(String state) {
+        if (state == null || state.trim().isEmpty()) {
+            return null;
+        }
+
+        try (Jedis jedis = jedisPool.getResource()) {
+            String key = RedisConfiguration.KeyPatterns.oauthState(state);
+            String value = jedis.get(key);
+
+            if (value == null) {
+                return null;
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> stateData = objectMapper.readValue(value, Map.class);
+            return stateData;
+
+        } catch (Exception e) {
+            LOGGER.warning("Failed to peek state: " + e.getMessage());
+            return null;
         }
     }
 

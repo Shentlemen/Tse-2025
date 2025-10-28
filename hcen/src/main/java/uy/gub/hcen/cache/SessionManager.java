@@ -7,6 +7,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import uy.gub.hcen.config.qualifier.SessionPool;
 
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public class SessionManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
+    @SessionPool
     private JedisPool jedisPool;
 
     /**

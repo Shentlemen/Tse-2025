@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import uy.gub.hcen.config.RedisConfiguration;
+import uy.gub.hcen.config.qualifier.SessionPool;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class SessionManager {
     private static final Logger LOGGER = Logger.getLogger(SessionManager.class.getName());
 
     @Inject
-    @Named("sessionPool")
+    @SessionPool
     private JedisPool sessionPool;
 
     private final ObjectMapper objectMapper;
