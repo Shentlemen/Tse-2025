@@ -1,7 +1,6 @@
 package uy.gub.clinic.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -150,17 +149,40 @@ public class ClinicService {
     
     // Métodos para clínicas
     public List<Clinic> getAllClinics() {
-        return new ArrayList<>(hardcodedClinics.values());
+        try {
+            TypedQuery<Clinic> query = entityManager.createQuery(
+                "SELECT c FROM Clinic c WHERE c.active = true ORDER BY c.name", 
+                Clinic.class);
+            return query.getResultList();
+        } catch (Exception e) {
+            logger.error("Error al obtener clínicas de la BD, usando datos hardcodeados", e);
+            return new ArrayList<>(hardcodedClinics.values());
+        }
     }
     
     public Optional<Clinic> getClinicById(Long id) {
-        return Optional.ofNullable(hardcodedClinics.get(id));
+        try {
+            Clinic clinic = entityManager.find(Clinic.class, id);
+            return Optional.ofNullable(clinic);
+        } catch (Exception e) {
+            logger.error("Error al obtener clínica {} de la BD, usando datos hardcodeados", id, e);
+            return Optional.ofNullable(hardcodedClinics.get(id));
+        }
     }
     
     public Optional<Clinic> getClinicByCode(String code) {
-        return hardcodedClinics.values().stream()
-                .filter(clinic -> clinic.getCode().equals(code))
-                .findFirst();
+        try {
+            TypedQuery<Clinic> query = entityManager.createQuery(
+                "SELECT c FROM Clinic c WHERE c.code = :code AND c.active = true", 
+                Clinic.class);
+            query.setParameter("code", code);
+            return query.getResultList().stream().findFirst();
+        } catch (Exception e) {
+            logger.error("Error al obtener clínica {} de la BD, usando datos hardcodeados", code, e);
+            return hardcodedClinics.values().stream()
+                    .filter(clinic -> clinic.getCode().equals(code))
+                    .findFirst();
+        }
     }
     
     @Transactional

@@ -107,16 +107,16 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-hospital me-2"></i>HCEN Clínica
+            <a class="navbar-brand" href="<c:url value='/admin/dashboard'/>">
+                <i class="fas fa-hospital me-2"></i>HCEN - ${sessionScope.clinicName}
             </a>
             
             <div class="navbar-nav ms-auto">
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user me-2"></i>${sessionScope.user}
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="<c:url value='/auth/logout'/>">
                             <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
                         </a></li>
@@ -135,17 +135,17 @@
                         <h6 class="text-white-50 mb-3">ADMINISTRACIÓN</h6>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link active" href="<c:url value='/admin/dashboard.jsp'/>">
+                                <a class="nav-link active" href="<c:url value='/admin/dashboard'/>">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/professionals.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/admin/professionals'/>">
                                     <i class="fas fa-user-md me-2"></i>Profesionales
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/patients.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/admin/patients-list'/>">
                                     <i class="fas fa-users me-2"></i>Pacientes
                                 </a>
                             </li>
@@ -155,13 +155,20 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/specialties.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/admin/specialties-list'/>">
                                     <i class="fas fa-stethoscope me-2"></i>Especialidades
                                 </a>
                             </li>
+                            <c:if test="${sessionScope.role == 'SUPER_ADMIN'}">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<c:url value='/admin/super-admin'/>">
+                                        <i class="fas fa-crown me-2"></i>Super Admin
+                                    </a>
+                                </li>
+                            </c:if>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/settings.jsp'/>">
-                                    <i class="fas fa-cogs me-2"></i>Configuración
+                                <a class="nav-link" href="<c:url value='/admin/users'/>">
+                                    <i class="fas fa-user-cog me-2"></i>Gestión de Usuarios
                                 </a>
                             </li>
                         </ul>
@@ -180,6 +187,13 @@
                         <fmt:formatDate value="<%=new java.util.Date()%>" pattern="dd/MM/yyyy HH:mm"/>
                     </div>
                 </div>
+                
+                <c:if test="${sessionScope.role == 'SUPER_ADMIN'}">
+                    <div class="alert alert-info">
+                        <i class="fas fa-crown me-2"></i>
+                        <strong>Vista Completa:</strong> Estás viendo datos de todas las clínicas del sistema.
+                    </div>
+                </c:if>
 
                 <!-- Estadísticas -->
                 <div class="row mb-4">
@@ -190,7 +204,7 @@
                                     <i class="fas fa-user-md"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">12</h4>
+                                    <h4 class="mb-0">${professionalsCount}</h4>
                                     <small class="opacity-75">Profesionales</small>
                                 </div>
                             </div>
@@ -204,7 +218,7 @@
                                     <i class="fas fa-users"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">1,247</h4>
+                                    <h4 class="mb-0">${patientsCount}</h4>
                                     <small class="opacity-75">Pacientes</small>
                                 </div>
                             </div>
@@ -218,7 +232,7 @@
                                     <i class="fas fa-file-medical"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">3,891</h4>
+                                    <h4 class="mb-0">${documentsCount}</h4>
                                     <small class="opacity-75">Documentos</small>
                                 </div>
                             </div>
@@ -232,7 +246,7 @@
                                     <i class="fas fa-stethoscope"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">8</h4>
+                                    <h4 class="mb-0">${specialtiesCount}</h4>
                                     <small class="opacity-75">Especialidades</small>
                                 </div>
                             </div>
@@ -302,22 +316,40 @@
                             </div>
                             <div class="card-body">
                                 <div class="d-grid gap-2">
-                                    <a href="<c:url value='/admin/professionals.jsp'/>" class="btn btn-primary">
+                                    <a href="<c:url value='/admin/professionals'/>#addProfessionalModal" class="btn btn-primary" onclick="openProfessionalModal()">
                                         <i class="fas fa-user-plus me-2"></i>Agregar Profesional
                                     </a>
                                     
-                                    <a href="<c:url value='/admin/patients.jsp'/>" class="btn btn-outline-primary">
+                                    <a href="<c:url value='/admin/patients-list'/>#addPatientModal" class="btn btn-outline-primary" onclick="openPatientModal()">
                                         <i class="fas fa-user-plus me-2"></i>Registrar Paciente
                                     </a>
                                     
                                     <a href="<c:url value='/admin/documents.jsp'/>" class="btn btn-outline-primary">
                                         <i class="fas fa-file-upload me-2"></i>Subir Documento
                                     </a>
-                                    
-                                    <a href="<c:url value='/admin/settings.jsp'/>" class="btn btn-outline-secondary">
-                                        <i class="fas fa-cog me-2"></i>Configuración
-                                    </a>
                                 </div>
+                                
+                                <script>
+                                    function openProfessionalModal() {
+                                        // Guardar la URL para después
+                                        sessionStorage.setItem('openProfessionalModal', 'true');
+                                    }
+                                    
+                                    function openPatientModal() {
+                                        // Guardar la URL para después
+                                        sessionStorage.setItem('openPatientModal', 'true');
+                                    }
+                                    
+                                    // Verificar si necesitamos abrir el modal
+                                    if (sessionStorage.getItem('openProfessionalModal') === 'true') {
+                                        sessionStorage.removeItem('openProfessionalModal');
+                                        // Disparar el evento cuando la página cargue
+                                        window.addEventListener('load', function() {
+                                            const modal = new bootstrap.Modal(document.getElementById('addProfessionalModal'));
+                                            modal.show();
+                                        });
+                                    }
+                                </script>
                                 
                                 <hr>
                                 

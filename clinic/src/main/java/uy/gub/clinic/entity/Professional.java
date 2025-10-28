@@ -15,9 +15,13 @@ import java.util.List;
 @Table(name = "professionals")
 @NamedQueries({
     @NamedQuery(name = "Professional.findAll", query = "SELECT p FROM Professional p"),
+    @NamedQuery(name = "Professional.findAllActive", query = "SELECT p FROM Professional p WHERE p.active = true"),
     @NamedQuery(name = "Professional.findByClinic", query = "SELECT p FROM Professional p WHERE p.clinic.id = :clinicId"),
+    @NamedQuery(name = "Professional.findByClinicActive", query = "SELECT p FROM Professional p WHERE p.clinic.id = :clinicId AND p.active = true"),
     @NamedQuery(name = "Professional.findBySpecialty", query = "SELECT p FROM Professional p WHERE p.specialty.id = :specialtyId"),
-    @NamedQuery(name = "Professional.findByLicense", query = "SELECT p FROM Professional p WHERE p.licenseNumber = :licenseNumber")
+    @NamedQuery(name = "Professional.findBySpecialtyActive", query = "SELECT p FROM Professional p WHERE p.specialty.id = :specialtyId AND p.active = true"),
+    @NamedQuery(name = "Professional.findByLicense", query = "SELECT p FROM Professional p WHERE p.licenseNumber = :licenseNumber AND p.active = true"),
+    @NamedQuery(name = "Professional.findByEmail", query = "SELECT p FROM Professional p WHERE p.email = :email AND p.active = true")
 })
 public class Professional {
     

@@ -33,14 +33,24 @@ public class User {
     private String password;
     
     @NotBlank
-    @Size(max = 100)
+    @Size(max = 20)
     @Column(name = "role", nullable = false)
-    private String role; // ADMIN_CLINIC, PROFESSIONAL
+    private String role; // ADMIN_CLINIC, PROFESSIONAL, SUPER_ADMIN
     
-    @Email
-    @Size(max = 255)
-    @Column(name = "email")
-    private String email;
+    @Size(max = 100)
+    @Column(name = "first_name")
+    private String firstName;
+    
+    @Size(max = 100)
+    @Column(name = "last_name")
+    private String lastName;
+    
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy;
     
     @Column(name = "active", nullable = false)
     private Boolean active = true;
@@ -51,9 +61,14 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @Email
+    @Size(max = 255)
+    @Column(name = "email")
+    private String email;
+    
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clinic_id", nullable = false)
+    @JoinColumn(name = "clinic_id")
     private Clinic clinic;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -122,6 +137,38 @@ public class User {
     
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getFirstName() {
+        return firstName;
+    }
+    
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    
+    public String getLastName() {
+        return lastName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+    
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+    
+    public User getCreatedBy() {
+        return createdBy;
+    }
+    
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
     
     public Boolean getActive() {

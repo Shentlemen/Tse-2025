@@ -7,8 +7,7 @@
 
     <context-root>/clinic</context-root>
     
-    <!-- Configuración de seguridad -->
-    <security-domain>clinic-security</security-domain>
+    <!-- Configuración de seguridad - Removido por incompatibilidad con WildFly 30 -->
     
     <!-- Configuración de recursos -->
     <resource-ref>
