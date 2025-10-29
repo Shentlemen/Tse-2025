@@ -12,14 +12,21 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/hcen/.gradle"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
-  DOCKER_DRIVER: overlay2
-  # GitLab Registry built-ins (CI_REGISTRY, CI_REGISTRY_IMAGE, CI_REGISTRY_USER, CI_REGISTRY_PASSWORD) are provided automatically when registry enabled.
+  # Docker-in-Docker configuration (GitLab official recommendation)
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  # Container image variables
+  CONTAINER_TEST_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  CONTAINER_RELEASE_IMAGE: "$CI_REGISTRY_IMAGE:latest"
   # Virtuozzo (Jelastic) deployment variables (add these in GitLab CI/CD settings):
   # VZ_API_HOST        -> e.g. paas.minube.antel.com (without protocol)
   # VZ_ENV_NAME        -> environment name in Virtuozzo
   # VZ_NODE_ID         -> numeric node id of the custom Docker container (or use VZ_NODE_GROUP instead)
   # VZ_TOKEN           -> session token; OR provide VZ_USER and VZ_PASSWORD to let script obtain one
   # Optional: VZ_NODE_GROUP (e.g. cp) if you prefer redeploying group instead of a single node
+
 cache:
   paths:
     - hcen/.gradle/wrapper
@@ -74,58 +81,62 @@ package:
     - develop
     - tags
 
-docker_build_and_push:
+# Docker build using GitLab's official recommended configuration
+docker_build:
   stage: docker
-  image: docker:24.0.7
+  image: docker:24.0.5-cli
   services:
-    - name: docker:24.0.7-dind
-      alias: docker
+    - docker:24.0.5-dind
   needs: ["package"]
   dependencies:
     - package
-  variables:
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
   before_script:
     - cd "$CI_PROJECT_DIR"
-    - ls -la
-    # Wait for Docker daemon to be ready (with timeout)
-    - |
-      echo "Waiting for Docker daemon to start..."
-      timeout=60
-      counter=0
-      until docker info >/dev/null 2>&1 || [ $counter -eq $timeout ]; do
-        counter=$((counter + 1))
-        echo "Waiting for Docker... ($counter/$timeout)"
-        sleep 1
-      done
-      if [ $counter -eq $timeout ]; then
-        echo "ERROR: Docker daemon failed to start within $timeout seconds"
-        exit 1
-      fi
-      echo "Docker daemon is ready!"
-      docker info
+    - ls -la hcen/build/libs
+    # Login to GitLab Container Registry using official method
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
-    - ls -l hcen/build/libs
-    - echo "Registry:$CI_REGISTRY"
-    - echo "Registry Image:$CI_REGISTRY_IMAGE"
-    - echo "Building image $CI_REGISTRY_IMAGE:$IMAGE_TAG"
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:latest" hcen/
+    - echo "Building Docker image..."
+    - echo "Registry: $CI_REGISTRY"
+    - echo "Image: $CI_REGISTRY_IMAGE"
+    - echo "Tag: $IMAGE_TAG"
+    # Build with --pull to fetch latest base image
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" hcen/
     - docker images
+    # Push commit-specific tag
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
-    - docker push "$CI_REGISTRY_IMAGE:latest"
-    - echo "Successfully pushed images"
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - echo "Successfully pushed image: $CI_REGISTRY_IMAGE:$IMAGE_TAG"
   only:
     - main
     - develop
     - tags
 
+# Release latest tag (only on main branch)
+docker_release:
+  stage: docker
+  image: docker:24.0.5-cli
+  services:
+    - docker:24.0.5-dind
+  needs: ["docker_build"]
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Releasing image as latest..."
+    # Pull the commit-specific image
+    - docker pull "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    # Tag as latest
+    - docker tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" "$CONTAINER_RELEASE_IMAGE"
+    # Push latest tag
+    - docker push "$CONTAINER_RELEASE_IMAGE"
+    - echo "Successfully released: $CONTAINER_RELEASE_IMAGE"
+  only:
+    - main
+
 deploy_virtuozzo:
   stage: deploy
   image: curlimages/curl:8.5.0
-  needs: ["docker_build_and_push"]
+  needs: ["docker_release"]
   variables:
     # allow override of tag (e.g. manual redeploy older tag)
     DEPLOY_IMAGE_TAG: "$IMAGE_TAG"
