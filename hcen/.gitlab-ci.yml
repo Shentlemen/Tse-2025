@@ -96,14 +96,14 @@ docker_build:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     - echo "Building Docker image..."
-    - echo "Registry: $CI_REGISTRY"
-    - echo "Image: $CI_REGISTRY_IMAGE"
-    - echo "Tag: $IMAGE_TAG"
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" hcen/
+    - echo "Registry:" $CI_REGISTRY
+    - echo "Image:" $CI_REGISTRY_IMAGE
+    - echo "Tag:" $IMAGE_TAG
+    - docker build --pull -t $CI_REGISTRY_IMAGE:$IMAGE_TAG -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG hcen/
     - docker images
-    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    - echo "Successfully pushed image: $CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - echo "Successfully pushed image:" $CI_REGISTRY_IMAGE:$IMAGE_TAG
   only:
     - main
     - develop
@@ -120,13 +120,10 @@ docker_release:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     - echo "Releasing image as latest..."
-    # Pull the commit-specific image
     - docker pull "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
-    # Tag as latest
     - docker tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" "$CONTAINER_RELEASE_IMAGE"
-    # Push latest tag
     - docker push "$CONTAINER_RELEASE_IMAGE"
-    - echo "Successfully released: $CONTAINER_RELEASE_IMAGE"
+    - echo "Successfully released:" $CONTAINER_RELEASE_IMAGE
   only:
     - main
 
