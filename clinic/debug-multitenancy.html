@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Multitenancy - HCEN Clínica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        .btn-info {
+            background: #2196F3;
+        }
+        .btn-info:hover {
+            background: #1976D2;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .step {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .debug-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .credentials {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Multitenancy - HCEN Clínica</h1>
+        
+        <div class="debug-info">
+            <h3>📊 Información de Debug:</h3>
+            <p><strong>URL de la aplicación:</strong> <a href="http://localhost:8080/clinic/" target="_blank">http://localhost:8080/clinic/</a></p>
+            <p><strong>Logs del servidor:</strong> Revisa la consola de WildFly para ver los logs detallados</p>
+            <p><strong>Herramientas de desarrollador:</strong> Presiona F12 para abrir DevTools</p>
+        </div>
+        
+        <div class="credentials">
+            <h3>🔑 Credenciales de Prueba:</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4>Clínica del Corazón</h4>
+                    <p><strong>Admin:</strong> admin / admin123</p>
+                    <p><strong>Profesional:</strong> prof / prof123</p>
+                </div>
+                <div>
+                    <h4>Centro Neurológico</h4>
+                    <p><strong>Admin:</strong> admin2 / admin456</p>
+                    <p><strong>Profesional:</strong> prof2 / prof456</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-form">
+            <h3>🧪 Test Rápido:</h3>
+            <form id="testForm">
+                <div class="form-group">
+                    <label>Clínica:</label>
+                    <select id="clinicSelect">
+                        <option value="">Seleccionar clínica</option>
+                        <option value="admin">Clínica del Corazón - Admin</option>
+                        <option value="admin2">Centro Neurológico - Admin</option>
+                        <option value="prof">Clínica del Corazón - Profesional</option>
+                        <option value="prof2">Centro Neurológico - Profesional</option>
+                    </select>
+                </div>
+                <button type="button" class="btn" onclick="fillCredentials()">Llenar Credenciales</button>
+                <button type="button" class="btn btn-info" onclick="openApp()">Abrir Aplicación</button>
+            </form>
+        </div>
+        
+        <div class="step">
+            <h3>📋 Pasos para Debug:</h3>
+            <ol>
+                <li><strong>Limpiar caché:</strong> <button class="btn" onclick="clearAllCache()">🧹 Limpiar Todo</button></li>
+                <li><strong>Abrir aplicación:</strong> <a href="http://localhost:8080/clinic/" target="_blank" class="btn">🚀 Abrir App</a></li>
+                <li><strong>Loguearse con primera clínica:</strong> admin / admin123</li>
+                <li><strong>Verificar dashboard:</strong> Debe mostrar "Clínica del Corazón"</li>
+                <li><strong>Hacer logout:</strong> Clic en "Cerrar Sesión"</li>
+                <li><strong>Loguearse con segunda clínica:</strong> admin2 / admin456</li>
+                <li><strong>Verificar dashboard:</strong> Debe mostrar "Centro Neurológico"</li>
+                <li><strong>Revisar logs:</strong> Ver consola de WildFly para logs detallados</li>
+            </ol>
+        </div>
+        
+        <div class="info">
+            <h3>🔧 Herramientas de Debug:</h3>
+            <button class="btn" onclick="clearAllCache()">Limpiar Caché</button>
+            <button class="btn btn-info" onclick="openDevTools()">Abrir DevTools</button>
+            <button class="btn btn-danger" onclick="clearSessionStorage()">Limpiar SessionStorage</button>
+            <button class="btn" onclick="showDebugInfo()">Mostrar Info Debug</button>
+        </div>
+        
+        <div id="result"></div>
+        <div id="debugInfo" style="display: none;"></div>
+    </div>
+
+    <script>
+        function clearAllCache() {
+            // Limpiar localStorage
+            localStorage.clear();
+            
+            // Limpiar sessionStorage
+            sessionStorage.clear();
+            
+            // Limpiar caché del navegador
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+            
+            // Limpiar cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            document.getElementById('result').innerHTML = 
+                '<div style="color: green; margin-top: 20px; padding: 10px; background: #e8f5e8; border-radius: 5px;">✅ Caché limpiado completamente.</div>';
+        }
+        
+        function openDevTools() {
+            alert('Presiona F12 para abrir las herramientas de desarrollador y ver la consola.');
+        }
+        
+        function clearSessionStorage() {
+            sessionStorage.clear();
+            document.getElementById('result').innerHTML = 
+                '<div style="color: orange; margin-top: 20px; padding: 10px; background: #fff3cd; border-radius: 5px;">⚠️ SessionStorage limpiado.</div>';
+        }
+        
+        function openApp() {
+            window.open('http://localhost:8080/clinic/', '_blank');
+        }
+        
+        function fillCredentials() {
+            const clinic = document.getElementById('clinicSelect').value;
+            const credentials = {
+                'admin': { user: 'admin', pass: 'admin123' },
+                'admin2': { user: 'admin2', pass: 'admin456' },
+                'prof': { user: 'prof', pass: 'prof123' },
+                'prof2': { user: 'prof2', pass: 'prof456' }
+            };
+            
+            if (credentials[clinic]) {
+                document.getElementById('result').innerHTML = 
+                    `<div style="color: blue; margin-top: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                        <strong>Credenciales para ${clinic}:</strong><br>
+                        Usuario: <code>${credentials[clinic].user}</code><br>
+                        Contraseña: <code>${credentials[clinic].pass}</code>
+                    </div>`;
+            }
+        }
+        
+        function showDebugInfo() {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                    <h4>🔍 Información de Debug del Navegador:</h4>
+                    <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                    <p><strong>Cookies:</strong> ${document.cookie || 'No hay cookies'}</p>
+                    <p><strong>LocalStorage:</strong> ${Object.keys(localStorage).length} elementos</p>
+                    <p><strong>SessionStorage:</strong> ${Object.keys(sessionStorage).length} elementos</p>
+                    <p><strong>URL actual:</strong> ${window.location.href}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

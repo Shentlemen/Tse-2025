@@ -13,7 +13,8 @@
         <param-value>Development</param-value>
     </context-param>
 
-    <!-- Configuración de seguridad -->
+    <!-- Configuración de seguridad - Temporalmente deshabilitada para desarrollo -->
+    <!--
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Admin Portal</web-resource-name>
@@ -37,6 +38,7 @@
             <role-name>PROFESSIONAL</role-name>
         </auth-constraint>
     </security-constraint>
+    -->
 
     <!-- Páginas de error -->
     <error-page>
@@ -62,5 +64,90 @@
             <secure>false</secure>
         </cookie-config>
     </session-config>
+
+    <!-- Mapeo del Servlet de Autenticación -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.auth.AuthServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth/login</url-pattern>
+        <url-pattern>/auth/logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet de Gestión de Usuarios -->
+    <servlet>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.UserManagementServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <url-pattern>/admin/users</url-pattern>
+        <url-pattern>/admin/users/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet de Super Administrador -->
+    <servlet>
+        <servlet-name>SuperAdminServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.SuperAdminServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>SuperAdminServlet</servlet-name>
+        <url-pattern>/admin/super-admin</url-pattern>
+        <url-pattern>/admin/super-admin/*</url-pattern>
+        <url-pattern>/super-admin</url-pattern>
+        <url-pattern>/super-admin/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet Selector de Clínica -->
+    <servlet>
+        <servlet-name>ClinicSelectorServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.ClinicSelectorServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ClinicSelectorServlet</servlet-name>
+        <url-pattern>/admin/clinic-selector</url-pattern>
+        <url-pattern>/admin/clinic-selector/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet de Gestión de Usuarios -->
+    <servlet>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.UserManagementServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>UserManagementServlet</servlet-name>
+        <url-pattern>/admin/users</url-pattern>
+        <url-pattern>/admin/users/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet de Prueba de Especialidades -->
+    <servlet>
+        <servlet-name>TestSpecialtyServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.TestSpecialtyServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>TestSpecialtyServlet</servlet-name>
+        <url-pattern>/test-specialty</url-pattern>
+    </servlet-mapping>
+
+    <!-- Mapeo del Servlet de Dashboard -->
+    <servlet>
+        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.DashboardServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/admin/dashboard</url-pattern>
+        <url-pattern>/admin/dashboard/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>

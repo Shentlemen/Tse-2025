@@ -1,6 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+    // Validación básica de sesión
+    if (session == null || session.getAttribute("user") == null) {
+        response.sendRedirect(request.getContextPath() + "/");
+        return;
+    }
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -151,15 +158,15 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-user-md me-2"></i>Portal Profesional
+                <i class="fas fa-user-md me-2"></i>Portal Profesional - ${sessionScope.clinicName}
             </a>
             
             <div class="navbar-nav ms-auto">
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-2"></i>Dr. Juan Pérez
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-2"></i>${sessionScope.user}
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#">
                             <i class="fas fa-user me-2"></i>Mi Perfil
                         </a></li>

@@ -13,7 +13,9 @@ import java.util.List;
 @Table(name = "specialties")
 @NamedQueries({
     @NamedQuery(name = "Specialty.findAll", query = "SELECT s FROM Specialty s ORDER BY s.name"),
-    @NamedQuery(name = "Specialty.findActive", query = "SELECT s FROM Specialty s WHERE s.active = true ORDER BY s.name")
+    @NamedQuery(name = "Specialty.findActive", query = "SELECT s FROM Specialty s WHERE s.active = true ORDER BY s.name"),
+    @NamedQuery(name = "Specialty.findByClinic", query = "SELECT s FROM Specialty s WHERE s.clinic.id = :clinicId ORDER BY s.name"),
+    @NamedQuery(name = "Specialty.findActiveByClinic", query = "SELECT s FROM Specialty s WHERE s.clinic.id = :clinicId AND s.active = true ORDER BY s.name")
 })
 public class Specialty {
     
@@ -38,6 +40,10 @@ public class Specialty {
     private Boolean active = true;
     
     // Relaciones
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clinic_id", nullable = false)
+    private Clinic clinic;
+    
     @OneToMany(mappedBy = "specialty", fetch = FetchType.LAZY)
     private List<Professional> professionals = new ArrayList<>();
     
@@ -93,6 +99,14 @@ public class Specialty {
     
     public void setActive(Boolean active) {
         this.active = active;
+    }
+    
+    public Clinic getClinic() {
+        return clinic;
+    }
+    
+    public void setClinic(Clinic clinic) {
+        this.clinic = clinic;
     }
     
     public List<Professional> getProfessionals() {

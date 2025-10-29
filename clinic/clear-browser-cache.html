@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Caché - HCEN Clínica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpiar Caché del Navegador</h1>
+        
+        <div class="info">
+            <h3>Instrucciones para probar el multitenancy:</h3>
+            <ol>
+                <li>Haz clic en "Limpiar Caché"</li>
+                <li>Ve a <a href="http://localhost:8080/clinic/" target="_blank">http://localhost:8080/clinic/</a></li>
+                <li>Logueate con la primera clínica: <code>admin</code> / <code>admin123</code></li>
+                <li>Haz logout</li>
+                <li>Logueate con la segunda clínica: <code>admin2</code> / <code>admin456</code></li>
+            </ol>
+        </div>
+        
+        <button class="btn" onclick="clearCache()">Limpiar Caché</button>
+        <button class="btn" onclick="window.open('http://localhost:8080/clinic/', '_blank')">Ir a la Aplicación</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function clearCache() {
+            // Limpiar localStorage
+            localStorage.clear();
+            
+            // Limpiar sessionStorage
+            sessionStorage.clear();
+            
+            // Intentar limpiar caché del navegador (funciona en algunos navegadores)
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+            
+            document.getElementById('result').innerHTML = 
+                '<div style="color: green; margin-top: 20px;">✅ Caché limpiado correctamente. Ahora puedes probar el multitenancy.</div>';
+        }
+    </script>
+</body>
+</html>

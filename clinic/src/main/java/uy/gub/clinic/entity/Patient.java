@@ -15,10 +15,15 @@ import java.util.List;
 @Table(name = "patients")
 @NamedQueries({
     @NamedQuery(name = "Patient.findAll", query = "SELECT p FROM Patient p"),
+    @NamedQuery(name = "Patient.findAllActive", query = "SELECT p FROM Patient p WHERE p.active = true"),
     @NamedQuery(name = "Patient.findByClinic", query = "SELECT p FROM Patient p WHERE p.clinic.id = :clinicId"),
+    @NamedQuery(name = "Patient.findByClinicActive", query = "SELECT p FROM Patient p WHERE p.clinic.id = :clinicId AND p.active = true"),
     @NamedQuery(name = "Patient.findByInusId", query = "SELECT p FROM Patient p WHERE p.inusId = :inusId"),
+    @NamedQuery(name = "Patient.findByInusIdActive", query = "SELECT p FROM Patient p WHERE p.inusId = :inusId AND p.active = true"),
     @NamedQuery(name = "Patient.findByDocument", query = "SELECT p FROM Patient p WHERE p.documentNumber = :documentNumber"),
-    @NamedQuery(name = "Patient.searchByName", query = "SELECT p FROM Patient p WHERE LOWER(p.name) LIKE LOWER(:name)")
+    @NamedQuery(name = "Patient.findByDocumentActive", query = "SELECT p FROM Patient p WHERE p.documentNumber = :documentNumber AND p.active = true"),
+    @NamedQuery(name = "Patient.searchByName", query = "SELECT p FROM Patient p WHERE LOWER(p.name) LIKE LOWER(:name)"),
+    @NamedQuery(name = "Patient.searchByNameActive", query = "SELECT p FROM Patient p WHERE LOWER(p.name) LIKE LOWER(:name) AND p.active = true")
 })
 public class Patient {
     

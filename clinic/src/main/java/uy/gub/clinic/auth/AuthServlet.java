@@ -1,29 +1,44 @@
 package uy.gub.clinic.auth;
 
+import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uy.gub.clinic.entity.User;
+import uy.gub.clinic.service.UserService;
+import uy.gub.clinic.util.PasswordUtil;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
- * Servlet para manejo de autenticación simple
+ * Servlet para manejo de autenticación basada en base de datos
  */
-@WebServlet(name = "AuthServlet", urlPatterns = {"/auth/login", "/auth/logout"})
 public class AuthServlet extends HttpServlet {
     
     private static final Logger logger = LoggerFactory.getLogger(AuthServlet.class);
     
-    // Usuarios hardcodeados para desarrollo
-    private static final String ADMIN_USER = "admin";
-    private static final String ADMIN_PASS = "admin123";
-    private static final String PROFESSIONAL_USER = "prof";
-    private static final String PROFESSIONAL_PASS = "prof123";
+    @Inject
+    private UserService userService;
+    
+    // Usuarios hardcodeados para desarrollo (TEMPORAL)
+    // Estos se usarán hasta que el sistema interno de gestión esté listo
+    private static final String SUPER_ADMIN_USER = "superadmin";
+    private static final String SUPER_ADMIN_PASS = "super123";
+    
+    private static final String ADMIN_USER_CLINIC1 = "admin";
+    private static final String ADMIN_PASS_CLINIC1 = "admin123";
+    private static final String PROF_USER_CLINIC1 = "prof";
+    private static final String PROF_PASS_CLINIC1 = "prof123";
+    
+    private static final String ADMIN_USER_CLINIC2 = "admin2";
+    private static final String ADMIN_PASS_CLINIC2 = "admin456";
+    private static final String PROF_USER_CLINIC2 = "prof2";
+    private static final String PROF_PASS_CLINIC2 = "prof456";
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -44,6 +59,9 @@ public class AuthServlet extends HttpServlet {
         
         if (requestURI.endsWith("/logout")) {
             handleLogout(request, response);
+        } else if (requestURI.endsWith("/login")) {
+            // Si alguien accede directamente a /auth/login, redirigir a la página principal
+            response.sendRedirect(request.getContextPath() + "/");
         }
     }
     
@@ -61,34 +79,160 @@ public class AuthServlet extends HttpServlet {
             return;
         }
         
-        // Validación simple de usuarios hardcodeados
-        if (ADMIN_USER.equals(username) && ADMIN_PASS.equals(password)) {
-            // Usuario administrador
-            HttpSession session = request.getSession(true);
+        // Obtener o crear sesión
+        HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(30 * 60); // 30 minutos
+        
+        // Limpiar atributos anteriores si existen
+        session.removeAttribute("user");
+        session.removeAttribute("role");
+        session.removeAttribute("clinicId");
+        session.removeAttribute("clinicName");
+        session.removeAttribute("professionalId");
+        session.removeAttribute("userId");
+        
+        logger.info("Sesión preparada con ID: {}", session.getId());
+        
+        try {
+            // SISTEMA HÍBRIDO: Primero verificar usuarios hardcodeados (TEMPORAL)
+            // Luego verificar base de datos para usuarios creados internamente
+            
+            boolean loginExitoso = false;
+            String role = null;
+            Long clinicId = null;
+            String clinicName = null;
+            Long professionalId = null;
+            
+            // Verificar usuarios hardcodeados primero
+            if (SUPER_ADMIN_USER.equals(username) && SUPER_ADMIN_PASS.equals(password)) {
+                loginExitoso = true;
+                role = "SUPER_ADMIN";
+                clinicId = 0L; // ID especial para super admin (acceso completo)
+                clinicName = "Super Administrador - Acceso Completo";
+                professionalId = null;
+                logger.info("Login exitoso con super administrador: {}", username);
+                
+            } else if (ADMIN_USER_CLINIC1.equals(username) && ADMIN_PASS_CLINIC1.equals(password)) {
+                loginExitoso = true;
+                role = "ADMIN_CLINIC";
+                clinicId = 4L;
+                clinicName = "Clínica del Corazón";
+                professionalId = null;
+                logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
+                
+            } else if (PROF_USER_CLINIC1.equals(username) && PROF_PASS_CLINIC1.equals(password)) {
+                loginExitoso = true;
+                role = "PROFESSIONAL";
+                clinicId = 4L;
+                clinicName = "Clínica del Corazón";
+                professionalId = 1L;
+                logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
+                
+            } else if (ADMIN_USER_CLINIC2.equals(username) && ADMIN_PASS_CLINIC2.equals(password)) {
+                loginExitoso = true;
+                role = "ADMIN_CLINIC";
+                clinicId = 5L;
+                clinicName = "Centro Neurológico";
+                professionalId = null;
+                logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
+                
+            } else if (PROF_USER_CLINIC2.equals(username) && PROF_PASS_CLINIC2.equals(password)) {
+                loginExitoso = true;
+                role = "PROFESSIONAL";
+                clinicId = 5L;
+                clinicName = "Centro Neurológico";
+                professionalId = 2L;
+                logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
+                
+            } else {
+                // Si no es usuario hardcodeado, verificar en base de datos
+                System.out.println("=== DEBUG LOGIN ===");
+                System.out.println("Username ingresado: " + username);
+                System.out.println("Password ingresado: " + password);
+                
+                Optional<User> userOpt = userService.findByUsername(username);
+                
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    System.out.println("Usuario encontrado en BD:");
+                    System.out.println("  - ID: " + user.getId());
+                    System.out.println("  - Username: " + user.getUsername());
+                    System.out.println("  - Role: " + user.getRole());
+                    System.out.println("  - Active: " + user.getActive());
+                    System.out.println("  - Email: " + user.getEmail());
+                    System.out.println("  - Password hash: " + user.getPassword());
+                    System.out.println("  - Clinic: " + (user.getClinic() != null ? user.getClinic().getName() : "NULL"));
+                    System.out.println("  - Professional: " + (user.getProfessional() != null ? user.getProfessional().getFullName() : "NULL"));
+                    
+                    // Verificar si el usuario está activo
+                    if (!user.getActive()) {
+                        System.out.println("ERROR: Usuario inactivo");
+                        logger.warn("Intento de login con usuario inactivo: {}", username);
+                        request.setAttribute("error", "Usuario desactivado. Contacte al administrador.");
+                        request.getRequestDispatcher("/index.jsp").forward(request, response);
+                        return;
+                    }
+                    
+                    // Verificar contraseña con BCrypt
+                    System.out.println("Verificando contraseña...");
+                    boolean passwordMatch = PasswordUtil.verifyPassword(password, user.getPassword());
+                    System.out.println("Password match: " + passwordMatch);
+                    
+                    if (passwordMatch) {
+                        loginExitoso = true;
+                        role = user.getRole();
+                        clinicId = user.getClinic() != null ? user.getClinic().getId() : null;
+                        clinicName = user.getClinic() != null ? user.getClinic().getName() : "Sistema";
+                        professionalId = user.getProfessional() != null ? user.getProfessional().getId() : null;
+                        logger.info("Login exitoso con usuario de BD: {} ({})", username, role);
+                        
+                        // Actualizar último login
+                        userService.updateLastLogin(username);
+                    } else {
+                        System.out.println("ERROR: Contraseña incorrecta");
+                    }
+                } else {
+                    System.out.println("ERROR: Usuario no encontrado en BD");
+                }
+            }
+            
+            if (!loginExitoso) {
+                System.out.println("=== LOGIN FALLIDO ===");
+                logger.warn("Intento de login fallido para usuario: {}", username);
+                request.setAttribute("error", "Usuario o contraseña incorrectos");
+                request.getRequestDispatcher("/index.jsp").forward(request, response);
+                return;
+            }
+            
+            // Login exitoso - configurar sesión
             session.setAttribute("user", username);
-            session.setAttribute("role", "ADMIN_CLINIC");
-            session.setAttribute("clinicId", 1L); // Clínica por defecto
-            session.setMaxInactiveInterval(30 * 60); // 30 minutos
+            session.setAttribute("role", role);
+            session.setAttribute("clinicId", clinicId);
+            session.setAttribute("clinicName", clinicName);
+            session.setAttribute("professionalId", professionalId);
             
-            logger.info("Login exitoso para administrador: {}", username);
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard.jsp");
+            // Configurar redirección según el rol
+            if ("SUPER_ADMIN".equals(role)) {
+                logger.info("Redirigiendo super administrador a dashboard");
+                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+                
+            } else if ("ADMIN_CLINIC".equals(role)) {
+                logger.info("Redirigiendo administrador de clínica {} a dashboard", clinicName);
+                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+                
+            } else if ("PROFESSIONAL".equals(role)) {
+                logger.info("Redirigiendo profesional de clínica {} a dashboard", clinicName);
+                response.sendRedirect(request.getContextPath() + "/professional/dashboard.jsp");
+                
+            } else {
+                logger.error("Rol no reconocido: {}", role);
+                request.setAttribute("error", "Error de configuración del usuario. Contacte al administrador.");
+                request.getRequestDispatcher("/index.jsp").forward(request, response);
+            }
             
-        } else if (PROFESSIONAL_USER.equals(username) && PROFESSIONAL_PASS.equals(password)) {
-            // Usuario profesional
-            HttpSession session = request.getSession(true);
-            session.setAttribute("user", username);
-            session.setAttribute("role", "PROFESSIONAL");
-            session.setAttribute("professionalId", 1L); // Profesional por defecto
-            session.setAttribute("clinicId", 1L); // Clínica por defecto
-            session.setMaxInactiveInterval(30 * 60); // 30 minutos
-            
-            logger.info("Login exitoso para profesional: {}", username);
-            response.sendRedirect(request.getContextPath() + "/professional/dashboard.jsp");
-            
-        } else {
-            // Credenciales inválidas
-            request.setAttribute("error", "Usuario o contraseña incorrectos");
-            logger.warn("Intento de login fallido para usuario: {}", username);
+        } catch (Exception e) {
+            logger.error("Error durante el proceso de login para usuario: {}", username, e);
+            request.setAttribute("error", "Error interno del servidor. Intente nuevamente.");
             request.getRequestDispatcher("/index.jsp").forward(request, response);
         }
     }
@@ -99,10 +243,19 @@ public class AuthServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null) {
             String user = (String) session.getAttribute("user");
-            logger.info("Logout para usuario: {}", user);
-            session.invalidate();
+            String clinicName = (String) session.getAttribute("clinicName");
+            logger.info("Logout para usuario: {} de clínica: {}", user, clinicName);
+            
+            // Solo limpiar los atributos de sesión, no invalidar la sesión completa
+            session.removeAttribute("user");
+            session.removeAttribute("role");
+            session.removeAttribute("clinicId");
+            session.removeAttribute("clinicName");
+            session.removeAttribute("professionalId");
+            session.removeAttribute("userId");
         }
         
+        logger.info("Atributos de sesión limpiados, redirigiendo a login");
         response.sendRedirect(request.getContextPath() + "/");
     }
 }

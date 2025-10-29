@@ -1,0 +1,31 @@
+# Script CLI para configurar el datasource PostgreSQL en WildFly
+# Ejecutar con: ./jboss-cli.sh --file=wildfly-datasource.cli
+
+# Agregar el driver PostgreSQL
+/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-class-name=org.postgresql.Driver)
+
+# Crear el datasource
+/subsystem=datasources/data-source=ClinicDS:add(
+    jndi-name=java:jboss/datasources/ClinicDS,
+    driver-name=postgresql,
+    connection-url=jdbc:postgresql://localhost:5432/clinic_db,
+    user-name=clinic_user,
+    password=clinic_pass,
+    min-pool-size=5,
+    max-pool-size=20,
+    pool-prefill=true,
+    pool-use-strict-min=true,
+    validate-on-match=true,
+    background-validation=true,
+    background-validation-millis=30000,
+    check-valid-connection-sql="SELECT 1"
+)
+
+# Habilitar el datasource
+/subsystem=datasources/data-source=ClinicDS:enable
+
+# Verificar la configuración
+/subsystem=datasources/data-source=ClinicDS:read-resource
+
+# Salir
+quit

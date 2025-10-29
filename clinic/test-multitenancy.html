@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Multitenancy - HCEN Clínica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .step {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Multitenancy - HCEN Clínica</h1>
+        
+        <div class="info">
+            <h3>Pasos para probar el multitenancy:</h3>
+            
+            <div class="step">
+                <strong>Paso 1:</strong> Limpiar caché del navegador
+                <button class="btn" onclick="clearAllCache()">🧹 Limpiar Todo</button>
+            </div>
+            
+            <div class="step">
+                <strong>Paso 2:</strong> Ir a la aplicación
+                <a href="http://localhost:8080/clinic/" target="_blank" class="btn">🚀 Abrir Aplicación</a>
+            </div>
+            
+            <div class="step">
+                <strong>Paso 3:</strong> Loguearse con la primera clínica
+                <br><strong>Usuario:</strong> <code>admin</code> | <strong>Contraseña:</strong> <code>admin123</code>
+                <br><em>Clínica del Corazón</em>
+            </div>
+            
+            <div class="step">
+                <strong>Paso 4:</strong> Hacer logout
+                <br>Hacer clic en "Cerrar Sesión" en el menú superior
+            </div>
+            
+            <div class="step">
+                <strong>Paso 5:</strong> Loguearse con la segunda clínica
+                <br><strong>Usuario:</strong> <code>admin2</code> | <strong>Contraseña:</strong> <code>admin456</code>
+                <br><em>Centro Neurológico</em>
+            </div>
+            
+            <div class="step">
+                <strong>Paso 6:</strong> Repetir el proceso
+                <br>Hacer logout y volver a loguearse con la primera clínica
+            </div>
+        </div>
+        
+        <div class="info">
+            <h3>🔧 Herramientas de Debug:</h3>
+            <button class="btn" onclick="clearAllCache()">Limpiar Caché</button>
+            <button class="btn" onclick="openDevTools()">Abrir DevTools</button>
+            <button class="btn btn-danger" onclick="clearSessionStorage()">Limpiar SessionStorage</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function clearAllCache() {
+            // Limpiar localStorage
+            localStorage.clear();
+            
+            // Limpiar sessionStorage
+            sessionStorage.clear();
+            
+            // Limpiar caché del navegador
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+            
+            // Limpiar cookies (si es posible)
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            document.getElementById('result').innerHTML = 
+                '<div style="color: green; margin-top: 20px; padding: 10px; background: #e8f5e8; border-radius: 5px;">✅ Caché limpiado completamente. Ahora puedes probar el multitenancy.</div>';
+        }
+        
+        function openDevTools() {
+            alert('Presiona F12 para abrir las herramientas de desarrollador y ver la consola.');
+        }
+        
+        function clearSessionStorage() {
+            sessionStorage.clear();
+            document.getElementById('result').innerHTML = 
+                '<div style="color: orange; margin-top: 20px; padding: 10px; background: #fff3cd; border-radius: 5px;">⚠️ SessionStorage limpiado.</div>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Script para instalar el driver PostgreSQL en WildFly
+# Ejecutar con: ./jboss-cli.sh --file=install-postgresql-driver.cli
+
+# Crear el módulo PostgreSQL
+module add --name=org.postgresql --resources=postgresql-42.7.0.jar --dependencies=javax.api,javax.transaction.api
+
+# Salir
+quit
