@@ -93,17 +93,14 @@ docker_build:
   before_script:
     - cd "$CI_PROJECT_DIR"
     - ls -la hcen/build/libs
-    # Login to GitLab Container Registry using official method
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     - echo "Building Docker image..."
     - echo "Registry: $CI_REGISTRY"
     - echo "Image: $CI_REGISTRY_IMAGE"
     - echo "Tag: $IMAGE_TAG"
-    # Build with --pull to fetch latest base image
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" hcen/
     - docker images
-    # Push commit-specific tag
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     - echo "Successfully pushed image: $CI_REGISTRY_IMAGE:$IMAGE_TAG"
