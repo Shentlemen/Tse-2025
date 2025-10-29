@@ -79,17 +79,33 @@ docker_build_and_push:
   image: docker:24.0.7
   services:
     - name: docker:24.0.7-dind
-      command: ["--tls=false"]
+      alias: docker
   needs: ["package"]
   dependencies:
     - package
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
   before_script:
     - cd "$CI_PROJECT_DIR"
     - ls -la
-    - until docker info; do sleep 1; done
+    # Wait for Docker daemon to be ready (with timeout)
+    - |
+      echo "Waiting for Docker daemon to start..."
+      timeout=60
+      counter=0
+      until docker info >/dev/null 2>&1 || [ $counter -eq $timeout ]; do
+        counter=$((counter + 1))
+        echo "Waiting for Docker... ($counter/$timeout)"
+        sleep 1
+      done
+      if [ $counter -eq $timeout ]; then
+        echo "ERROR: Docker daemon failed to start within $timeout seconds"
+        exit 1
+      fi
+      echo "Docker daemon is ready!"
+      docker info
   script:
     - ls -l hcen/build/libs
     - echo "Registry:$CI_REGISTRY"
