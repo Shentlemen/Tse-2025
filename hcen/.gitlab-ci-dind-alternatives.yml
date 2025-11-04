@@ -1,0 +1,185 @@
+# ==============================================================================
+# GitLab CI/CD - Docker Build Alternative Solutions
+# ==============================================================================
+# This file contains backup solutions if Kaniko doesn't work on FING runners
+#
+# CURRENT ISSUE: Docker-in-Docker requires privileged mode, which is NOT
+# enabled on the shared FING GitLab runner (gitlab-runner01).
+#
+# SOLUTIONS (in priority order):
+# 1. Kaniko (IMPLEMENTED) - No privileged mode required
+# 2. Buildah (below) - Red Hat's daemonless builder
+# 3. DinD without TLS (below) - Less secure, but works without privileged
+# 4. Shell runner (below) - Requires docker on runner host
+# ==============================================================================
+
+# ==============================================================================
+# SOLUTION 2: Buildah (Red Hat's daemonless container builder)
+# ==============================================================================
+# Pros: No Docker daemon, no privileged mode, Red Hat official tool
+# Cons: Slightly different syntax, less common than Docker/Kaniko
+
+docker_build_buildah:
+  stage: docker
+  image: quay.io/buildah/stable:v1.35
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - cd "$CI_PROJECT_DIR"
+    - ls -la hcen/build/libs
+    # Buildah configuration for rootless mode
+    - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Building Docker image with Buildah..."
+    - echo "Registry:" $CI_REGISTRY
+    - echo "Image:" $CI_REGISTRY_IMAGE
+    - echo "Tag:" $IMAGE_TAG
+    # Build image
+    - buildah bud
+      --format docker
+      --layers
+      -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+      -t "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+      -f hcen/Dockerfile
+      hcen/
+    # Push both tags
+    - buildah push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+    - buildah push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+    - echo "Successfully pushed image:" $CI_REGISTRY_IMAGE:$IMAGE_TAG
+  only:
+    - main
+    - develop
+    - tags
+
+# ==============================================================================
+# SOLUTION 3: Docker-in-Docker WITHOUT TLS (insecure, but works without privileged)
+# ==============================================================================
+# WARNING: This disables TLS certificate verification between docker client and daemon
+# Only use this if you trust the runner environment (university internal network)
+
+docker_build_dind_no_tls:
+  stage: docker
+  image: docker:24.0.5-cli
+  services:
+    - name: docker:24.0.5-dind
+      command: ["--tls=false"]  # Disable TLS requirement
+  variables:
+    DOCKER_HOST: tcp://docker:2375  # Use non-TLS port
+    DOCKER_TLS_CERTDIR: ""  # Disable TLS certificate directory
+    DOCKER_DRIVER: overlay2
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - cd "$CI_PROJECT_DIR"
+    - ls -la hcen/build/libs
+    # Wait for Docker daemon to be ready (without TLS)
+    - timeout 30 sh -c 'until docker info; do echo "Waiting for docker..."; sleep 1; done'
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Building Docker image (DinD without TLS)..."
+    - docker build --pull -t $CI_REGISTRY_IMAGE:$IMAGE_TAG -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG hcen/
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - echo "Successfully pushed image:" $CI_REGISTRY_IMAGE:$IMAGE_TAG
+  only:
+    - main
+    - develop
+    - tags
+
+# ==============================================================================
+# SOLUTION 4: Shell Runner with Docker (requires runner admin configuration)
+# ==============================================================================
+# This requires the GitLab admin to:
+# 1. Register a shell runner on a VM/host with Docker installed
+# 2. Add the gitlab-runner user to the docker group
+# 3. Tag the runner (e.g., "shell", "docker")
+#
+# Contact: gitlab-admin@fing.edu.uy or your professor
+
+docker_build_shell:
+  stage: docker
+  tags:
+    - shell  # Requires a shell runner with this tag
+    - docker # Requires docker installed on runner host
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - cd "$CI_PROJECT_DIR"
+    - ls -la hcen/build/libs
+    - docker --version
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Building Docker image on shell runner..."
+    - docker build --pull -t $CI_REGISTRY_IMAGE:$IMAGE_TAG -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG hcen/
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - echo "Successfully pushed image:" $CI_REGISTRY_IMAGE:$IMAGE_TAG
+  only:
+    - main
+    - develop
+    - tags
+
+# ==============================================================================
+# SOLUTION 5: Request Runner Admin to Enable Privileged Mode
+# ==============================================================================
+# If none of the above work, request the GitLab admin to enable privileged mode
+# for Docker-in-Docker. This requires editing the runner configuration:
+#
+# File: /etc/gitlab-runner/config.toml (on runner host)
+#
+# [[runners]]
+#   name = "gitlab-runner01"
+#   executor = "docker"
+#   [runners.docker]
+#     privileged = true  # <-- ADD THIS LINE
+#     volumes = ["/certs/client", "/cache"]
+#
+# Then restart: sudo gitlab-runner restart
+#
+# Contact information:
+# - FING IT Support: soporte@fing.edu.uy
+# - GitLab instance: gitlab-runner.fing.edu.uy
+# - Runner: gitlab-runner01
+# ==============================================================================
+
+# ==============================================================================
+# DEBUGGING: Check Runner Capabilities
+# ==============================================================================
+# Use this job to diagnose what the runner supports
+
+debug_runner:
+  stage: build
+  image: alpine:3.19
+  script:
+    - echo "=== Runner Information ==="
+    - echo "Runner:" $CI_RUNNER_DESCRIPTION
+    - echo "Runner ID:" $CI_RUNNER_ID
+    - echo "Runner Tags:" $CI_RUNNER_TAGS
+    - echo ""
+    - echo "=== System Information ==="
+    - uname -a
+    - cat /etc/os-release || echo "No /etc/os-release"
+    - echo ""
+    - echo "=== User Information ==="
+    - id
+    - whoami
+    - echo ""
+    - echo "=== Kernel Capabilities ==="
+    - apk add --no-cache libcap
+    - capsh --print || echo "capsh not available"
+    - echo ""
+    - echo "=== Available Tools ==="
+    - which docker || echo "docker not found"
+    - which buildah || echo "buildah not found"
+    - which podman || echo "podman not found"
+    - echo ""
+    - echo "=== Docker Socket ==="
+    - ls -la /var/run/docker.sock || echo "No docker socket"
+    - echo ""
+    - echo "=== Filesystem ==="
+    - df -h
+    - mount | grep -E "(sys|proc|cgroup)" || echo "No special mounts visible"
+  when: manual

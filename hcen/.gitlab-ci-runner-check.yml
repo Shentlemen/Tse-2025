@@ -1,0 +1,70 @@
+# Quick Runner Diagnostic Test
+#
+# Usage: Temporarily rename this to .gitlab-ci.yml to test
+# Or include it: include: .gitlab-ci-runner-check.yml
+
+stages:
+  - diagnose
+
+# Test 1: Try to find a shell runner
+test_shell_runner:
+  stage: diagnose
+  tags:
+    - shell
+  script:
+    - echo "✓ Shell runner found!"
+    - echo "Runner: $CI_RUNNER_DESCRIPTION"
+    - echo "Executor: $CI_RUNNER_EXECUTOR"
+    - echo "Tags: $CI_RUNNER_TAGS"
+    - docker --version && echo "✓ Docker installed" || echo "✗ No Docker"
+    - docker info 2>&1 | head -20 && echo "✓ Docker daemon accessible" || echo "✗ No daemon access"
+  allow_failure: true
+  only:
+    - branches
+
+# Test 2: Check current runner capabilities
+test_current_runner:
+  stage: diagnose
+  # No tags = use any available runner
+  script:
+    - echo "=== Current Runner Info ==="
+    - echo "Runner: ${CI_RUNNER_DESCRIPTION:-unknown}"
+    - echo "Executor: ${CI_RUNNER_EXECUTOR:-unknown}"
+    - echo "Tags: ${CI_RUNNER_TAGS:-none}"
+    - echo "ID: ${CI_RUNNER_ID:-unknown}"
+    - echo ""
+    - echo "=== Environment Check ==="
+    - if [ -f /.dockerenv ]; then echo "Environment: Docker container"; else echo "Environment: Shell/VM"; fi
+    - echo "User: $(whoami)"
+    - echo "Home: $HOME"
+    - echo "PWD: $PWD"
+    - echo ""
+    - echo "=== Docker Availability ==="
+    - docker --version 2>&1 || echo "Docker CLI not found"
+    - docker info 2>&1 | head -30 || echo "Docker daemon not accessible"
+  allow_failure: true
+  only:
+    - branches
+
+# Test 3: Check for docker-shell or bash-shell runners
+test_docker_shell_runner:
+  stage: diagnose
+  tags:
+    - docker-shell
+  script:
+    - echo "✓ Docker-shell runner found!"
+    - docker info
+  allow_failure: true
+  only:
+    - branches
+
+test_bash_shell_runner:
+  stage: diagnose
+  tags:
+    - bash
+  script:
+    - echo "✓ Bash runner found!"
+    - docker info || true
+  allow_failure: true
+  only:
+    - branches

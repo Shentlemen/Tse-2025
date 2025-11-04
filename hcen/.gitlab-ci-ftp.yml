@@ -1,0 +1,258 @@
+# GitLab CI/CD Pipeline - Simple FTP Deployment
+# Deploys WAR directly to WildFly via FTP
+#
+# Required GitLab CI/CD Variables:
+# - VZ_FTP_HOST: FTP server (e.g., ftp.app.minube.antel.com.uy)
+# - VZ_FTP_PORT: FTP port (usually 21)
+# - VZ_FTP_USER: FTP username
+# - VZ_FTP_PASSWORD: FTP password (MASKED!)
+# - VZ_DEPLOY_PATH: Deployment directory (e.g., /opt/jboss/wildfly/standalone/deployments/)
+
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/hcen/.gradle"
+  WAR_FILE: "hcen-1.0-SNAPSHOT.war"
+  WAR_DEPLOY_NAME: "hcen.war"  # Name in WildFly
+
+cache:
+  paths:
+    - hcen/.gradle/wrapper
+    - hcen/.gradle/caches
+
+# Default settings for all jobs
+default:
+  before_script:
+    - cd hcen
+    - pwd
+    - ls -la
+
+# ============================================
+# Stage 1: Build
+# ============================================
+build:
+  stage: build
+  image: eclipse-temurin:24-jdk
+  script:
+    - echo "Building HCEN application..."
+    - chmod +x ./gradlew
+    - ./gradlew clean assemble
+  artifacts:
+    paths:
+      - hcen/build/libs/*.war
+      - hcen/build/classes/
+    expire_in: 1 hour
+
+# ============================================
+# Stage 2: Test (optional - skip if not needed)
+# ============================================
+test:
+  stage: test
+  image: eclipse-temurin:24-jdk
+  script:
+    - echo "Running tests..."
+    - chmod +x ./gradlew
+    - ./gradlew test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - hcen/build/test-results/test/**/TEST-*.xml
+    paths:
+      - hcen/build/reports/tests/test/
+    expire_in: 1 week
+  allow_failure: true  # Don't block deployment if tests fail
+
+# ============================================
+# Stage 3: Package
+# ============================================
+package:
+  stage: package
+  image: eclipse-temurin:24-jdk
+  script:
+    - echo "Creating WAR package..."
+    - chmod +x ./gradlew
+    - ./gradlew war
+    - echo "WAR file created:"
+    - ls -lh build/libs/$WAR_FILE
+    - du -h build/libs/$WAR_FILE
+  artifacts:
+    paths:
+      - hcen/build/libs/*.war
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+    - tags
+
+# ============================================
+# Stage 4: Deploy via FTP
+# ============================================
+
+# Deploy to Staging (automatic on develop branch)
+deploy_staging_ftp:
+  stage: deploy
+  image: alpine:latest
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - apk add --no-cache lftp
+    - cd "$CI_PROJECT_DIR/hcen"
+    - ls -la build/libs/
+  script:
+    - echo "======================================"
+    - echo "Deploying to STAGING via FTP"
+    - echo "======================================"
+    - echo "FTP Host: $VZ_FTP_HOST:${VZ_FTP_PORT:-21}"
+    - echo "FTP User: $VZ_FTP_USER"
+    - echo "Deploy Path: ${VZ_DEPLOY_PATH}"
+    - echo "WAR File: build/libs/$WAR_FILE"
+    - echo ""
+
+    # Upload WAR via FTP
+    - |
+      lftp -c "
+        set ftp:ssl-allow no;
+        set ftp:passive-mode yes;
+        set net:timeout 30;
+        set net:max-retries 3;
+        set net:reconnect-interval-base 5;
+        open -u ${VZ_FTP_USER},${VZ_FTP_PASSWORD} ${VZ_FTP_HOST}:${VZ_FTP_PORT:-21};
+        cd ${VZ_DEPLOY_PATH};
+        put build/libs/${WAR_FILE} -o ${WAR_DEPLOY_NAME};
+        ls -l ${WAR_DEPLOY_NAME};
+        bye
+      " && echo "✓ Upload successful!" || (echo "✗ Upload failed!" && exit 1)
+
+    - echo ""
+    - echo "======================================"
+    - echo "Deployment Complete!"
+    - echo "======================================"
+    - echo "WildFly will auto-deploy the WAR file."
+    - echo "Monitor deployment in Virtuozzo dashboard."
+    - echo ""
+    - echo "Application URL (after deployment):"
+    - echo "  https://hcen-staging.minube.antel.com.uy/hcen/"
+    - echo ""
+    - echo "Check deployment status:"
+    - echo "  1. Look for ${WAR_DEPLOY_NAME}.deployed marker file"
+    - echo "  2. Check WildFly logs in Virtuozzo dashboard"
+    - echo "  3. Access application URL above"
+
+  environment:
+    name: staging
+    url: https://hcen-staging.minube.antel.com.uy/hcen/
+  only:
+    - develop
+  when: on_success
+
+# Deploy to Production (manual approval required)
+deploy_production_ftp:
+  stage: deploy
+  image: alpine:latest
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - apk add --no-cache lftp
+    - cd "$CI_PROJECT_DIR/hcen"
+    - ls -la build/libs/
+  script:
+    - echo "======================================"
+    - echo "⚠️  PRODUCTION DEPLOYMENT"
+    - echo "======================================"
+    - echo "FTP Host: $VZ_FTP_HOST:${VZ_FTP_PORT:-21}"
+    - echo "FTP User: $VZ_FTP_USER"
+    - echo "Deploy Path: ${VZ_DEPLOY_PATH}"
+    - echo "WAR File: build/libs/$WAR_FILE"
+    - echo ""
+    - echo "This will deploy to PRODUCTION!"
+    - echo "Press Ctrl+C in next 5 seconds to abort..."
+    - sleep 5
+    - echo ""
+
+    # Backup existing WAR (if exists)
+    - |
+      echo "Creating backup of existing deployment..."
+      lftp -c "
+        set ftp:ssl-allow no;
+        set ftp:passive-mode yes;
+        open -u ${VZ_FTP_USER},${VZ_FTP_PASSWORD} ${VZ_FTP_HOST}:${VZ_FTP_PORT:-21};
+        cd ${VZ_DEPLOY_PATH};
+        mv ${WAR_DEPLOY_NAME} ${WAR_DEPLOY_NAME}.backup-$(date +%Y%m%d-%H%M%S) || echo 'No existing WAR to backup';
+        bye
+      " || echo "Backup failed (may not exist yet)"
+
+    # Upload new WAR
+    - |
+      echo "Uploading new WAR file..."
+      lftp -c "
+        set ftp:ssl-allow no;
+        set ftp:passive-mode yes;
+        set net:timeout 30;
+        set net:max-retries 3;
+        set net:reconnect-interval-base 5;
+        open -u ${VZ_FTP_USER},${VZ_FTP_PASSWORD} ${VZ_FTP_HOST}:${VZ_FTP_PORT:-21};
+        cd ${VZ_DEPLOY_PATH};
+        put build/libs/${WAR_FILE} -o ${WAR_DEPLOY_NAME};
+        ls -l ${WAR_DEPLOY_NAME};
+        bye
+      " && echo "✓ Upload successful!" || (echo "✗ Upload failed!" && exit 1)
+
+    - echo ""
+    - echo "======================================"
+    - echo "✓ Production Deployment Complete!"
+    - echo "======================================"
+    - echo "WildFly will auto-deploy the WAR file."
+    - echo ""
+    - echo "Application URL:"
+    - echo "  https://hcen-prod.minube.antel.com.uy/hcen/"
+    - echo ""
+    - echo "Next steps:"
+    - echo "  1. Monitor WildFly logs in Virtuozzo"
+    - echo "  2. Verify application is responding"
+    - echo "  3. Run smoke tests"
+    - echo "  4. Notify team of deployment"
+
+  environment:
+    name: production
+    url: https://hcen-prod.minube.antel.com.uy/hcen/
+  only:
+    - main
+  when: manual  # Require manual click to deploy to production
+
+# Quick test deployment (for testing FTP connection)
+test_ftp_connection:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache lftp
+  script:
+    - echo "Testing FTP connection..."
+    - echo "FTP Host: $VZ_FTP_HOST:${VZ_FTP_PORT:-21}"
+    - echo "FTP User: $VZ_FTP_USER"
+    - echo ""
+
+    # Test connection and list directory
+    - |
+      lftp -c "
+        set ftp:ssl-allow no;
+        set ftp:passive-mode yes;
+        open -u ${VZ_FTP_USER},${VZ_FTP_PASSWORD} ${VZ_FTP_HOST}:${VZ_FTP_PORT:-21};
+        cd ${VZ_DEPLOY_PATH};
+        ls -la;
+        bye
+      " && echo "✓ FTP connection successful!" || (echo "✗ FTP connection failed!" && exit 1)
+
+    - echo ""
+    - echo "FTP credentials are working correctly!"
+  only:
+    - branches
+  when: manual  # Run manually to test
+  allow_failure: true

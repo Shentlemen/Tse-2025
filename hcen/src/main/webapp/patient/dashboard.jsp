@@ -360,7 +360,7 @@
                 <div class="menu-title">Auditoría</div>
                 <div class="menu-description">Ver quién accedió a mis datos</div>
             </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/approvals')">
+            <div class="menu-card" onclick="navigateTo('/hcen/patient/pending-requests.jsp')">
                 <span class="menu-icon">✅</span>
                 <div class="menu-title">Aprobaciones</div>
                 <div class="menu-description">Autorizar solicitudes de acceso</div>
@@ -588,6 +588,12 @@
          * Navigate to page
          */
         function navigateTo(url) {
+            // Check if this is the pending-requests page (now implemented)
+            if (url.includes('pending-requests.jsp')) {
+                window.location.href = url;
+                return;
+            }
+
             alert('Esta función estará disponible próximamente.\n\nURL: ' + url);
             // Uncomment when pages are ready:
             // window.location.href = url;

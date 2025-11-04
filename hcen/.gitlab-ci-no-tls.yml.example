@@ -1,0 +1,152 @@
+# GitLab CI/CD Pipeline - Alternative Configuration WITHOUT TLS
+# This is an ALTERNATIVE configuration that disables TLS for faster Docker builds
+# Less secure than the TLS-enabled version, but may work better on some runners
+#
+# To use this configuration, rename it to .gitlab-ci.yml or copy the docker_build job
+
+stages:
+  - build
+  - test
+  - package
+  - docker
+  - deploy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/hcen/.gradle"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  # Docker-in-Docker WITHOUT TLS (faster, less secure)
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_DRIVER: overlay2
+
+cache:
+  paths:
+    - hcen/.gradle/wrapper
+    - hcen/.gradle/caches
+
+default:
+  before_script:
+    - cd hcen
+    - pwd
+    - ls -la
+
+build:
+  stage: build
+  image: eclipse-temurin:24-jdk
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew assemble
+  artifacts:
+    paths:
+      - hcen/build/libs/*.war
+      - hcen/build/classes/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  image: eclipse-temurin:24-jdk
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - hcen/build/test-results/test/**/TEST-*.xml
+    paths:
+      - hcen/build/reports/tests/test/
+    expire_in: 1 week
+
+package:
+  stage: package
+  image: eclipse-temurin:24-jdk
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew war
+  artifacts:
+    paths:
+      - hcen/build/libs/*.war
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+    - tags
+
+# Docker build WITHOUT TLS (alternative approach)
+docker_build:
+  stage: docker
+  image: docker:24.0.5-cli
+  services:
+    - name: docker:24.0.5-dind
+      command: ["--tls=false"]
+  needs: ["package"]
+  dependencies:
+    - package
+  before_script:
+    - cd "$CI_PROJECT_DIR"
+    - ls -la hcen/build/libs
+    # Wait for Docker daemon to be ready (simplified)
+    - |
+      for i in $(seq 1 30); do
+        docker info > /dev/null 2>&1 && break
+        echo "Waiting for Docker daemon... ($i/30)"
+        sleep 2
+      done
+    - docker info
+    # Login to GitLab Container Registry
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Building Docker image..."
+    - echo "Registry: $CI_REGISTRY"
+    - echo "Image: $CI_REGISTRY_IMAGE"
+    - echo "Tag: $IMAGE_TAG"
+    # Build with --pull to fetch latest base image
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" hcen/
+    - docker images
+    # Push commit-specific tag
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - echo "Successfully pushed image: $CI_REGISTRY_IMAGE:$IMAGE_TAG"
+  only:
+    - main
+    - develop
+    - tags
+
+docker_release:
+  stage: docker
+  image: docker:24.0.5-cli
+  services:
+    - name: docker:24.0.5-dind
+      command: ["--tls=false"]
+  needs: ["docker_build"]
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+  script:
+    - echo "Releasing image as latest..."
+    - docker pull "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - docker tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" "$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+    - echo "Successfully released: $CI_REGISTRY_IMAGE:latest"
+  only:
+    - main
+
+deploy_virtuozzo:
+  stage: deploy
+  image: curlimages/curl:8.5.0
+  needs: ["docker_release"]
+  variables:
+    DEPLOY_IMAGE_TAG: "$IMAGE_TAG"
+  before_script:
+    - cd "$CI_PROJECT_DIR"
+    - ls -la
+  script:
+    - echo "Starting Virtuozzo redeploy of tag $DEPLOY_IMAGE_TAG"
+    - chmod +x hcen/scripts/vz-deploy.sh
+    - ./hcen/scripts/vz-deploy.sh "$DEPLOY_IMAGE_TAG"
+  environment:
+    name: production
+    url: https://$VZ_ENV_NAME.$VZ_API_HOST
+  only:
+    - main
+  when: manual

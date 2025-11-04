@@ -64,8 +64,8 @@ dependencies {
     // Transaction
     providedCompile 'jakarta.transaction:jakarta.transaction-api:2.0.1'
 
-    // PostgreSQL Driver (compile-time for PGobject in converters, runtime for JDBC)
-    providedCompile 'org.postgresql:postgresql:42.7.0'
+    // PostgreSQL Driver (bundled in WAR for Virtuozzo deployment)
+    implementation 'org.postgresql:postgresql:42.7.1'
 
     // MongoDB Driver (for NoSQL audit logs, refresh tokens, and INUS data)
     implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
