@@ -4,13 +4,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import uy.gub.hcen.service.audit.AuditService;
-import uy.gub.hcen.cache.PolicyCacheService;
 import uy.gub.hcen.policy.dto.PolicyCreateRequest;
 import uy.gub.hcen.policy.dto.PolicyResponse;
 import uy.gub.hcen.policy.dto.PolicyUpdateRequest;
 import uy.gub.hcen.policy.entity.AccessPolicy;
 import uy.gub.hcen.policy.repository.AccessPolicyRepository;
-import uy.gub.hcen.service.audit.AuditService;
 
 import java.time.LocalDateTime;
 import java.util.List;

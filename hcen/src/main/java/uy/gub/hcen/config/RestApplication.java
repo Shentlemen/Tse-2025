@@ -25,6 +25,7 @@ public class RestApplication extends Application {
         resources.add(uy.gub.hcen.policy.api.rest.AccessRequestResource.class);
         resources.add(uy.gub.hcen.audit.api.rest.AuditResource.class);
         resources.add(uy.gub.hcen.service.clinic.api.rest.ClinicResource.class);
+        resources.add(uy.gub.hcen.clinicalhistory.api.rest.ClinicalHistoryResource.class);
 
         return resources;
     }

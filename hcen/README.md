@@ -158,6 +158,64 @@ mongodb.uri=mongodb://localhost:27017
 mongodb.database=hcen_audit
 ```
 
+## Database Migrations with Flyway
+
+HCEN uses Flyway for database schema versioning and migrations.
+
+### Quick Start
+
+1. **Start PostgreSQL**:
+   ```bash
+   docker-compose -f docker-compose-postgres.yml up -d postgres
+   ```
+
+2. **Run migrations**:
+   ```bash
+   # Windows
+   gradlew.bat flywayMigrate
+
+   # Linux/macOS
+   ./gradlew flywayMigrate
+   ```
+
+3. **Verify migrations**:
+   ```bash
+   # Windows
+   gradlew.bat flywayInfo
+
+   # Linux/macOS
+   ./gradlew flywayInfo
+   ```
+
+### Automated Test
+
+Run the test script to verify Flyway setup:
+
+**Windows**:
+```bash
+test-flyway.bat
+```
+
+**Linux/macOS**:
+```bash
+chmod +x test-flyway.sh
+./test-flyway.sh
+```
+
+### Migration Files
+
+All migration files are located in `src/main/resources/db/migration/`:
+- `V001__create_inus_schema.sql` - National User Index
+- `V002__create_rndc_schema.sql` - Clinical Document Registry
+- `V003__create_policies_schema.sql` - Access Policies
+- `V004__create_audit_schema.sql` - Audit Logs
+- `V005__create_clinics_schema.sql` - Clinics Registry
+
+### Documentation
+
+- **Quick Start**: See `FLYWAY_QUICKSTART.md`
+- **Full Guide**: See `FLYWAY_MIGRATION_GUIDE.md`
+
 ## Build & Run
 
 ### Build the project
@@ -237,11 +295,27 @@ Target: 80% code coverage (configured in build.gradle)
 
 ## Key Components
 
+### Backend Services
 - **INUS Service**: National Index of Health Users - manages user registry
 - **RNDC Service**: National Clinical Document Registry - manages document metadata
 - **Policy Engine**: Evaluates access policies using ABAC/RBAC
 - **Audit Service**: Logs all system events for compliance
+- **Access Request Service**: Manages pending access requests from healthcare professionals
+- **Access Policy Service**: Enables patients to define and manage document access policies
+- **Clinical History Service**: Retrieves and displays patient clinical documents
 - **Integration Layer**: Adapters for gub.uy, PDI, and peripheral nodes
+
+### Web UI Components (Patient Portal)
+- **Patient Registration**: Self-registration via INUS portal
+- **Patient Profile**: View and manage personal health information
+- **Patient Pending Access Requests**: Review and approve/deny professional access requests
+- **Patient Access Policies**: Define granular access policies for clinical documents
+- **Patient Clinical History**: View and search clinical documents with filtering/sorting
+
+### Web UI Components (Admin Portal)
+- **Admin User Management**: Manage health users (INUS registry)
+- **Admin Clinic Management**: Register and manage healthcare clinics
+- **Admin Dashboard**: System statistics and status monitoring
 
 ## Security
 

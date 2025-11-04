@@ -30,7 +30,8 @@
       "Bash(find:*)",
       "Bash(awk '{print $9, \"\"\"\"(\"\"\"\" $5 \"\"\"\")\"\"\"\"}')",
       "Bash(nul)",
-      "Bash(clinic:*)"
+      "Bash(clinic:*)",
+      "Bash(gradlew.bat:*)"
     ],
     "deny": [],
     "ask": []

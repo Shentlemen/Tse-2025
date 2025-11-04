@@ -762,7 +762,7 @@
             }
 
             try {
-                const response = await apiCall('/policies/patient/' + encodeURIComponent(patientCi));
+                const response = await apiCall('/policies');
 
                 if (!response || !response.ok) {
                     throw new Error('Failed to load policies');

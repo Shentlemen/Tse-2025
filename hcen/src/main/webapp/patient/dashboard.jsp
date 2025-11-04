@@ -345,17 +345,17 @@
         <div class="section-title">Mi Información de Salud</div>
 
         <div class="menu-grid">
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/history')">
+            <div class="menu-card" onclick="navigateTo('/hcen/patient/clinical-history.jsp')">
                 <span class="menu-icon">📋</span>
                 <div class="menu-title">Mi Historial</div>
                 <div class="menu-description">Ver todos mis documentos clínicos</div>
             </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/policies')">
+            <div class="menu-card" onclick="navigateTo('/hcen/patient/access-policies.jsp')">
                 <span class="menu-icon">🔒</span>
                 <div class="menu-title">Políticas de Acceso</div>
                 <div class="menu-description">Gestionar quién puede ver mi información</div>
             </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/audit')">
+            <div class="menu-card" onclick="navigateTo('/hcen/patient/audit-logs.jsp')">
                 <span class="menu-icon">🔍</span>
                 <div class="menu-title">Auditoría</div>
                 <div class="menu-description">Ver quién accedió a mis datos</div>
@@ -588,8 +588,11 @@
          * Navigate to page
          */
         function navigateTo(url) {
-            // Check if this is the pending-requests page (now implemented)
-            if (url.includes('pending-requests.jsp')) {
+            // Check if these pages are implemented
+            if (url.includes('pending-requests.jsp') ||
+                url.includes('access-policies.jsp') ||
+                url.includes('clinical-history.jsp') ||
+                url.includes('audit-logs.jsp')) {
                 window.location.href = url;
                 return;
             }

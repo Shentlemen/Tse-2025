@@ -1,6 +1,17 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'org.postgresql:postgresql:42.7.1'
+    classpath 'org.flywaydb:flyway-database-postgresql:10.0.0'
+  }
+}
+
 plugins {
   id 'java'
   id 'war'
+  id 'org.flywaydb.flyway' version '10.0.0'
 }
 
 group 'fing.hcen'
@@ -19,6 +30,11 @@ targetCompatibility = '21'
 
 tasks.withType(JavaCompile) {
   options.encoding = 'UTF-8'
+}
+
+// Configuration for Flyway plugin to access PostgreSQL driver
+configurations {
+  flywayConfiguration
 }
 
 //dependencies {
@@ -67,6 +83,14 @@ dependencies {
     // PostgreSQL Driver (bundled in WAR for Virtuozzo deployment)
     implementation 'org.postgresql:postgresql:42.7.1'
 
+    // PostgreSQL Driver for Flyway plugin
+    flywayConfiguration 'org.postgresql:postgresql:42.7.1'
+    flywayConfiguration 'org.flywaydb:flyway-database-postgresql:10.0.0'
+
+    // Flyway Core library
+    implementation "org.flywaydb:flyway-core:10.0.0"
+    implementation 'org.flywaydb:flyway-database-postgresql:10.0.0'
+
     // MongoDB Driver (for NoSQL audit logs, refresh tokens, and INUS data)
     implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
     implementation 'org.mongodb:bson:4.11.1'
@@ -107,6 +131,50 @@ dependencies {
     testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container:1.8.0.Final'
     testImplementation 'org.wildfly.arquillian:wildfly-arquillian-container-managed:5.0.1.Final'
 }
+
+// ==============================================
+// Flyway Database Migration Configuration
+// ==============================================
+
+flyway {
+    // Database connection - use environment variables for production
+    url = System.getenv('FLYWAY_DB_URL') ?: 'jdbc:postgresql://localhost:5432/hcen'
+    user = System.getenv('FLYWAY_DB_USER') ?: 'postgres'
+    password = System.getenv('FLYWAY_DB_PASSWORD') ?: 'postgres'
+    driver = 'org.postgresql.Driver'
+
+    // Multiple schemas for HCEN architecture
+    schemas = ['inus', 'rndc', 'policies', 'audit', 'clinics']
+
+    // Migration scripts location
+    locations = ['classpath:db/migration']
+
+    // Baseline on migrate allows Flyway to start versioning an existing database
+    // Set to true if you're adding Flyway to an existing database
+    baselineOnMigrate = true
+    baselineVersion = '0'
+
+    // Validate migrations before running
+    validateOnMigrate = true
+
+    // Encoding for migration files
+    encoding = 'UTF-8'
+
+    // Placeholders for SQL migrations (optional)
+    placeholders = [
+        'database': 'hcen'
+    ]
+
+    // Output detailed information
+    outOfOrder = false
+
+    // Clean database (DANGER: only for development!)
+    // Set to false in production to prevent accidental data loss
+    cleanDisabled = System.getenv('FLYWAY_CLEAN_DISABLED') != 'false'
+}
+
+// Make sure the flywayMigrate task runs after your classes are compiled
+flywayMigrate.dependsOn classes
 
 // Configure the WAR plugin
 //war {

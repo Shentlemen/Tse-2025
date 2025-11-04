@@ -81,6 +81,9 @@ public class PolicyResource {
     @Inject
     private PolicyEngine policyEngine;
 
+    @Inject
+    private uy.gub.hcen.policy.service.PolicyManagementService policyManagementService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ================================================================
@@ -525,6 +528,45 @@ public class PolicyResource {
         } catch (Exception e) {
             LOGGER.log(Level.FINE, "Invalid JSON: " + e.getMessage());
             return false;
+        }
+    }
+
+    // ================================================================
+    // GET /api/policies/templates - Get Policy Templates
+    // ================================================================
+
+    /**
+     * Retrieves available policy templates with configuration schemas.
+     * <p>
+     * Returns metadata for all supported policy types, including:
+     * - Display name and description
+     * - Available effects (PERMIT/DENY)
+     * - Configuration schema (JSON Schema)
+     * - Example configuration
+     * - Default priority
+     * <p>
+     * This endpoint helps clients dynamically build policy configuration UIs.
+     *
+     * @return 200 OK with List of PolicyTemplateDTO
+     */
+    @GET
+    @Path("/templates")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPolicyTemplates() {
+        LOGGER.log(Level.INFO, "Retrieving policy templates");
+
+        try {
+            List<PolicyTemplateDTO> templates = PolicyTemplateDTO.getAllTemplates();
+
+            LOGGER.log(Level.INFO, "Retrieved {0} policy templates", templates.size());
+
+            return Response.ok(templates).build();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving policy templates", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(ErrorResponse.internalServerError("Failed to retrieve policy templates: " + e.getMessage()))
+                    .build();
         }
     }
 }

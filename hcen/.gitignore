@@ -42,3 +42,8 @@ bin/
 ### Mac OS ###
 .DS_Store
 /.idea/
+
+### Flyway ###
+# Exclude environment-specific Flyway configuration
+.env.flyway
+flyway.conf
