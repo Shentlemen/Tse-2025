@@ -593,12 +593,12 @@
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
 
-            if (!data.content || data.content.length === 0) {
+            if (!data.users || data.users.length === 0) {
                 showEmpty();
                 return;
             }
 
-            data.content.forEach(function(user) {
+            data.users.forEach(function(user) {
                 const row = document.createElement('tr');
                 row.innerHTML =
                     '<td>' + (user.ci || '-') + '</td>' +

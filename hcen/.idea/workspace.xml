@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add access policies and audit log">
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/api/rest/InusResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/api/rest/InusResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/dto/UserRegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/dto/UserRegistrationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/clinic-detail.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/clinic-detail.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/user-detail.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/user-detail.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/patient/audit-logs.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/patient/audit-logs.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/patient/clinical-history.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/patient/clinical-history.jsp" afterDir="false" />
-    </list>
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: user register, clinic register and onboard process" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -365,7 +353,7 @@
       <workItem from="1761741277325" duration="106000" />
       <workItem from="1761865802436" duration="44000" />
       <workItem from="1761865867022" duration="23054000" />
-      <workItem from="1762299823812" duration="7810000" />
+      <workItem from="1762299823812" duration="8111000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -591,7 +579,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762300179677</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="fix: user register, clinic register and onboard process">
+      <option name="closed" value="true" />
+      <created>1762310303686</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1762310303686</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -623,7 +619,8 @@
     <MESSAGE value="feat: add pending requests page" />
     <MESSAGE value="feat: add access policies" />
     <MESSAGE value="feat: add access policies and audit log" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add access policies and audit log" />
+    <MESSAGE value="fix: user register, clinic register and onboard process" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: user register, clinic register and onboard process" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
