@@ -633,9 +633,21 @@
             return badges[status] || '<span class="status-badge">' + status + '</span>';
         }
 
-        function formatDateTime(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
+        function formatDateTime(dateInput) {
+            if (!dateInput) return '-';
+
+            let date;
+
+            // Handle Java LocalDateTime array format: [year, month, day, hour, minute, second, nano]
+            if (Array.isArray(dateInput)) {
+                // Java months are 1-12, JavaScript months are 0-11
+                date = new Date(dateInput[0], dateInput[1] - 1, dateInput[2],
+                                dateInput[3] || 0, dateInput[4] || 0, dateInput[5] || 0);
+            } else {
+                // Handle string format
+                date = new Date(dateInput);
+            }
+
             return date.toLocaleString('es-UY');
         }
 

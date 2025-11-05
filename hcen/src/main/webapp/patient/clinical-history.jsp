@@ -1043,27 +1043,27 @@
                 card.innerHTML = `
                     <div class="doc-header">
                         <div class="doc-type">
-                            <span class="doc-type-icon">${config.icon}</span>
-                            ${doc.documentTypeDisplayName}
+                            <span class="doc-type-icon">${'$'}{config.icon}</span>
+                            ${'$'}{doc.documentTypeDisplayName}
                         </div>
-                        <span class="doc-status ${doc.status === 'ACTIVE' ? 'status-active' : 'status-unavailable'}">
-                            ${doc.status === 'ACTIVE' ? 'Disponible' : 'No disponible'}
+                        <span class="doc-status ${'$'}{doc.status === 'ACTIVE' ? 'status-active' : 'status-unavailable'}">
+                            ${'$'}{doc.status === 'ACTIVE' ? 'Disponible' : 'No disponible'}
                         </span>
                     </div>
-                    <div class="doc-title">${doc.title}</div>
-                    <div class="doc-info">🏥 ${doc.clinicName}</div>
-                    <div class="doc-info">👨‍⚕️ ${doc.professionalName}</div>
-                    <div class="doc-info">📅 ${formatDate(doc.createdAt)}</div>
+                    <div class="doc-title">${'$'}{doc.title}</div>
+                    <div class="doc-info">🏥 ${'$'}{doc.clinicName}</div>
+                    <div class="doc-info">👨‍⚕️ ${'$'}{doc.professionalName}</div>
+                    <div class="doc-info">📅 ${'$'}{formatDate(doc.createdAt)}</div>
                     <div class="doc-actions">
-                        <button class="btn-view" onclick="viewDocument(${doc.id})">Ver Detalles</button>
-                        ${doc.hasContent ? '<button class="btn-download" onclick="downloadDocumentById(' + doc.id + ')">📥 Descargar</button>' : ''}
+                        <button class="btn-view" onclick="viewDocument(${'$'}{doc.id})">Ver Detalles</button>
+                        ${'$'}{doc.hasContent ? '<button class="btn-download" onclick="downloadDocumentById(' + doc.id + ')">📥 Descargar</button>' : ''}
                     </div>
                 `;
                 grid.appendChild(card);
             });
 
             document.getElementById('documentsTitle').textContent =
-                `Mis Documentos Clínicos (${filteredDocuments.length})`;
+                `Mis Documentos Clínicos (${'$'}{filteredDocuments.length})`;
         }
 
         /**
@@ -1217,7 +1217,7 @@
             }
 
             container.style.display = 'flex';
-            document.getElementById('pageInfo').textContent = `Página ${currentPage + 1} de ${totalPages}`;
+            document.getElementById('pageInfo').textContent = `Página ${'$'}{currentPage + 1} de ${'$'}{totalPages}`;
             document.getElementById('prevBtn').disabled = currentPage === 0;
             document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
         }

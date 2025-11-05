@@ -637,14 +637,28 @@
         async function loadClinicDetails() {
             const clinicId = getClinicId();
 
+            console.log('Clinic id from URL:', clinicId);
+
             if (!clinicId) {
-                showMessage('ID de clínica no especificado', 'error');
+                showMessage('ID de clínica no especificado en la URL. Use: ?id=clinic-xxx', 'error');
                 setTimeout(() => goBack(), 2000);
                 return;
             }
 
-            try {
-                const clinic = await apiCall(`/admin/clinics/${clinicId}`);
+            // try {
+                const clinic = await apiCall(`/admin/clinics/`+ clinicId);
+
+                // Debug: Log the response
+                console.log('Clinic API Response:', clinic);
+                console.log('Clinic fields:', {
+                    clinicId: clinic.clinicId,
+                    clinicName: clinic.clinicName,
+                    address: clinic.address,
+                    city: clinic.city,
+                    phoneNumber: clinic.phoneNumber,
+                    email: clinic.email,
+                    status: clinic.status
+                });
 
                 if (!clinic) {
                     return;
@@ -656,28 +670,28 @@
                 // Load statistics
                 loadStatistics(clinicId);
 
-            } catch (error) {
-                console.error('Error loading clinic:', error);
-                showMessage('Error al cargar datos de la clínica: ' + error.message, 'error');
-                setTimeout(() => goBack(), 3000);
-            }
+            // } catch (error) {
+            //     console.error('Error loading clinic:', error);
+            //     showMessage('Error al cargar datos de la clínica: ' + error.message, 'error');
+            //     setTimeout(() => goBack(), 3000);
+            // }
         }
 
         /**
          * Display clinic details
          */
         function displayClinicDetails(clinic) {
-            document.getElementById('pageTitle').textContent = clinic.clinicName;
-            document.getElementById('clinicId').textContent = clinic.clinicId;
-            document.getElementById('clinicName').textContent = clinic.clinicName;
-            document.getElementById('address').textContent = clinic.address;
-            document.getElementById('city').textContent = clinic.city;
-            document.getElementById('phoneNumber').textContent = clinic.phoneNumber;
-            document.getElementById('email').textContent = clinic.email;
-            document.getElementById('peripheralNodeUrl').textContent = clinic.peripheralNodeUrl;
-            document.getElementById('apiKey').textContent = clinic.apiKey;
+            document.getElementById('pageTitle').textContent = clinic.clinicName || 'Sin nombre';
+            document.getElementById('clinicId').textContent = clinic.clinicId || 'N/A';
+            document.getElementById('clinicName').textContent = clinic.clinicName || 'Sin nombre';
+            document.getElementById('address').textContent = clinic.address || 'No especificada';
+            document.getElementById('city').textContent = clinic.city || 'No especificada';
+            document.getElementById('phoneNumber').textContent = clinic.phoneNumber || 'No especificado';
+            document.getElementById('email').textContent = clinic.email || 'No especificado';
+            document.getElementById('peripheralNodeUrl').textContent = clinic.peripheralNodeUrl || 'No especificada';
+            document.getElementById('apiKey').textContent = clinic.apiKey || 'No generada';
             document.getElementById('createdAt').textContent = formatDate(clinic.createdAt);
-            document.getElementById('updatedAt').textContent = formatDate(clinic.updatedAt);
+            document.getElementById('updatedAt').textContent = formatDate(clinic.onboardedAt);
 
             // Status badge
             document.getElementById('statusBadge').innerHTML = renderStatusBadge(clinic.status);
@@ -700,11 +714,11 @@
          */
         async function loadStatistics(clinicId) {
             try {
-                const stats = await apiCall(`/admin/clinics/${clinicId}/statistics`);
+                const stats = await apiCall(`/admin/clinics/` + clinicId + `/statistics`);
 
                 if (stats) {
-                    document.getElementById('statUsers').textContent = stats.userCount || 0;
-                    document.getElementById('statDocuments').textContent = stats.documentCount || 0;
+                    document.getElementById('statUsers').textContent = stats.totalUsers || 0;
+                    document.getElementById('statDocuments').textContent = stats.totalDocuments || 0;
                 }
             } catch (error) {
                 console.error('Error loading statistics:', error);
@@ -730,10 +744,21 @@
         /**
          * Format date
          */
-        function formatDate(dateString) {
-            if (!dateString) return '-';
+        function formatDate(dateInput) {
+            if (!dateInput) return '-';
 
-            const date = new Date(dateString);
+            let date;
+
+            // Handle Java LocalDateTime array format: [year, month, day, hour, minute, second, nano]
+            if (Array.isArray(dateInput)) {
+                // Java months are 1-12, JavaScript months are 0-11
+                date = new Date(dateInput[0], dateInput[1] - 1, dateInput[2],
+                                dateInput[3] || 0, dateInput[4] || 0, dateInput[5] || 0);
+            } else {
+                // Handle string format
+                date = new Date(dateInput);
+            }
+
             return date.toLocaleString('es-UY', {
                 year: 'numeric',
                 month: 'long',
@@ -750,13 +775,13 @@
             document.getElementById('viewMode').style.display = 'none';
             document.getElementById('editMode').classList.add('show');
 
-            // Populate edit form
-            document.getElementById('editClinicName').value = currentClinic.clinicName;
-            document.getElementById('editAddress').value = currentClinic.address;
-            document.getElementById('editCity').value = currentClinic.city;
-            document.getElementById('editPhoneNumber').value = currentClinic.phoneNumber;
-            document.getElementById('editEmail').value = currentClinic.email;
-            document.getElementById('editPeripheralNodeUrl').value = currentClinic.peripheralNodeUrl;
+            // Populate edit form (handle null/undefined values)
+            document.getElementById('editClinicName').value = currentClinic.clinicName || '';
+            document.getElementById('editAddress').value = currentClinic.address || '';
+            document.getElementById('editCity').value = currentClinic.city || '';
+            document.getElementById('editPhoneNumber').value = currentClinic.phoneNumber || '';
+            document.getElementById('editEmail').value = currentClinic.email || '';
+            document.getElementById('editPeripheralNodeUrl').value = currentClinic.peripheralNodeUrl || '';
         }
 
         /**
@@ -813,9 +838,10 @@
             const clinicId = currentClinic.clinicId;
 
             try {
-                const result = await apiCall(`/admin/clinics/${clinicId}/onboard`, {
+                const result = await apiCall(`/admin/clinics/` + clinicId + `/onboard`, {
                     method: 'POST'
                 });
+
 
                 if (result) {
                     showMessage('Clínica onboardeada exitosamente', 'success');

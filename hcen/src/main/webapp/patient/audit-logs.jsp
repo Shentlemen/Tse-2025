@@ -797,35 +797,35 @@
             card.innerHTML = `
                 <div class="audit-log-header">
                     <div class="actor-info">
-                        <div class="actor-name">${log.actorId || 'Desconocido'}</div>
-                        <div class="actor-type">${log.actorType || 'N/A'}</div>
+                        <div class="actor-name">${'$'}{log.actorId || 'Desconocido'}</div>
+                        <div class="actor-type">${'$'}{log.actorType || 'N/A'}</div>
                     </div>
                     <div>
-                        <span class="event-badge ${eventClass}">${formatEventType(log.eventType)}</span>
-                        <span class="outcome-badge ${outcomeClass}">${formatOutcome(log.actionOutcome)}</span>
+                        <span class="event-badge ${'$'}{eventClass}">${'$'}{formatEventType(log.eventType)}</span>
+                        <span class="outcome-badge ${'$'}{outcomeClass}">${'$'}{formatOutcome(log.actionOutcome)}</span>
                     </div>
                 </div>
                 <div class="audit-log-details">
                     <div class="detail-item">
                         <div class="detail-label">Recurso</div>
-                        <div class="detail-value">${log.resourceType || 'N/A'}</div>
+                        <div class="detail-value">${'$'}{log.resourceType || 'N/A'}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">ID Recurso</div>
-                        <div class="detail-value">${log.resourceId || 'N/A'}</div>
+                        <div class="detail-value">${'$'}{log.resourceId || 'N/A'}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">IP Address</div>
-                        <div class="detail-value">${log.ipAddress || 'N/A'}</div>
+                        <div class="detail-value">${'$'}{log.ipAddress || 'N/A'}</div>
                     </div>
-                    ${log.details && log.details.documentType ? `
+                    ${'$'}{log.details && log.details.documentType ? `
                     <div class="detail-item">
                         <div class="detail-label">Tipo de Documento</div>
-                        <div class="detail-value">${log.details.documentType}</div>
+                        <div class="detail-value">${'$'}{log.details.documentType}</div>
                     </div>
                     ` : ''}
                 </div>
-                <div class="timestamp">📅 ${formatTimestamp(log.timestamp)}</div>
+                <div class="timestamp">📅 ${'$'}{formatTimestamp(log.timestamp)}</div>
             `;
 
             return card;
@@ -921,7 +921,7 @@
             prevBtn.disabled = !response.hasPrevious;
             nextBtn.disabled = !response.hasNext;
 
-            paginationInfo.textContent = `Página ${response.page + 1} de ${response.totalPages || 1} (${response.totalCount} registros)`;
+            paginationInfo.textContent = `Página ${'$'}{response.page + 1} de ${'$'}{response.totalPages || 1} (${'$'}{response.totalCount} registros)`;
         }
 
         /**

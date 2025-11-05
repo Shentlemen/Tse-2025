@@ -72,8 +72,8 @@ public class InusResource {
     /**
      * Register a new user in the INUS system.
      * <p>
-     * This endpoint is called by peripheral nodes (clinics, health providers)
-     * to register new patients in the national user index.
+     * This endpoint is called by peripheral nodes (clinics, health providers),
+     * admins, or patients themselves to register new patients in the national user index.
      * <p>
      * Request Body: UserRegistrationRequest (JSON)
      * - ci: Cédula de Identidad (required)
@@ -82,7 +82,7 @@ public class InusResource {
      * - dateOfBirth: Date of birth (required, must be in the past)
      * - email: Email address (optional)
      * - phoneNumber: Phone number (optional)
-     * - clinicId: ID of clinic registering the user (required)
+     * - clinicId: ID of clinic registering the user (optional)
      * <p>
      * Response:
      * - 201 Created: User successfully registered, body contains UserResponse

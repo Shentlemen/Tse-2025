@@ -74,9 +74,11 @@ public class UserRegistrationRequest {
     private String phoneNumber;
 
     /**
-     * ID of the clinic registering the user
+     * ID of the clinic registering the user (optional)
+     * <p>
+     * This field is required when peripheral nodes (clinics) register users.
+     * For admin registration or patient self-registration, this can be null.
      */
-    @NotBlank(message = "Clinic ID is required")
     @Size(max = 50, message = "Clinic ID must not exceed 50 characters")
     private String clinicId;
 
