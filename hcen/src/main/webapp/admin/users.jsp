@@ -628,10 +628,10 @@
 
         function updatePagination(data) {
             const paginationInfo = document.getElementById('paginationInfo');
-            paginationInfo.textContent = 'Página ' + (data.number + 1) + ' de ' + data.totalPages + ' (' + data.totalElements + ' resultados)';
+            paginationInfo.textContent = 'Página ' + (data.page + 1) + ' de ' + data.totalPages + ' (' + data.totalCount + ' resultados)';
 
-            document.getElementById('btnPrev').disabled = data.first;
-            document.getElementById('btnNext').disabled = data.last;
+            document.getElementById('btnPrev').disabled = data.page === 0;
+            document.getElementById('btnNext').disabled = data.page >= data.totalPages - 1;
         }
 
         function showEmpty() {
@@ -658,15 +658,34 @@
             return badges[status] || '<span class="status-badge">' + status + '</span>';
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
+        function formatDate(dateInput) {
+            if (!dateInput) return '-';
+
+            let date;
+            // Handle Java LocalDateTime array format: [year, month, day, hour, minute, second, nano]
+            if (Array.isArray(dateInput)) {
+                // Java months are 1-12, JavaScript months are 0-11
+                date = new Date(dateInput[0], dateInput[1] - 1, dateInput[2]);
+            } else {
+                date = new Date(dateInput);
+            }
+
             return date.toLocaleDateString('es-UY');
         }
 
-        function formatDateTime(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
+        function formatDateTime(dateInput) {
+            if (!dateInput) return '-';
+
+            let date;
+            // Handle Java LocalDateTime array format: [year, month, day, hour, minute, second, nano]
+            if (Array.isArray(dateInput)) {
+                // Java months are 1-12, JavaScript months are 0-11
+                date = new Date(dateInput[0], dateInput[1] - 1, dateInput[2],
+                                dateInput[3] || 0, dateInput[4] || 0, dateInput[5] || 0);
+            } else {
+                date = new Date(dateInput);
+            }
+
             return date.toLocaleDateString('es-UY');
         }
 

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew clean:*)",
+      "Bash(java:*)",
+      "Bash(set:*)",
+      "Bash(dir \"C:\\Program Files\\Java\")",
+      "Bash(del:*)",
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(./gradlew wrapper:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

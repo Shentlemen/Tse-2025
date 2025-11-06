@@ -5,30 +5,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle de Usuario - Admin HCEN</title>
-    <link rel="stylesheet" href="../css/admin-common.css">
     <style>
-        .back-button {
-            display: inline-flex;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e4;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            color: #667eea;
-            text-decoration: none;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        .breadcrumb {
+            color: #a0a0a0;
             font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            transition: gap 0.3s;
+            margin-bottom: 15px;
         }
 
-        .back-button:hover {
-            gap: 12px;
+        .breadcrumb a {
+            color: #00d4ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
         }
 
-        .user-header {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .breadcrumb a:hover {
+            color: #00b8e6;
         }
 
         .user-header-content {
@@ -46,13 +86,14 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d4ff, #0095ff);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 32px;
             color: white;
             font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
         }
 
         .user-info {
@@ -61,13 +102,14 @@
 
         .user-name {
             font-size: 28px;
-            color: #333;
-            margin-bottom: 4px;
+            color: #e4e4e4;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .user-meta {
             font-size: 14px;
-            color: #666;
+            color: #a0a0a0;
             display: flex;
             align-items: center;
             gap: 16px;
@@ -75,25 +117,28 @@
 
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 6px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
         }
 
         .status-badge.active {
-            background: #d1f4e0;
-            color: #059669;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .status-badge.inactive {
-            background: #fee;
-            color: #dc2626;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .status-badge.suspended {
-            background: #fff3cd;
-            color: #856404;
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .action-buttons {
@@ -102,42 +147,62 @@
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #00d4ff, #0095ff);
             color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: linear-gradient(135deg, #0095ff, #0066cc);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e4e4e4;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
         }
 
         .btn-danger {
-            background: #dc2626;
-            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .btn-danger:hover {
-            background: #b91c1c;
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
         }
 
         .btn-success {
-            background: #059669;
-            color: white;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .btn-success:hover {
-            background: #047857;
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
         }
 
         .content-grid {
@@ -147,18 +212,20 @@
         }
 
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .card h2 {
             font-size: 20px;
-            color: #333;
+            color: #00d4ff;
             margin-bottom: 24px;
             padding-bottom: 16px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
         }
 
         .form-group {
@@ -168,7 +235,7 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #a0a0a0;
             font-weight: 500;
             font-size: 14px;
         }
@@ -177,21 +244,34 @@
         .form-group select {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e1e8ed;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e4e4e4;
+            transition: all 0.3s ease;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #00d4ff;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .form-group input:disabled {
-            background: #f5f5f5;
+            background: rgba(255, 255, 255, 0.02);
             cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: #e4e4e4;
         }
 
         .info-item {
@@ -202,7 +282,7 @@
 
         .info-item label {
             font-size: 12px;
-            color: #666;
+            color: #a0a0a0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
@@ -210,12 +290,12 @@
 
         .info-item .value {
             font-size: 16px;
-            color: #333;
+            color: #e4e4e4;
             font-weight: 500;
         }
 
         .info-item .value.empty {
-            color: #999;
+            color: #666;
             font-style: italic;
         }
 
@@ -225,7 +305,7 @@
 
         .activity-item {
             padding: 16px 0;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .activity-item:last-child {
@@ -234,13 +314,13 @@
 
         .activity-item .activity-title {
             font-weight: 600;
-            color: #333;
+            color: #e4e4e4;
             margin-bottom: 4px;
         }
 
         .activity-item .activity-time {
             font-size: 12px;
-            color: #999;
+            color: #a0a0a0;
         }
 
         .alert {
@@ -248,6 +328,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
+            border: 1px solid;
         }
 
         .alert.show {
@@ -255,15 +336,15 @@
         }
 
         .alert-success {
-            background: #d1f4e0;
-            color: #059669;
-            border: 1px solid #a7e6c8;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         .alert-error {
-            background: #fee;
-            color: #dc2626;
-            border: 1px solid #fcc;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
         .loading-overlay {
@@ -272,18 +353,19 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(26, 26, 46, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
         .loading-spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid #f0f0f0;
-            border-top-color: #667eea;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d4ff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -296,51 +378,65 @@
             .content-grid {
                 grid-template-columns: 1fr;
             }
+
+            .user-header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .action-buttons {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <h1>HCEN Admin</h1>
-        </div>
-        <div class="navbar-menu">
-            <a href="dashboard.jsp">Dashboard</a>
-            <a href="users.jsp" class="active">Usuarios</a>
-            <a href="clinics.jsp">Clínicas</a>
-            <a href="#" onclick="alert('Función disponible próximamente')">Reportes</a>
-            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </nav>
-
     <div class="container">
-        <a href="users.jsp" class="back-button">← Volver a Usuarios</a>
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <span class="logo-icon">🏥</span>
+                    HCEN Admin
+                </div>
+            </div>
+            <div class="breadcrumb">
+                <a href="dashboard.jsp">Dashboard</a> /
+                <a href="users.jsp">Usuarios</a> /
+                <span>Detalle de Usuario</span>
+            </div>
+
+            <div id="userHeader" style="display: none;">
+                <div class="user-header-content">
+                    <div class="user-avatar-section">
+                        <div class="user-avatar" id="userAvatar">JD</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">Cargando...</div>
+                            <div class="user-meta">
+                                <span>CI: <span id="userCI"></span></span>
+                                <span id="userStatusBadge"></span>
+                                <span>INUS ID: <span id="inusId"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons" id="actionButtons">
+                        <!-- Actions will be populated based on edit mode -->
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div id="alertSuccess" class="alert alert-success">
-            Usuario actualizado correctamente
+            ✓ Usuario actualizado correctamente
         </div>
 
         <div id="alertError" class="alert alert-error">
             <strong>Error:</strong> <span id="errorMessage"></span>
-        </div>
-
-        <div class="user-header" id="userHeader" style="display: none;">
-            <div class="user-header-content">
-                <div class="user-avatar-section">
-                    <div class="user-avatar" id="userAvatar">JD</div>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">Cargando...</div>
-                        <div class="user-meta">
-                            <span>CI: <span id="userCI"></span></span>
-                            <span id="userStatusBadge"></span>
-                            <span>INUS ID: <span id="inusId"></span></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="action-buttons" id="actionButtons">
-                    <!-- Actions will be populated based on edit mode -->
-                </div>
-            </div>
         </div>
 
         <div class="content-grid">
@@ -550,14 +646,12 @@
         }
 
         async function saveUser() {
+            // Only send mutable fields - ci, dateOfBirth, and status are immutable
             const updatedData = {
-                ci: currentUser.ci,
                 firstName: document.getElementById('firstName').value.trim(),
                 lastName: document.getElementById('lastName').value.trim(),
-                dateOfBirth: document.getElementById('dateOfBirth').value,
                 email: document.getElementById('email').value.trim() || null,
-                phoneNumber: document.getElementById('phoneNumber').value.trim() || null,
-                status: document.getElementById('status').value
+                phoneNumber: document.getElementById('phoneNumber').value.trim() || null
             };
 
             try {

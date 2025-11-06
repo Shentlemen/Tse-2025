@@ -66,12 +66,12 @@ public class PDIClient {
 
     private static final Logger logger = LoggerFactory.getLogger(PDIClient.class);
 
-    // Configuration constants (would typically come from properties file)
-    private static final String PDI_SOAP_ENDPOINT = "https://pdi-testing.gub.uy/dnic/servicio-basico";
-    private static final String PDI_USERNAME = "hcen-client";
-    private static final String PDI_PASSWORD = "secure-password";
-    private static final int CONNECTION_TIMEOUT_MS = 5000;
-    private static final int READ_TIMEOUT_MS = 30000;
+    // Configuration properties (loaded from application.properties)
+    private String pdiSoapEndpoint;
+    private String pdiUsername;
+    private String pdiPassword;
+    private int connectionTimeoutMs;
+    private int readTimeoutMs;
 
     // Retry configuration
     private static final int MAX_RETRY_ATTEMPTS = 3;
@@ -83,8 +83,7 @@ public class PDIClient {
 
     // SOAP namespaces
     private static final String SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/";
-    private static final String WSSE_NS = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
-    private static final String DNIC_NS = "http://dnic.gub.uy/servicios";
+    private static final String PDI_NS = "http://pdi.hcen.fing/";
 
     // HTTP client components
     private CloseableHttpClient httpClient;
@@ -101,10 +100,13 @@ public class PDIClient {
     public void init() {
         logger.info("Initializing PDI SOAP Client...");
 
+        // Load configuration from application.properties
+        loadConfiguration();
+
         // Configure request timeouts
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(Timeout.of(CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS))
-                .setResponseTimeout(Timeout.of(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS))
+                .setConnectionRequestTimeout(Timeout.of(connectionTimeoutMs, TimeUnit.MILLISECONDS))
+                .setResponseTimeout(Timeout.of(readTimeoutMs, TimeUnit.MILLISECONDS))
                 .build();
 
         // Build HTTP client
@@ -117,7 +119,47 @@ public class PDIClient {
         this.documentBuilderFactory.setNamespaceAware(true);
 
         logger.info("PDI SOAP Client initialized successfully (endpoint: {}, connection timeout: {}ms, read timeout: {}ms)",
-                PDI_SOAP_ENDPOINT, CONNECTION_TIMEOUT_MS, READ_TIMEOUT_MS);
+                pdiSoapEndpoint, connectionTimeoutMs, readTimeoutMs);
+    }
+
+    /**
+     * Loads configuration from application.properties
+     */
+    private void loadConfiguration() {
+        try (var inputStream = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+            if (inputStream == null) {
+                logger.warn("application.properties not found - using default configuration");
+                setDefaultConfiguration();
+                return;
+            }
+
+            java.util.Properties props = new java.util.Properties();
+            props.load(inputStream);
+
+            // Load PDI configuration
+            pdiSoapEndpoint = props.getProperty("pdi.soap.endpoint", "http://localhost:8080/hcen-pdi-1.0-SNAPSHOT/PDIService");
+            pdiUsername = props.getProperty("pdi.soap.username", "HCEN");
+            pdiPassword = props.getProperty("pdi.soap.password", "hcen-test-2025");
+            connectionTimeoutMs = Integer.parseInt(props.getProperty("pdi.soap.timeout.connect", "5000"));
+            readTimeoutMs = Integer.parseInt(props.getProperty("pdi.soap.timeout.read", "30000"));
+
+            logger.info("PDI configuration loaded from application.properties");
+
+        } catch (Exception e) {
+            logger.error("Failed to load PDI configuration from application.properties - using defaults", e);
+            setDefaultConfiguration();
+        }
+    }
+
+    /**
+     * Sets default configuration values
+     */
+    private void setDefaultConfiguration() {
+        pdiSoapEndpoint = "http://localhost:8080/hcen-pdi-1.0-SNAPSHOT/PDIService";
+        pdiUsername = "HCEN";
+        pdiPassword = "hcen-test-2025";
+        connectionTimeoutMs = 5000;
+        readTimeoutMs = 30000;
     }
 
     /**
@@ -270,29 +312,26 @@ public class PDIClient {
     // ================================================================
 
     /**
-     * Builds SOAP request envelope for ConsultarUsuario operation.
+     * Builds SOAP request envelope for obtPersonaPorDoc operation.
      * <p>
      * Request format:
      * <pre>{@code
      * <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-     *                   xmlns:dnic="http://dnic.gub.uy/servicios">
-     *    <soapenv:Header>
-     *       <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/...">
-     *          <wsse:UsernameToken>
-     *             <wsse:Username>hcen-client</wsse:Username>
-     *             <wsse:Password>password</wsse:Password>
-     *          </wsse:UsernameToken>
-     *       </wsse:Security>
-     *    </soapenv:Header>
+     *                   xmlns:pdi="http://pdi.hcen.fing/">
      *    <soapenv:Body>
-     *       <dnic:ConsultarUsuario>
-     *          <dnic:ci>12345678</dnic:ci>
-     *       </dnic:ConsultarUsuario>
+     *       <pdi:obtPersonaPorDoc>
+     *          <parametros>
+     *             <organizacion>hcen-client</organizacion>
+     *             <passwordEntidad>secure-password</passwordEntidad>
+     *             <NroDocumento>12345678</NroDocumento>
+     *             <TipoDocumento>CI</TipoDocumento>
+     *          </parametros>
+     *       </pdi:obtPersonaPorDoc>
      *    </soapenv:Body>
      * </soapenv:Envelope>
      * }</pre>
      *
-     * @param ci User's CI
+     * @param ci User's CI (Cédula de Identidad)
      * @return SOAP XML request string
      */
     private String buildConsultarUsuarioRequest(String ci) {
@@ -301,23 +340,18 @@ public class PDIClient {
         soapRequest.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         soapRequest.append("<soapenv:Envelope ");
         soapRequest.append("xmlns:soapenv=\"").append(SOAP_ENV_NS).append("\" ");
-        soapRequest.append("xmlns:dnic=\"").append(DNIC_NS).append("\">");
+        soapRequest.append("xmlns:pdi=\"").append(PDI_NS).append("\">");
 
-        // SOAP Header with WS-Security
-        soapRequest.append("<soapenv:Header>");
-        soapRequest.append("<wsse:Security xmlns:wsse=\"").append(WSSE_NS).append("\">");
-        soapRequest.append("<wsse:UsernameToken>");
-        soapRequest.append("<wsse:Username>").append(escapeXml(PDI_USERNAME)).append("</wsse:Username>");
-        soapRequest.append("<wsse:Password>").append(escapeXml(PDI_PASSWORD)).append("</wsse:Password>");
-        soapRequest.append("</wsse:UsernameToken>");
-        soapRequest.append("</wsse:Security>");
-        soapRequest.append("</soapenv:Header>");
-
-        // SOAP Body
+        // SOAP Body - no header needed, authentication is in the body
         soapRequest.append("<soapenv:Body>");
-        soapRequest.append("<dnic:ConsultarUsuario>");
-        soapRequest.append("<dnic:ci>").append(escapeXml(ci)).append("</dnic:ci>");
-        soapRequest.append("</dnic:ConsultarUsuario>");
+        soapRequest.append("<pdi:obtPersonaPorDoc>");
+        soapRequest.append("<parametros>");
+        soapRequest.append("<organizacion>").append(escapeXml(pdiUsername)).append("</organizacion>");
+        soapRequest.append("<passwordEntidad>").append(escapeXml(pdiPassword)).append("</passwordEntidad>");
+        soapRequest.append("<NroDocumento>").append(escapeXml(ci)).append("</NroDocumento>");
+        soapRequest.append("<TipoDocumento>CI</TipoDocumento>");
+        soapRequest.append("</parametros>");
+        soapRequest.append("</pdi:obtPersonaPorDoc>");
         soapRequest.append("</soapenv:Body>");
 
         soapRequest.append("</soapenv:Envelope>");
@@ -336,7 +370,7 @@ public class PDIClient {
      * @throws IOException if HTTP request fails
      */
     private String executeSoapRequest(String soapRequest) throws IOException {
-        HttpPost httpPost = new HttpPost(PDI_SOAP_ENDPOINT);
+        HttpPost httpPost = new HttpPost(pdiSoapEndpoint);
         httpPost.setEntity(new StringEntity(soapRequest, ContentType.TEXT_XML.withCharset("UTF-8")));
         httpPost.setHeader("Content-Type", "text/xml; charset=UTF-8");
         httpPost.setHeader("SOAPAction", "\"\""); // Empty SOAPAction (SOAP 1.1)
@@ -357,17 +391,28 @@ public class PDIClient {
     }
 
     /**
-     * Parses SOAP response from ConsultarUsuario operation.
+     * Parses SOAP response from obtPersonaPorDoc operation.
      * <p>
      * Expected response format:
      * <pre>{@code
      * <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
      *    <soapenv:Body>
-     *       <dnic:ConsultarUsuarioResponse>
-     *          <dnic:ci>12345678</dnic:ci>
-     *          <dnic:nombreCompleto>Juan Pérez</dnic:nombreCompleto>
-     *          <dnic:fechaNacimiento>1990-01-15</dnic:fechaNacimiento>
-     *       </dnic:ConsultarUsuarioResponse>
+     *       <pdi:obtPersonaPorDocResponse xmlns:pdi="http://pdi.hcen.fing/">
+     *          <return>
+     *             <Persona>
+     *                <NroDocumento>12345678</NroDocumento>
+     *                <TipoDocumento>CI</TipoDocumento>
+     *                <Nombre1>Juan</Nombre1>
+     *                <Nombre2>Carlos</Nombre2>
+     *                <Apellido1>Pérez</Apellido1>
+     *                <Apellido2>González</Apellido2>
+     *                <FechaNacimiento>1990-01-15</FechaNacimiento>
+     *                <Sexo>M</Sexo>
+     *             </Persona>
+     *             <Errores>...</Errores>
+     *             <Warnings>...</Warnings>
+     *          </return>
+     *       </pdi:obtPersonaPorDocResponse>
      *    </soapenv:Body>
      * </soapenv:Envelope>
      * }</pre>
@@ -391,42 +436,84 @@ public class PDIClient {
                 throw new PDIException("PDI service error: " + faultString);
             }
 
-            // Parse ConsultarUsuarioResponse
-            NodeList responseNodes = doc.getElementsByTagNameNS(DNIC_NS, "ConsultarUsuarioResponse");
+            // Parse obtPersonaPorDocResponse
+            NodeList responseNodes = doc.getElementsByTagNameNS(PDI_NS, "obtPersonaPorDocResponse");
             if (responseNodes.getLength() == 0) {
-                logger.error("PDI response missing ConsultarUsuarioResponse element");
-                throw new PDIException("Invalid PDI response format - missing ConsultarUsuarioResponse");
+                logger.error("PDI response missing obtPersonaPorDocResponse element");
+                throw new PDIException("Invalid PDI response format - missing obtPersonaPorDocResponse");
             }
 
             Element responseElement = (Element) responseNodes.item(0);
 
-            // Extract user data
-            String ci = getElementTextContentNS(responseElement, DNIC_NS, "ci");
-            String nombreCompleto = getElementTextContentNS(responseElement, DNIC_NS, "nombreCompleto");
-            String fechaNacimientoStr = getElementTextContentNS(responseElement, DNIC_NS, "fechaNacimiento");
-
-            // Validate required fields
-            if (ci == null || ci.isEmpty()) {
-                throw new PDIException("PDI response missing CI");
+            // Navigate to return > Persona
+            NodeList returnNodes = responseElement.getElementsByTagName("return");
+            if (returnNodes.getLength() == 0) {
+                logger.error("PDI response missing return element");
+                throw new PDIException("Invalid PDI response format - missing return");
             }
 
-            if (nombreCompleto == null || nombreCompleto.isEmpty()) {
-                throw new PDIException("PDI response missing full name");
+            Element returnElement = (Element) returnNodes.item(0);
+
+            // Check for errors
+            NodeList errorNodes = returnElement.getElementsByTagName("Errores");
+            if (errorNodes.getLength() > 0) {
+                Element errorElement = (Element) errorNodes.item(0);
+                String errorCode = getElementTextContent(errorElement, "CodMensaje");
+                String errorDesc = getElementTextContent(errorElement, "Descripcion");
+                logger.error("PDI returned error: {} - {}", errorCode, errorDesc);
+                throw new PDIException("PDI error: " + errorDesc);
+            }
+
+            // Extract Persona
+            NodeList personaNodes = returnElement.getElementsByTagName("Persona");
+            if (personaNodes.getLength() == 0) {
+                logger.error("PDI response missing Persona element - user not found");
+                throw new PDIException("User not found in PDI for CI: " + requestedCi);
+            }
+
+            Element personaElement = (Element) personaNodes.item(0);
+
+            // Extract user data
+            String nroDocumento = getElementTextContent(personaElement, "NroDocumento");
+            String nombre1 = getElementTextContent(personaElement, "Nombre1");
+            String nombre2 = getElementTextContent(personaElement, "Nombre2");
+            String apellido1 = getElementTextContent(personaElement, "Apellido1");
+            String apellido2 = getElementTextContent(personaElement, "Apellido2");
+            String fechaNacimientoStr = getElementTextContent(personaElement, "FechaNacimiento");
+
+            // Validate required fields
+            if (nroDocumento == null || nroDocumento.isEmpty()) {
+                throw new PDIException("PDI response missing NroDocumento");
+            }
+
+            if (nombre1 == null || nombre1.isEmpty() || apellido1 == null || apellido1.isEmpty()) {
+                throw new PDIException("PDI response missing name fields");
             }
 
             if (fechaNacimientoStr == null || fechaNacimientoStr.isEmpty()) {
-                throw new PDIException("PDI response missing date of birth");
+                throw new PDIException("PDI response missing FechaNacimiento");
+            }
+
+            // Build full name
+            StringBuilder nombreCompleto = new StringBuilder();
+            nombreCompleto.append(nombre1);
+            if (nombre2 != null && !nombre2.isEmpty()) {
+                nombreCompleto.append(" ").append(nombre2);
+            }
+            nombreCompleto.append(" ").append(apellido1);
+            if (apellido2 != null && !apellido2.isEmpty()) {
+                nombreCompleto.append(" ").append(apellido2);
             }
 
             // Validate CI matches request
-            if (!ci.equals(requestedCi)) {
-                logger.warn("PDI returned data for different CI: requested={}, received={}", requestedCi, ci);
+            if (!nroDocumento.equals(requestedCi)) {
+                logger.warn("PDI returned data for different CI: requested={}, received={}", requestedCi, nroDocumento);
             }
 
             // Parse date of birth
             LocalDate fechaNacimiento = LocalDate.parse(fechaNacimientoStr, DateTimeFormatter.ISO_LOCAL_DATE);
 
-            PDIUserData userData = new PDIUserData(ci, nombreCompleto, fechaNacimiento);
+            PDIUserData userData = new PDIUserData(nroDocumento, nombreCompleto.toString(), fechaNacimiento);
             logger.debug("Parsed PDI user data: {}", userData);
 
             return userData;
