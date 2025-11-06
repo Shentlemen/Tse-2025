@@ -1,0 +1,401 @@
+package uy.gub.clinic.service;
+
+import jakarta.ejb.Stateless;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uy.gub.clinic.entity.ClinicalDocument;
+import uy.gub.clinic.entity.Clinic;
+import uy.gub.clinic.entity.Patient;
+import uy.gub.clinic.entity.Professional;
+import uy.gub.clinic.entity.Specialty;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Servicio para gestión de documentos clínicos
+ */
+@Stateless
+public class ClinicalDocumentService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalDocumentService.class);
+    
+    @PersistenceContext(unitName = "clinicPU")
+    private EntityManager entityManager;
+    
+    /**
+     * Obtener todos los documentos
+     */
+    public List<ClinicalDocument> findAll() {
+        try {
+            TypedQuery<ClinicalDocument> query = entityManager.createQuery(
+                "SELECT d FROM ClinicalDocument d ORDER BY d.createdAt DESC", 
+                ClinicalDocument.class);
+            List<ClinicalDocument> documents = query.getResultList();
+            
+            // Cargar relaciones lazy
+            for (ClinicalDocument doc : documents) {
+                if (doc.getPatient() != null) doc.getPatient().getName();
+                if (doc.getProfessional() != null) doc.getProfessional().getName();
+                if (doc.getClinic() != null) doc.getClinic().getName();
+                if (doc.getSpecialty() != null) doc.getSpecialty().getName();
+            }
+            
+            return documents;
+        } catch (Exception e) {
+            logger.error("Error al obtener todos los documentos", e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Obtener todos los documentos de una clínica
+     */
+    public List<ClinicalDocument> findByClinic(Long clinicId) {
+        try {
+            TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
+                "ClinicalDocument.findByClinic", ClinicalDocument.class);
+            query.setParameter("clinicId", clinicId);
+            List<ClinicalDocument> documents = query.getResultList();
+            
+            // Cargar relaciones lazy
+            for (ClinicalDocument doc : documents) {
+                if (doc.getPatient() != null) doc.getPatient().getName();
+                if (doc.getProfessional() != null) doc.getProfessional().getName();
+                if (doc.getClinic() != null) doc.getClinic().getName();
+                if (doc.getSpecialty() != null) doc.getSpecialty().getName();
+            }
+            
+            return documents;
+        } catch (Exception e) {
+            logger.error("Error al obtener documentos por clínica: {}", clinicId, e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Obtener documentos por clínica y especialidad
+     */
+    public List<ClinicalDocument> findByClinicAndSpecialty(Long clinicId, Long specialtyId) {
+        try {
+            TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
+                "ClinicalDocument.findByClinicAndSpecialty", ClinicalDocument.class);
+            query.setParameter("clinicId", clinicId);
+            query.setParameter("specialtyId", specialtyId);
+            List<ClinicalDocument> documents = query.getResultList();
+            
+            // Cargar relaciones lazy
+            for (ClinicalDocument doc : documents) {
+                if (doc.getPatient() != null) doc.getPatient().getName();
+                if (doc.getProfessional() != null) doc.getProfessional().getName();
+                if (doc.getClinic() != null) doc.getClinic().getName();
+                if (doc.getSpecialty() != null) doc.getSpecialty().getName();
+            }
+            
+            return documents;
+        } catch (Exception e) {
+            logger.error("Error al obtener documentos por clínica y especialidad: {} - {}", clinicId, specialtyId, e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Obtener documentos por paciente
+     */
+    public List<ClinicalDocument> findByPatient(Long patientId) {
+        try {
+            TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
+                "ClinicalDocument.findByPatient", ClinicalDocument.class);
+            query.setParameter("patientId", patientId);
+            return query.getResultList();
+        } catch (Exception e) {
+            logger.error("Error al obtener documentos por paciente: {}", patientId, e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Obtener documentos por profesional
+     */
+    public List<ClinicalDocument> findByProfessional(Long professionalId) {
+        try {
+            TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
+                "ClinicalDocument.findByProfessional", ClinicalDocument.class);
+            query.setParameter("professionalId", professionalId);
+            return query.getResultList();
+        } catch (Exception e) {
+            logger.error("Error al obtener documentos por profesional: {}", professionalId, e);
+            return List.of();
+        }
+    }
+    
+    /**
+     * Buscar documento por ID
+     */
+    public Optional<ClinicalDocument> findById(Long id) {
+        try {
+            ClinicalDocument document = entityManager.find(ClinicalDocument.class, id);
+            if (document != null) {
+                // Cargar relaciones lazy
+                if (document.getPatient() != null) document.getPatient().getName();
+                if (document.getProfessional() != null) document.getProfessional().getName();
+                if (document.getClinic() != null) document.getClinic().getName();
+                if (document.getSpecialty() != null) document.getSpecialty().getName();
+            }
+            return Optional.ofNullable(document);
+        } catch (Exception e) {
+            logger.error("Error al buscar documento por ID: {}", id, e);
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * Crear nuevo documento clínico
+     */
+    @Transactional
+    public ClinicalDocument createDocument(ClinicalDocument document) {
+        try {
+            // Validar relaciones
+            if (document.getPatient() == null || document.getPatient().getId() == null) {
+                throw new IllegalArgumentException("El paciente es requerido");
+            }
+            if (document.getProfessional() == null || document.getProfessional().getId() == null) {
+                throw new IllegalArgumentException("El profesional es requerido");
+            }
+            if (document.getClinic() == null || document.getClinic().getId() == null) {
+                throw new IllegalArgumentException("La clínica es requerida");
+            }
+            if (document.getSpecialty() == null || document.getSpecialty().getId() == null) {
+                throw new IllegalArgumentException("La especialidad es requerida");
+            }
+            
+            // Cargar entidades desde la base de datos
+            Patient patient = entityManager.find(Patient.class, document.getPatient().getId());
+            if (patient == null) {
+                throw new IllegalArgumentException("Paciente no encontrado: " + document.getPatient().getId());
+            }
+            
+            Professional professional = entityManager.find(Professional.class, document.getProfessional().getId());
+            if (professional == null) {
+                throw new IllegalArgumentException("Profesional no encontrado: " + document.getProfessional().getId());
+            }
+            
+            Clinic clinic = entityManager.find(Clinic.class, document.getClinic().getId());
+            if (clinic == null) {
+                throw new IllegalArgumentException("Clínica no encontrada: " + document.getClinic().getId());
+            }
+            
+            Specialty specialty = entityManager.find(Specialty.class, document.getSpecialty().getId());
+            if (specialty == null) {
+                throw new IllegalArgumentException("Especialidad no encontrada: " + document.getSpecialty().getId());
+            }
+            
+            // Validar que el paciente pertenezca a la clínica
+            if (!patient.getClinic().getId().equals(clinic.getId())) {
+                throw new IllegalArgumentException("El paciente no pertenece a la clínica especificada");
+            }
+            
+            // Validar que el profesional pertenezca a la clínica
+            if (!professional.getClinic().getId().equals(clinic.getId())) {
+                throw new IllegalArgumentException("El profesional no pertenece a la clínica especificada");
+            }
+            
+            // Validar que la especialidad pertenezca a la clínica
+            if (!specialty.getClinic().getId().equals(clinic.getId())) {
+                throw new IllegalArgumentException("La especialidad no pertenece a la clínica especificada");
+            }
+            
+            // Establecer relaciones
+            document.setPatient(patient);
+            document.setProfessional(professional);
+            document.setClinic(clinic);
+            document.setSpecialty(specialty);
+            
+            // Si no hay fecha de visita, usar la fecha actual
+            if (document.getDateOfVisit() == null) {
+                document.setDateOfVisit(LocalDate.now());
+            }
+            
+            entityManager.persist(document);
+            entityManager.flush();
+            
+            logger.info("Documento clínico creado exitosamente: ID={}, Título={}", 
+                document.getId(), document.getTitle());
+            
+            return document;
+            
+        } catch (Exception e) {
+            logger.error("Error al crear documento clínico", e);
+            throw e;
+        }
+    }
+    
+    /**
+     * Actualizar documento clínico
+     */
+    @Transactional
+    public ClinicalDocument updateDocument(ClinicalDocument document) {
+        try {
+            ClinicalDocument existing = entityManager.find(ClinicalDocument.class, document.getId());
+            if (existing == null) {
+                throw new IllegalArgumentException("Documento no encontrado: " + document.getId());
+            }
+            
+            // Actualizar campos básicos
+            existing.setTitle(document.getTitle());
+            existing.setDescription(document.getDescription());
+            existing.setDocumentType(document.getDocumentType());
+            existing.setDateOfVisit(document.getDateOfVisit());
+            
+            // Actualizar campos del formulario médico
+            existing.setChiefComplaint(document.getChiefComplaint());
+            existing.setCurrentIllness(document.getCurrentIllness());
+            existing.setVitalSigns(document.getVitalSigns());
+            existing.setPhysicalExamination(document.getPhysicalExamination());
+            existing.setDiagnosis(document.getDiagnosis());
+            existing.setTreatment(document.getTreatment());
+            existing.setPrescriptions(document.getPrescriptions());
+            existing.setObservations(document.getObservations());
+            existing.setNextAppointment(document.getNextAppointment());
+            existing.setAttachments(document.getAttachments());
+            
+            // Actualizar relaciones si se proporcionan
+            if (document.getPatient() != null && document.getPatient().getId() != null) {
+                Patient patient = entityManager.find(Patient.class, document.getPatient().getId());
+                if (patient != null) {
+                    existing.setPatient(patient);
+                }
+            }
+            
+            if (document.getProfessional() != null && document.getProfessional().getId() != null) {
+                Professional professional = entityManager.find(Professional.class, document.getProfessional().getId());
+                if (professional != null) {
+                    existing.setProfessional(professional);
+                }
+            }
+            
+            if (document.getSpecialty() != null && document.getSpecialty().getId() != null) {
+                Specialty specialty = entityManager.find(Specialty.class, document.getSpecialty().getId());
+                if (specialty != null) {
+                    existing.setSpecialty(specialty);
+                }
+            }
+            
+            entityManager.merge(existing);
+            entityManager.flush();
+            
+            logger.info("Documento clínico actualizado exitosamente: ID={}", existing.getId());
+            
+            return existing;
+            
+        } catch (Exception e) {
+            logger.error("Error al actualizar documento clínico: {}", document.getId(), e);
+            throw e;
+        }
+    }
+    
+    /**
+     * Eliminar documento clínico
+     */
+    @Transactional
+    public void deleteDocument(Long id) {
+        try {
+            ClinicalDocument document = entityManager.find(ClinicalDocument.class, id);
+            if (document == null) {
+                throw new IllegalArgumentException("Documento no encontrado: " + id);
+            }
+            
+            entityManager.remove(document);
+            entityManager.flush();
+            
+            logger.info("Documento clínico eliminado exitosamente: ID={}", id);
+            
+        } catch (Exception e) {
+            logger.error("Error al eliminar documento clínico: {}", id, e);
+            throw e;
+        }
+    }
+    
+    /**
+     * Buscar documentos con filtros
+     */
+    public List<ClinicalDocument> searchDocuments(Long clinicId, Long specialtyId, Long patientId, 
+                                                  Long professionalId, String documentType, 
+                                                  LocalDate dateFrom, LocalDate dateTo) {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT d FROM ClinicalDocument d WHERE 1=1");
+            
+            // Si clinicId es null, no filtrar por clínica (para superadmin)
+            if (clinicId != null) {
+                jpql.append(" AND d.clinic.id = :clinicId");
+            }
+            
+            if (specialtyId != null) {
+                jpql.append(" AND d.specialty.id = :specialtyId");
+            }
+            if (patientId != null) {
+                jpql.append(" AND d.patient.id = :patientId");
+            }
+            if (professionalId != null) {
+                jpql.append(" AND d.professional.id = :professionalId");
+            }
+            if (documentType != null && !documentType.isEmpty()) {
+                jpql.append(" AND d.documentType = :documentType");
+            }
+            if (dateFrom != null) {
+                jpql.append(" AND d.dateOfVisit >= :dateFrom");
+            }
+            if (dateTo != null) {
+                jpql.append(" AND d.dateOfVisit <= :dateTo");
+            }
+            
+            jpql.append(" ORDER BY d.dateOfVisit DESC, d.createdAt DESC");
+            
+            TypedQuery<ClinicalDocument> query = entityManager.createQuery(jpql.toString(), ClinicalDocument.class);
+            if (clinicId != null) {
+                query.setParameter("clinicId", clinicId);
+            }
+            
+            if (specialtyId != null) {
+                query.setParameter("specialtyId", specialtyId);
+            }
+            if (patientId != null) {
+                query.setParameter("patientId", patientId);
+            }
+            if (professionalId != null) {
+                query.setParameter("professionalId", professionalId);
+            }
+            if (documentType != null && !documentType.isEmpty()) {
+                query.setParameter("documentType", documentType);
+            }
+            if (dateFrom != null) {
+                query.setParameter("dateFrom", dateFrom);
+            }
+            if (dateTo != null) {
+                query.setParameter("dateTo", dateTo);
+            }
+            
+            List<ClinicalDocument> documents = query.getResultList();
+            
+            // Cargar relaciones lazy
+            for (ClinicalDocument doc : documents) {
+                if (doc.getPatient() != null) doc.getPatient().getName();
+                if (doc.getProfessional() != null) doc.getProfessional().getName();
+                if (doc.getClinic() != null) doc.getClinic().getName();
+                if (doc.getSpecialty() != null) doc.getSpecialty().getName();
+            }
+            
+            return documents;
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar documentos con filtros", e);
+            return List.of();
+        }
+    }
+}
+

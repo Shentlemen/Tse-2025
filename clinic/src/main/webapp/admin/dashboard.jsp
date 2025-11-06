@@ -150,7 +150,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/documents.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/admin/documents'/>">
                                     <i class="fas fa-file-medical me-2"></i>Documentos
                                 </a>
                             </li>
@@ -261,47 +261,61 @@
                         <div class="card">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-clock me-2"></i>Actividad Reciente
+                                    <i class="fas fa-file-medical me-2"></i>Documentos Recientes
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="list-group list-group-flush">
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-plus-circle text-success me-2"></i>
-                                            <strong>Nuevo documento</strong> - Consulta Cardiológica
-                                            <br><small class="text-muted">Dr. Juan Pérez - hace 2 horas</small>
+                                <c:choose>
+                                    <c:when test="${not empty recentDocuments}">
+                                        <div class="list-group list-group-flush">
+                                            <c:forEach var="doc" items="${recentDocuments}">
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="fas fa-file-medical text-primary me-2"></i>
+                                                        <strong>${doc.title}</strong>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            <c:if test="${doc.patient != null}">
+                                                                ${doc.patient.fullName}
+                                                            </c:if>
+                                                            <c:if test="${doc.professional != null}">
+                                                                - ${doc.professional.fullName}
+                                                            </c:if>
+                                                            <c:if test="${doc.specialty != null}">
+                                                                - ${doc.specialty.name}
+                                                            </c:if>
+                                                        </small>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            <%
+                                                                uy.gub.clinic.entity.ClinicalDocument docItem = (uy.gub.clinic.entity.ClinicalDocument) pageContext.getAttribute("doc");
+                                                                if (docItem != null && docItem.getCreatedAt() != null) {
+                                                                    java.util.Date date = java.sql.Timestamp.valueOf(docItem.getCreatedAt());
+                                                                    pageContext.setAttribute("docDate", date);
+                                                            %>
+                                                                <fmt:formatDate value="${docDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                            <%
+                                                                }
+                                                            %>
+                                                        </small>
+                                                    </div>
+                                                    <a href="<c:url value='/admin/documents'/>" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </c:forEach>
                                         </div>
-                                        <span class="badge bg-success">Nuevo</span>
-                                    </div>
-                                    
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-user-plus text-info me-2"></i>
-                                            <strong>Paciente registrado</strong> - Ana Silva
-                                            <br><small class="text-muted">Sistema - hace 4 horas</small>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-file-medical fa-3x mb-3 opacity-50"></i>
+                                            <p>No hay documentos recientes</p>
+                                            <a href="<c:url value='/admin/documents'/>" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-plus me-2"></i>Crear Primer Documento
+                                            </a>
                                         </div>
-                                        <span class="badge bg-info">Registro</span>
-                                    </div>
-                                    
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-file-medical text-warning me-2"></i>
-                                            <strong>Solicitud de acceso</strong> - Documento externo
-                                            <br><small class="text-muted">Dr. María González - hace 6 horas</small>
-                                        </div>
-                                        <span class="badge bg-warning">Pendiente</span>
-                                    </div>
-                                    
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-check-circle text-success me-2"></i>
-                                            <strong>Acceso autorizado</strong> - Historia clínica
-                                            <br><small class="text-muted">Sistema HCEN - hace 1 día</small>
-                                        </div>
-                                        <span class="badge bg-success">Completado</span>
-                                    </div>
-                                </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>
@@ -324,7 +338,7 @@
                                         <i class="fas fa-user-plus me-2"></i>Registrar Paciente
                                     </a>
                                     
-                                    <a href="<c:url value='/admin/documents.jsp'/>" class="btn btn-outline-primary">
+                                    <a href="<c:url value='/admin/documents'/>" class="btn btn-outline-primary">
                                         <i class="fas fa-file-upload me-2"></i>Subir Documento
                                     </a>
                                 </div>

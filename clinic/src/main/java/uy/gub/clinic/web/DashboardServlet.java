@@ -13,9 +13,12 @@ import uy.gub.clinic.service.ClinicService;
 import uy.gub.clinic.service.ProfessionalService;
 import uy.gub.clinic.service.PatientService;
 import uy.gub.clinic.service.SpecialtyService;
+import uy.gub.clinic.service.ClinicalDocumentService;
+import uy.gub.clinic.entity.ClinicalDocument;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servlet para el dashboard del administrador
@@ -35,6 +38,9 @@ public class DashboardServlet extends HttpServlet {
 
     @Inject
     private SpecialtyService specialtyService;
+
+    @Inject
+    private ClinicalDocumentService clinicalDocumentService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -79,15 +85,44 @@ public class DashboardServlet extends HttpServlet {
                         .filter(s -> s.getActive()).count();
             }
 
+            // Obtener documentos
+            long documentsCount = 0;
+            List<ClinicalDocument> recentDocuments = List.of();
+            
+            try {
+                if (clinicId != null && clinicId == 0L) {
+                    // Super Admin - todos los documentos
+                    List<ClinicalDocument> allDocs = clinicalDocumentService.findAll();
+                    documentsCount = allDocs.size();
+                    // Obtener los últimos 5 ordenados por fecha de creación
+                    recentDocuments = allDocs.stream()
+                        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                        .limit(5)
+                        .collect(Collectors.toList());
+                } else if (clinicId != null) {
+                    // Admin de clínica - documentos de su clínica
+                    List<ClinicalDocument> clinicDocs = clinicalDocumentService.findByClinic(clinicId);
+                    documentsCount = clinicDocs.size();
+                    // Obtener los últimos 5 ordenados por fecha de creación
+                    recentDocuments = clinicDocs.stream()
+                        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                        .limit(5)
+                        .collect(Collectors.toList());
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener documentos para dashboard: {}", e.getMessage());
+                // Continuar sin documentos si hay error
+            }
+
             // Establecer atributos en la request
             request.setAttribute("professionalsCount", professionalsCount);
             request.setAttribute("patientsCount", patientsCount);
             request.setAttribute("specialtiesCount", specialtiesCount);
-            // Documentos - dejamos en 0 por ahora
-            request.setAttribute("documentsCount", 0);
+            request.setAttribute("documentsCount", documentsCount);
+            request.setAttribute("recentDocuments", recentDocuments);
 
-            logger.info("Dashboard stats - Profesionales: {}, Pacientes: {}, Especialidades: {}", 
-                        professionalsCount, patientsCount, specialtiesCount);
+            logger.info("Dashboard stats - Profesionales: {}, Pacientes: {}, Especialidades: {}, Documentos: {}", 
+                        professionalsCount, patientsCount, specialtiesCount, documentsCount);
 
             // Forward a dashboard.jsp
             request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);

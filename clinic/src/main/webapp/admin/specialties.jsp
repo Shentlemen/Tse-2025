@@ -138,7 +138,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/admin/documents.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/admin/documents'/>">
                                     <i class="fas fa-file-medical me-2"></i>Documentos
                                 </a>
                             </li>

@@ -26,6 +26,29 @@
             color: var(--primary-color) !important;
         }
         
+        .navbar-nav .dropdown-menu {
+            z-index: 1050 !important;
+        }
+        
+        .navbar .dropdown-toggle::after {
+            margin-left: 0.5em;
+        }
+        
+        .navbar {
+            z-index: 1030;
+            position: relative;
+        }
+        
+        .navbar-nav .dropdown {
+            position: static;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            position: absolute;
+            right: 0;
+            left: auto;
+        }
+        
         .sidebar {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             min-height: calc(100vh - 56px);
@@ -156,7 +179,7 @@
                             <a class="nav-link" href="<c:url value='/admin/specialties-list'/>">
                                 <i class="fas fa-stethoscope me-2"></i>Especialidades
                             </a>
-                            <a class="nav-link" href="<c:url value='/admin/documents.jsp'/>">
+                            <a class="nav-link" href="<c:url value='/admin/documents'/>">
                                 <i class="fas fa-file-medical me-2"></i>Documentos
                             </a>
                             <c:if test="${sessionScope.role == 'ADMIN_CLINIC' or sessionScope.role == 'SUPER_ADMIN'}">
@@ -292,7 +315,17 @@
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${user.lastLogin != null}">
-                                                                <fmt:formatDate value="${user.lastLogin}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                <%
+                                                                    uy.gub.clinic.entity.User currentUser = (uy.gub.clinic.entity.User) pageContext.getAttribute("user");
+                                                                    if (currentUser != null && currentUser.getLastLogin() != null) {
+                                                                        java.time.LocalDateTime ldt = currentUser.getLastLogin();
+                                                                        java.util.Date date = java.sql.Timestamp.valueOf(ldt);
+                                                                        pageContext.setAttribute("lastLoginDate", date);
+                                                                %>
+                                                                    <fmt:formatDate value="${lastLoginDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                <%
+                                                                    }
+                                                                %>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="text-muted">Nunca</span>
@@ -495,113 +528,14 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Filtros
-        document.getElementById('roleFilter').addEventListener('change', filterTable);
-        document.getElementById('statusFilter').addEventListener('change', filterTable);
-        document.getElementById('searchInput').addEventListener('input', filterTable);
-        
-        // Manejo del formulario de edición
-        document.getElementById('editUserForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const userId = formData.get('userId');
-            
-            // Crear un formulario temporal para enviar los datos
-            const tempForm = document.createElement('form');
-            tempForm.method = 'POST';
-            tempForm.action = '${pageContext.request.contextPath}/admin/users';
-            
-            // Agregar campos
-            const actionInput = document.createElement('input');
-            actionInput.type = 'hidden';
-            actionInput.name = 'action';
-            actionInput.value = 'update';
-            tempForm.appendChild(actionInput);
-            
-            const idInput = document.createElement('input');
-            idInput.type = 'hidden';
-            idInput.name = 'id';
-            idInput.value = userId;
-            tempForm.appendChild(idInput);
-            
-            // Agregar todos los campos del formulario
-            for (const [key, value] of formData.entries()) {
-                if (key !== 'userId') {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = value;
-                    tempForm.appendChild(input);
-                }
-            }
-            
-            // Enviar formulario
-            document.body.appendChild(tempForm);
-            tempForm.submit();
-        });
-
-        function filterTable() {
-            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
-            const table = document.getElementById('usersTable');
-            const rows = table.getElementsByTagName('tr');
-
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                
-                const role = cells[3].textContent.toLowerCase();
-                const status = cells[5].textContent.toLowerCase().trim();
-                const searchText = row.textContent.toLowerCase();
-
-                // Mapear los valores del filtro de rol al texto mostrado
-                let roleMatch = true;
-                if (roleFilter) {
-                    if (roleFilter === 'admin_clinic') {
-                        roleMatch = role.includes('administrador');
-                    } else if (roleFilter === 'professional') {
-                        roleMatch = role.includes('profesional');
-                    } else if (roleFilter === 'super_admin') {
-                        roleMatch = role.includes('super admin');
-                    }
-                }
-                
-                // Mapear el estado
-                let statusMatch = true;
-                if (statusFilter) {
-                    // El texto completo de la columna es algo como "✓ Activo" o "✗ Inactivo"
-                    // Buscamos que contenga la palabra "activo" o "inactivo" seguida de espacio
-                    if (statusFilter === 'active') {
-                        // Buscar "activo" sin "inactivo"
-                        statusMatch = status.includes('activo') && !status.includes('inactivo');
-                    } else if (statusFilter === 'inactive') {
-                        // Buscar "inactivo"
-                        statusMatch = status.includes('inactivo');
-                    }
-                }
-                
-                const searchMatch = !searchInput || searchText.includes(searchInput);
-
-                if (roleMatch && statusMatch && searchMatch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        }
-
-        function clearFilters() {
-            document.getElementById('roleFilter').value = '';
-            document.getElementById('statusFilter').value = '';
-            document.getElementById('searchInput').value = '';
-            filterTable();
-        }
-
-        function viewUser(userId) {
+        // Definir funciones globalmente - asegurar que estén disponibles ANTES de cualquier uso
+        window.viewUser = function(userId) {
             // Buscar el usuario en la tabla para obtener sus datos
             const table = document.getElementById('usersTable');
+            if (!table) {
+                console.error('Tabla usersTable no encontrada');
+                return;
+            }
             const rows = table.getElementsByTagName('tr');
             
             for (let i = 1; i < rows.length; i++) {
@@ -643,9 +577,13 @@
             }
         }
 
-        function editUser(userId) {
+        window.editUser = function(userId) {
             // Buscar el usuario en la tabla para obtener sus datos
             const table = document.getElementById('usersTable');
+            if (!table) {
+                console.error('Tabla usersTable no encontrada');
+                return;
+            }
             const rows = table.getElementsByTagName('tr');
             
             for (let i = 1; i < rows.length; i++) {
@@ -695,7 +633,7 @@
             }
         }
 
-        function toggleUserStatus(userId, activate) {
+        window.toggleUserStatus = function(userId, activate) {
             if (confirm(activate ? '¿Activar este usuario?' : '¿Desactivar este usuario?')) {
                 // Crear un formulario temporal para enviar los datos
                 const tempForm = document.createElement('form');
@@ -726,6 +664,144 @@
                 tempForm.submit();
             }
         }
+
+        function filterTable() {
+            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const table = document.getElementById('usersTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                
+                const role = cells[3].textContent.toLowerCase();
+                const status = cells[5].textContent.toLowerCase().trim();
+                const searchText = row.textContent.toLowerCase();
+
+                // Mapear los valores del filtro de rol al texto mostrado
+                let roleMatch = true;
+                if (roleFilter) {
+                    if (roleFilter === 'admin_clinic') {
+                        roleMatch = role.includes('administrador');
+                    } else if (roleFilter === 'professional') {
+                        roleMatch = role.includes('profesional');
+                    } else if (roleFilter === 'super_admin') {
+                        roleMatch = role.includes('super admin');
+                    }
+                }
+                
+                // Mapear el estado
+                let statusMatch = true;
+                if (statusFilter) {
+                    if (statusFilter === 'active') {
+                        statusMatch = status.includes('activo') && !status.includes('inactivo');
+                    } else if (statusFilter === 'inactive') {
+                        statusMatch = status.includes('inactivo');
+                    }
+                }
+                
+                const searchMatch = !searchInput || searchText.includes(searchInput);
+
+                if (roleMatch && statusMatch && searchMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        window.clearFilters = function() {
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            filterTable();
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Asegurar que Bootstrap dropdown funcione
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                try {
+                    return new bootstrap.Dropdown(dropdownToggleEl);
+                } catch (e) {
+                    console.error('Error al inicializar dropdown:', e);
+                    return null;
+                }
+            });
+            
+            // Forzar inicialización si no funcionó
+            if (dropdownList.length === 0 || dropdownList[0] === null) {
+                console.log('Reintentando inicialización de dropdown...');
+                setTimeout(function() {
+                    var retryDropdown = document.querySelector('.navbar .dropdown-toggle');
+                    if (retryDropdown) {
+                        new bootstrap.Dropdown(retryDropdown);
+                    }
+                }, 100);
+            }
+            
+            // Filtros
+            const roleFilterEl = document.getElementById('roleFilter');
+            const statusFilterEl = document.getElementById('statusFilter');
+            const searchInputEl = document.getElementById('searchInput');
+            
+            if (roleFilterEl) {
+                roleFilterEl.addEventListener('change', filterTable);
+            }
+            if (statusFilterEl) {
+                statusFilterEl.addEventListener('change', filterTable);
+            }
+            if (searchInputEl) {
+                searchInputEl.addEventListener('input', filterTable);
+            }
+            
+            // Manejo del formulario de edición
+            const editUserForm = document.getElementById('editUserForm');
+            if (editUserForm) {
+                editUserForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const userId = formData.get('userId');
+                    
+                    // Crear un formulario temporal para enviar los datos
+                    const tempForm = document.createElement('form');
+                    tempForm.method = 'POST';
+                    tempForm.action = '${pageContext.request.contextPath}/admin/users';
+                    
+                    // Agregar campos
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = 'update';
+                    tempForm.appendChild(actionInput);
+                    
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'id';
+                    idInput.value = userId;
+                    tempForm.appendChild(idInput);
+                    
+                    // Agregar todos los campos del formulario
+                    for (const [key, value] of formData.entries()) {
+                        if (key !== 'userId') {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            tempForm.appendChild(input);
+                        }
+                    }
+                    
+                    // Enviar formulario
+                    document.body.appendChild(tempForm);
+                    tempForm.submit();
+                });
+            }
+        });
     </script>
 </body>
 </html>

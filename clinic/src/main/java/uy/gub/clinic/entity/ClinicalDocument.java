@@ -3,6 +3,7 @@ package uy.gub.clinic.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -14,7 +15,8 @@ import java.time.LocalDateTime;
     @NamedQuery(name = "ClinicalDocument.findAll", query = "SELECT d FROM ClinicalDocument d"),
     @NamedQuery(name = "ClinicalDocument.findByPatient", query = "SELECT d FROM ClinicalDocument d WHERE d.patient.id = :patientId"),
     @NamedQuery(name = "ClinicalDocument.findByProfessional", query = "SELECT d FROM ClinicalDocument d WHERE d.professional.id = :professionalId"),
-    @NamedQuery(name = "ClinicalDocument.findByClinic", query = "SELECT d FROM ClinicalDocument d WHERE d.clinic.id = :clinicId")
+    @NamedQuery(name = "ClinicalDocument.findByClinic", query = "SELECT d FROM ClinicalDocument d WHERE d.clinic.id = :clinicId ORDER BY d.dateOfVisit DESC, d.createdAt DESC"),
+    @NamedQuery(name = "ClinicalDocument.findByClinicAndSpecialty", query = "SELECT d FROM ClinicalDocument d WHERE d.clinic.id = :clinicId AND d.specialty.id = :specialtyId ORDER BY d.dateOfVisit DESC, d.createdAt DESC")
 })
 public class ClinicalDocument {
     
@@ -34,22 +36,42 @@ public class ClinicalDocument {
     @NotBlank
     @Size(max = 100)
     @Column(name = "document_type", nullable = false)
-    private String documentType; // CONSULTA, DIAGNOSTICO, TRATAMIENTO, etc.
+    private String documentType; // CONSULTA, DIAGNOSTICO, TRATAMIENTO, EVOLUCION, etc.
     
-    @Size(max = 500)
-    @Column(name = "file_path")
-    private String filePath;
+    @Column(name = "date_of_visit", nullable = false)
+    private LocalDate dateOfVisit;
     
-    @Size(max = 100)
-    @Column(name = "file_name")
-    private String fileName;
+    // Campos del formulario médico
+    @Column(name = "chief_complaint", columnDefinition = "TEXT")
+    private String chiefComplaint; // Motivo de consulta
     
-    @Column(name = "file_size")
-    private Long fileSize;
+    @Column(name = "current_illness", columnDefinition = "TEXT")
+    private String currentIllness; // Historia de la enfermedad actual
     
-    @Size(max = 100)
-    @Column(name = "mime_type")
-    private String mimeType;
+    @Column(name = "vital_signs", columnDefinition = "TEXT")
+    private String vitalSigns; // JSON: {pressure, temperature, pulse, respiratoryRate, o2Saturation, weight, height, bmi}
+    
+    @Column(name = "physical_examination", columnDefinition = "TEXT")
+    private String physicalExamination; // Examen físico
+    
+    @Column(name = "diagnosis", columnDefinition = "TEXT")
+    private String diagnosis; // Diagnóstico
+    
+    @Column(name = "treatment", columnDefinition = "TEXT")
+    private String treatment; // Tratamiento/Indicaciones
+    
+    @Column(name = "prescriptions", columnDefinition = "TEXT")
+    private String prescriptions; // JSON array: [{medication, dosage, frequency, duration}]
+    
+    @Column(name = "observations", columnDefinition = "TEXT")
+    private String observations; // Observaciones adicionales
+    
+    @Column(name = "next_appointment")
+    private LocalDate nextAppointment; // Próxima cita
+    
+    // Archivos adjuntos (JSON array para múltiples archivos)
+    @Column(name = "attachments", columnDefinition = "TEXT")
+    private String attachments; // JSON array: [{fileName, filePath, fileSize, mimeType}]
     
     @Size(max = 100)
     @Column(name = "rndc_id")
@@ -73,6 +95,10 @@ public class ClinicalDocument {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "specialty_id", nullable = false)
+    private Specialty specialty;
     
     // Constructores
     public ClinicalDocument() {
@@ -129,38 +155,6 @@ public class ClinicalDocument {
         this.documentType = documentType;
     }
     
-    public String getFilePath() {
-        return filePath;
-    }
-    
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-    
-    public String getFileName() {
-        return fileName;
-    }
-    
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-    
-    public Long getFileSize() {
-        return fileSize;
-    }
-    
-    public void setFileSize(Long fileSize) {
-        this.fileSize = fileSize;
-    }
-    
-    public String getMimeType() {
-        return mimeType;
-    }
-    
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-    
     public String getRndcId() {
         return rndcId;
     }
@@ -209,12 +203,110 @@ public class ClinicalDocument {
         this.clinic = clinic;
     }
     
+    public Specialty getSpecialty() {
+        return specialty;
+    }
+    
+    public void setSpecialty(Specialty specialty) {
+        this.specialty = specialty;
+    }
+    
+    // Getters y Setters para nuevos campos
+    public LocalDate getDateOfVisit() {
+        return dateOfVisit;
+    }
+    
+    public void setDateOfVisit(LocalDate dateOfVisit) {
+        this.dateOfVisit = dateOfVisit;
+    }
+    
+    public String getChiefComplaint() {
+        return chiefComplaint;
+    }
+    
+    public void setChiefComplaint(String chiefComplaint) {
+        this.chiefComplaint = chiefComplaint;
+    }
+    
+    public String getCurrentIllness() {
+        return currentIllness;
+    }
+    
+    public void setCurrentIllness(String currentIllness) {
+        this.currentIllness = currentIllness;
+    }
+    
+    public String getVitalSigns() {
+        return vitalSigns;
+    }
+    
+    public void setVitalSigns(String vitalSigns) {
+        this.vitalSigns = vitalSigns;
+    }
+    
+    public String getPhysicalExamination() {
+        return physicalExamination;
+    }
+    
+    public void setPhysicalExamination(String physicalExamination) {
+        this.physicalExamination = physicalExamination;
+    }
+    
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+    
+    public void setDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
+    }
+    
+    public String getTreatment() {
+        return treatment;
+    }
+    
+    public void setTreatment(String treatment) {
+        this.treatment = treatment;
+    }
+    
+    public String getPrescriptions() {
+        return prescriptions;
+    }
+    
+    public void setPrescriptions(String prescriptions) {
+        this.prescriptions = prescriptions;
+    }
+    
+    public String getObservations() {
+        return observations;
+    }
+    
+    public void setObservations(String observations) {
+        this.observations = observations;
+    }
+    
+    public LocalDate getNextAppointment() {
+        return nextAppointment;
+    }
+    
+    public void setNextAppointment(LocalDate nextAppointment) {
+        this.nextAppointment = nextAppointment;
+    }
+    
+    public String getAttachments() {
+        return attachments;
+    }
+    
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
+    }
+    
     @Override
     public String toString() {
         return "ClinicalDocument{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", documentType='" + documentType + '\'' +
+                ", dateOfVisit=" + dateOfVisit +
                 ", createdAt=" + createdAt +
                 '}';
     }
