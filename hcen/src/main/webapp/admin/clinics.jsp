@@ -544,7 +544,7 @@
         // Pagination state
         let currentPage = 0;
         let totalPages = 0;
-        let totalElements = 0;
+        let totalCount = 0;
 
         /**
          * Get JWT token from sessionStorage
@@ -636,9 +636,9 @@
                     return;
                 }
 
-                currentPage = data.currentPage;
+                currentPage = data.page;
                 totalPages = data.totalPages;
-                totalElements = data.totalElements;
+                totalCount = data.totalCount;
 
                 renderClinicsTable(data.clinics);
                 updatePagination();
@@ -730,7 +730,7 @@
             }
 
             paginationDiv.style.display = 'flex';
-            paginationInfo.textContent = 'Página ' + (currentPage + 1) + ' de ' + totalPages + ' (' + totalElements + ' resultados)';
+            paginationInfo.textContent = 'Página ' + (currentPage + 1) + ' de ' + totalPages + ' (' + totalCount + ' resultados)';
 
             prevBtn.disabled = currentPage === 0;
             nextBtn.disabled = currentPage >= totalPages - 1;
@@ -749,10 +749,10 @@
                     apiCall('/admin/clinics?status=INACTIVE&page=0&size=1')
                 ]);
 
-                document.getElementById('statTotal').textContent = allData?.totalElements || 0;
-                document.getElementById('statActive').textContent = activeData?.totalElements || 0;
-                document.getElementById('statPending').textContent = pendingData?.totalElements || 0;
-                document.getElementById('statInactive').textContent = inactiveData?.totalElements || 0;
+                document.getElementById('statTotal').textContent = allData?.totalCount || 0;
+                document.getElementById('statActive').textContent = activeData?.totalCount || 0;
+                document.getElementById('statPending').textContent = pendingData?.totalCount || 0;
+                document.getElementById('statInactive').textContent = inactiveData?.totalCount || 0;
 
             } catch (error) {
                 console.error('Error loading statistics:', error);

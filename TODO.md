@@ -15,6 +15,16 @@
    - Firebase integration (Cloud Messaging, push notifications) removed
    - Mobile-specific features removed from scope
 
+3. **Testing Coverage Requirements**
+   - Unit tests and integration tests are OUT OF SCOPE
+   - No 80% coverage requirement
+   - Focus on functional implementation only
+
+4. **Admin Audit Log UI**
+   - Admin audit dashboard/viewer is OUT OF SCOPE
+   - Audit log export functionality (CSV, JSON, PDF) is OUT OF SCOPE
+   - Patients can view their own audit logs via patient portal (IN SCOPE)
+
 ### NEW REQUIREMENT:
 - **Patient Pending Access Requests JSP Page**: Instead of mobile notifications, patients will view and approve/deny pending access requests through a web interface in the patient portal
 
@@ -24,12 +34,12 @@
 
 **Status**: 🔨 IN PROGRESS
 **Start Date**: 2025-10-30
-**Goal**: Complete core security and compliance features
-**Estimated Time**: 40-56 hours
+**Goal**: Complete core security and compliance features (functional implementation only, no testing)
+**Estimated Time**: 32-40 hours
 
 ### Sprint Objectives
 - Policy Engine: 60% → 100% (24-32 hours)
-- Audit System: 60% → 100% (16-24 hours)
+- Audit System: 60% → 90% (8-12 hours) - Backend only, no admin UI
 
 ### Policy Engine Completion (60% → 100%)
 - [ ] Implement ABAC (Attribute-Based Access Control) policy evaluator
@@ -101,21 +111,6 @@
   - [ ] Filter by outcome (SUCCESS, FAILURE, DENIED)
   - Files: Create `src/main/java/uy/gub/hcen/audit/rest/AuditQueryResource.java`
 
-- [ ] Add audit log export functionality
-  - [ ] Export to CSV format
-  - [ ] Export to JSON format
-  - [ ] Export to PDF report
-  - [ ] Add date range filtering for exports
-  - [ ] Include export audit trail (who exported what)
-  - Files: Create `src/main/java/uy/gub/hcen/audit/export/AuditExportService.java`
-
-- [ ] Create comprehensive audit tests
-  - [ ] Unit tests for audit service
-  - [ ] Test immutability and tamper detection
-  - [ ] Test retention policy enforcement
-  - [ ] Test search/query functionality
-  - [ ] Integration tests for full audit workflow
-  - Files: Create `src/test/java/uy/gub/hcen/audit/`
 
 ---
 
@@ -542,12 +537,6 @@
 - [ ] **Policy Engine Integration** - Verify access permissions before displaying documents
 - [ ] **Audit System Integration** - Log when patient views/accesses clinical history
 
-##### Testing
-- [ ] Unit tests for clinical history service
-- [ ] Unit tests for document filtering and sorting logic
-- [ ] Integration tests for REST endpoints
-- [ ] UI testing (pagination, filters, sorting)
-
 #### Implementation Notes
 - **External Integration Scope**: RNDC query will use existing local data model initially; real RNDC integration will be added in later phase
 - **Document Preview**: Will show abstract/summary; actual document retrieval from peripheral nodes will be implemented later
@@ -558,8 +547,7 @@
 - Backend service layer: 12 hours
 - REST API endpoints: 8 hours
 - Frontend UI page: 14 hours
-- Testing and refinement: 6 hours
-- **Total**: 36-40 hours
+- **Total**: 34 hours
 
 ---
 
@@ -650,6 +638,544 @@
 - 1 JSP file (frontend)
 - 1 modified dashboard file
 - Total: 1,984 lines of code
+
+---
+
+### 8. Peripheral Node Document Retrieval (PLANNED)
+**Status**: Detailed plan created, ready for implementation
+**Priority**: HIGH - Core feature for end-to-end functionality
+**Estimated Implementation Time**: 8-10 days (64-80 hours)
+
+#### 📋 Overview
+
+The document retrieval system enables patients and professionals to download actual documents (PDFs, XML, FHIR) from peripheral nodes (clinics, hospitals, labs). Currently, the system only shows document metadata from RNDC - this feature completes the end-to-end flow.
+
+**Architecture Flow**:
+```
+Patient/Professional → DocumentRetrievalResource (REST API)
+                    → DocumentRetrievalService (orchestration)
+                      → Check RNDC for metadata (documentLocator URL)
+                      → Evaluate access policies
+                      → Fetch document from peripheral node
+                      → Verify document hash (integrity)
+                      → Log access in audit
+                    → Return document to frontend
+```
+
+**Good News**: ✅ `PeripheralNodeClient` already exists with:
+- HTTP client with timeouts
+- Circuit breaker pattern
+- Retry logic with exponential backoff
+- Basic document retrieval from URL
+
+**We only need to build the orchestration layer!**
+
+#### 🎯 Implementation Phases
+
+##### **Phase 1: Core Retrieval (Foundation)** - 2-3 days (16-24 hours)
+
+**Goal**: Basic end-to-end document retrieval without policy enforcement
+
+**Tasks**:
+- [ ] Create `DocumentRetrievalService` (orchestrates retrieval workflow)
+  - Fetch document metadata from RNDC
+  - Call PeripheralNodeClient to fetch document
+  - Verify document hash (SHA-256 integrity check)
+  - Log access via AuditService
+  - Files: `src/main/java/uy/gub/hcen/document/service/DocumentRetrievalService.java`
+
+- [ ] Create `DocumentRetrievalResource` (REST API)
+  - `GET /api/documents/{documentId}/content` - Download document
+  - `GET /api/documents/{documentId}/metadata` - Check availability
+  - Authentication via JWT
+  - Files: `src/main/java/uy/gub/hcen/document/api/rest/DocumentRetrievalResource.java`
+
+- [ ] Create DTOs
+  - `DocumentContentDTO` - Response with document bytes, content type, filename
+  - `ErrorResponse` - Standardized error format
+  - Files: `src/main/java/uy/gub/hcen/document/dto/*`
+
+- [ ] Create Custom Exceptions
+  - `DocumentNotFoundException` - Document not in RNDC
+  - `AccessDeniedException` - Policy denied access
+  - `DocumentIntegrityException` - Hash verification failed
+  - `PeripheralNodeException` - Peripheral node error
+  - Files: `src/main/java/uy/gub/hcen/document/exception/*`
+
+- [ ] Integrate with existing services
+  - RNDC service integration (document metadata lookup)
+  - PeripheralNodeClient integration (HTTP retrieval)
+  - AuditService integration (access logging)
+
+**Deliverable**: Working document download for patients (no policy checks yet)
+
+**Testing Command**:
+```bash
+curl -H "Authorization: Bearer {patient_jwt}" \
+     http://localhost:8080/hcen/api/documents/123/content \
+     --output document.pdf
+```
+
+---
+
+##### **Phase 2: Policy Enforcement Integration** - 1-2 days (8-16 hours)
+
+**Goal**: Add access control based on patient-defined policies
+
+**Tasks**:
+- [ ] Create `PolicyEvaluationService`
+  - Extend or integrate with existing `PolicyManagementService`
+  - Implement `evaluateDocumentAccess(documentId, requestorCi, requestorRole)`
+  - Return: PERMIT / DENY / PENDING decisions
+  - Files: `src/main/java/uy/gub/hcen/policy/service/PolicyEvaluationService.java`
+
+- [ ] Integrate policy evaluation in `DocumentRetrievalService`
+  - Check policy BEFORE fetching document
+  - Handle PERMIT: Continue retrieval
+  - Handle DENY: Return 403 Forbidden with reason
+  - Handle PENDING: Send notification, return 202 Accepted
+
+- [ ] Add comprehensive error messages
+  - User-friendly messages explaining why access was denied
+  - Actionable guidance (e.g., "Contact the clinic administrator")
+
+**Deliverable**: Policy-aware document retrieval with proper authorization
+
+**Testing Scenarios**:
+- Create policy: "Deny LAB_RESULT for specialty CARDIOLOGY"
+- Attempt access as cardiologist → Verify 403 Forbidden
+- Approve access request → Verify 200 OK with document
+
+---
+
+##### **Phase 3: Advanced Features & Production Readiness** - 2-3 days (16-24 hours)
+
+**Goal**: Production-ready system with monitoring and caching
+
+**Tasks**:
+- [ ] Create `PeripheralNodeConfiguration`
+  - Multi-clinic API key management
+  - Load clinic configurations from database
+  - Support for clinic-specific settings (timeouts, retries)
+  - Files: `src/main/java/uy/gub/hcen/config/PeripheralNodeConfiguration.java`
+
+- [ ] Enhance error handling
+  - Detailed error messages with actionable guidance
+  - Graceful degradation when peripheral node is down
+  - Circuit breaker state visibility in responses
+
+- [ ] Add content type detection
+  - Determine MIME type from document metadata
+  - Support: PDF, XML, FHIR JSON/XML, DICOM, images
+
+- [ ] Add document caching (Redis)
+  - Cache frequently accessed documents (15-minute TTL)
+  - Configurable cache size limit
+  - Cache invalidation strategy
+
+- [ ] Add metrics and monitoring
+  - Prometheus metrics endpoint
+  - Track: retrieval latency, success/failure rates, cache hit rates
+  - Circuit breaker state monitoring
+
+- [ ] Add health check endpoint
+  - `GET /api/health/peripheral-nodes` - Check all peripheral node connectivity
+  - Return: status for each registered clinic
+
+- [ ] Update `ClinicalHistoryService`
+  - Replace document locator URL with actual retrieval
+  - Integrate with `DocumentRetrievalService`
+
+**Deliverable**: Production-ready system with caching, monitoring, and health checks
+
+---
+
+#### 📦 Components to Create/Modify
+
+##### New Components
+
+1. **DocumentRetrievalService** (`src/main/java/uy/gub/hcen/document/service/DocumentRetrievalService.java`)
+   - Core business logic for document retrieval
+   - Orchestrates RNDC, PeripheralNodeClient, PolicyEngine, AuditService
+   - Handles errors and circuit breaker states
+   - Estimated: 300-400 lines
+
+2. **DocumentRetrievalResource** (`src/main/java/uy/gub/hcen/document/api/rest/DocumentRetrievalResource.java`)
+   - REST API endpoints for document retrieval
+   - JWT authentication and authorization
+   - Error handling with proper HTTP status codes
+   - Estimated: 250-300 lines
+
+3. **DTOs** (`src/main/java/uy/gub/hcen/document/dto/`)
+   - `DocumentContentDTO.java` - Response with document bytes and metadata
+   - `DocumentRetrievalRequest.java` - Request DTO (future use)
+   - `ErrorResponse.java` - Standardized error response
+   - Estimated: 150-200 lines total
+
+4. **Exceptions** (`src/main/java/uy/gub/hcen/document/exception/`)
+   - `DocumentNotFoundException.java`
+   - `AccessDeniedException.java`
+   - `DocumentIntegrityException.java`
+   - Estimated: 100-150 lines total
+
+5. **PolicyEvaluationService** (`src/main/java/uy/gub/hcen/policy/service/PolicyEvaluationService.java`)
+   - Access control decision engine
+   - Integrates with existing PolicyManagementService
+   - Returns PERMIT/DENY/PENDING decisions
+   - Estimated: 200-300 lines
+
+6. **PeripheralNodeConfiguration** (`src/main/java/uy/gub/hcen/config/PeripheralNodeConfiguration.java`)
+   - Clinic API key management
+   - Load configurations from database/properties
+   - Clinic-specific settings
+   - Estimated: 200-250 lines
+
+##### Existing Components to Modify
+
+1. **PeripheralNodeClient** - Minor enhancements
+   - Already has core functionality ✅
+   - Add content type detection
+   - Add configurable clinic API keys
+   - Estimated: +50-100 lines
+
+2. **ClinicalHistoryService** - Update document content retrieval
+   - Replace locator URL return with actual document retrieval
+   - Integrate with DocumentRetrievalService
+   - Estimated: +50-100 lines
+
+3. **RndcService** - No changes needed ✅
+   - Already provides document metadata lookup
+
+4. **AuditService** - No changes needed ✅
+   - Already provides document access logging
+
+---
+
+#### 🔗 Integration Points
+
+##### 1. RNDC Service (Existing - ✅ Ready)
+- **Method**: `RndcService.getDocumentMetadata(Long documentId)`
+- **Returns**: `Optional<RndcDocument>` with documentLocator, documentHash, patientCi, clinicId
+- **Usage**: Fetch metadata before retrieval
+
+##### 2. PeripheralNodeClient (Existing - ✅ Ready)
+- **Method**: `PeripheralNodeClient.retrieveDocument(String locator, String apiKey, String expectedHash)`
+- **Features**: Circuit breaker, retry logic, hash verification
+- **Usage**: Fetch actual document bytes from peripheral node
+
+##### 3. PolicyManagementService (Existing - Partial)
+- **Status**: Exists but needs policy evaluation extension
+- **TODO**: Create PolicyEvaluationService for access decisions
+- **Returns**: PolicyDecision { PERMIT/DENY/PENDING, reason }
+
+##### 4. AuditService (Existing - ✅ Ready)
+- **Method**: `AuditService.logDocumentAccess(...)`
+- **Usage**: Log all access attempts (success, denied, failure)
+
+##### 5. ClinicManagementService (Existing - ✅ Ready)
+- **Method**: Get clinic API key for peripheral node authentication
+- **Usage**: Fetch API key by clinicId
+
+---
+
+#### 🔒 Security Considerations
+
+##### 1. Authentication & Authorization
+- **Between Frontend and HCEN**: JWT bearer token (existing)
+- **Between HCEN and Peripheral Nodes**: API key authentication
+  - Each clinic has unique API key
+  - Format: `Authorization: Bearer clinic-{id}-{uuid}`
+  - Keys stored encrypted in database
+
+##### 2. Document Integrity (Hash Verification)
+- **Algorithm**: SHA-256
+- **Process**:
+  1. Download document from peripheral node
+  2. Calculate SHA-256 hash of downloaded bytes
+  3. Compare with hash stored in RNDC metadata
+  4. Throw exception if mismatch (tampering detected)
+
+##### 3. HTTPS Enforcement
+- **Already Implemented**: ✅ PeripheralNodeClient validates HTTPS
+- **Requirement**: All peripheral node URLs must use https://
+- **Compliance**: AC002-AC004
+
+##### 4. Policy Enforcement
+- **Timing**: BEFORE document retrieval (fail fast)
+- **Types**: DOCUMENT_TYPE, SPECIALTY, CLINIC, TIME_BASED, PROFESSIONAL
+- **Decisions**: PERMIT (continue), DENY (403), PENDING (notify patient)
+
+##### 5. Audit Logging
+- **Events**: All access attempts (success, denied, failure)
+- **Fields**: who, what, when, from where, outcome, reason
+- **Compliance**: AC026 (patients can view audit trail)
+
+---
+
+#### 🏗️ Peripheral Node Contract
+
+##### REST API Specification (Peripheral Node Side)
+
+**Endpoint**: `GET /api/documents/{documentId}`
+
+**Request**:
+```http
+GET /api/documents/abc123 HTTP/1.1
+Host: clinic-001.hcen.uy
+Authorization: Bearer clinic-001-api-key-xyz
+Accept: application/octet-stream, application/pdf, application/xml
+```
+
+**Response (Success)**:
+```http
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Length: 2547891
+Content-Disposition: attachment; filename="clinical-note.pdf"
+X-Document-Hash: sha256:a1b2c3d4e5f6...
+X-Document-Type: CLINICAL_NOTE
+
+[binary PDF content]
+```
+
+**Response (Not Found)**:
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{
+  "error": "DOCUMENT_NOT_FOUND",
+  "message": "Document abc123 not found",
+  "timestamp": "2025-11-06T10:30:00Z"
+}
+```
+
+##### Supported Content Types
+- `application/pdf` - PDF documents
+- `application/xml` - XML clinical documents
+- `application/fhir+json` - FHIR resources (IPS format)
+- `application/fhir+xml` - FHIR XML
+- `image/jpeg`, `image/png` - Medical images
+- `application/dicom` - DICOM imaging files
+
+##### Document Locator URL Format
+```
+https://{clinic-domain}/api/documents/{document-id}
+
+Examples:
+https://clinic-hc.hcen.uy/api/documents/lab-result-2024-001
+https://hospital-britanico.hcen.uy/api/documents/imaging-20241106-001
+```
+
+##### Error Codes
+
+| HTTP Status | Error Code | Retry? | Meaning |
+|-------------|------------|--------|---------|
+| 200 OK | - | - | Success |
+| 400 Bad Request | INVALID_REQUEST | No | Malformed request |
+| 401 Unauthorized | UNAUTHORIZED | No | Invalid/missing API key |
+| 403 Forbidden | FORBIDDEN | No | Valid key but access denied |
+| 404 Not Found | DOCUMENT_NOT_FOUND | No | Document doesn't exist |
+| 500 Internal Server Error | INTERNAL_ERROR | Yes | Server error |
+| 503 Service Unavailable | SERVICE_UNAVAILABLE | Yes | Temporarily down |
+| 504 Gateway Timeout | TIMEOUT | Yes | Request timed out |
+
+**Retry Strategy**:
+- Network errors (IOException): Retry 3x with exponential backoff (1s, 2s, 4s)
+- 500, 503, 504: Retry 3x with exponential backoff
+- 400, 401, 403, 404: Do NOT retry (permanent errors)
+
+---
+
+#### 🛡️ Error Handling & Resilience
+
+##### Circuit Breaker (Already Implemented ✅)
+- **Threshold**: 5 consecutive failures
+- **Timeout**: 60 seconds
+- **States**: CLOSED → OPEN → HALF_OPEN → CLOSED
+- **Behavior**:
+  - CLOSED: All requests pass through
+  - OPEN: All requests fail fast (no network calls)
+  - HALF_OPEN: Next request is a test
+
+##### Retry Logic (Already Implemented ✅)
+- **Max attempts**: 3
+- **Backoff**: Exponential (1s, 2s, 4s)
+- **Retry on**: IOException, 500, 503, 504
+- **Don't retry**: 400, 401, 403, 404
+
+##### Timeout Configuration (Already Implemented ✅)
+- **Connection timeout**: 5 seconds
+- **Read timeout**: 30 seconds (for large documents)
+
+##### Graceful Degradation
+
+**Scenario 1: Peripheral Node Down**
+```
+Try retrieval → PeripheralNodeException
+→ Log error + audit failure
+→ Return 503 Service Unavailable
+→ Message: "Document retrieval temporarily unavailable. The clinic system may be offline."
+```
+
+**Scenario 2: Hash Verification Fails**
+```
+Download document → Calculate hash → Mismatch
+→ Log integrity violation
+→ Return 500 Internal Server Error
+→ Message: "Document integrity check failed. Access denied for security."
+```
+
+**Scenario 3: Policy Engine Unavailable**
+```
+Try policy evaluation → Exception
+→ Fail-safe: DENY access
+→ Log error
+→ Return 403 Forbidden
+→ Message: "Policy evaluation failed. Access denied by default."
+```
+
+---
+
+#### ⚙️ Configuration (application.properties)
+
+```properties
+# ================================================================
+# Peripheral Node Configuration
+# ================================================================
+
+# Circuit breaker settings
+peripheral.circuit-breaker.threshold=5
+peripheral.circuit-breaker.timeout-ms=60000
+
+# Retry settings
+peripheral.retry.max-attempts=3
+peripheral.retry.initial-delay-ms=1000
+
+# Timeout settings
+peripheral.timeout.connection-ms=5000
+peripheral.timeout.read-ms=30000
+
+# Cache settings (Redis)
+peripheral.cache.enabled=true
+peripheral.cache.ttl-minutes=15
+peripheral.cache.max-size-mb=100
+
+# Security
+peripheral.enforce-https=true
+peripheral.verify-hash=true
+
+# Content type mappings
+peripheral.content-type.pdf=application/pdf
+peripheral.content-type.xml=application/xml
+peripheral.content-type.fhir-json=application/fhir+json
+peripheral.content-type.dicom=application/dicom
+
+# Monitoring
+peripheral.metrics.enabled=true
+peripheral.metrics.export-interval-seconds=60
+```
+
+---
+
+#### 📁 File Structure
+
+```
+hcen/src/main/java/uy/gub/hcen/
+│
+├── document/                                   # NEW package
+│   ├── api/rest/
+│   │   └── DocumentRetrievalResource.java     # NEW - REST API
+│   ├── service/
+│   │   └── DocumentRetrievalService.java      # NEW - Business logic
+│   ├── dto/
+│   │   ├── DocumentContentDTO.java            # NEW - Response DTO
+│   │   └── ErrorResponse.java                 # NEW - Error DTO
+│   └── exception/
+│       ├── DocumentNotFoundException.java     # NEW - Exception
+│       ├── AccessDeniedException.java         # NEW - Exception
+│       └── DocumentIntegrityException.java    # NEW - Exception
+│
+├── config/
+│   └── PeripheralNodeConfiguration.java       # NEW - Clinic API keys
+│
+├── policy/service/
+│   └── PolicyEvaluationService.java           # NEW - Access decisions
+│
+├── integration/peripheral/
+│   └── PeripheralNodeClient.java              # EXISTING - Enhance
+│
+├── service/rndc/
+│   └── RndcService.java                       # EXISTING - Use as-is
+│
+├── service/audit/
+│   └── AuditService.java                      # EXISTING - Use as-is
+│
+└── clinicalhistory/service/
+    └── ClinicalHistoryService.java            # EXISTING - Modify
+
+hcen/src/test/java/uy/gub/hcen/
+│
+└── document/
+    ├── service/
+    │   └── DocumentRetrievalServiceTest.java  # NEW - Unit tests
+    └── api/rest/
+        └── DocumentRetrievalResourceTest.java # NEW - Integration tests
+```
+
+---
+
+#### 📊 Estimated Effort
+
+| Phase | Tasks | Estimated Time |
+|-------|-------|----------------|
+| **Phase 1: Core Retrieval** | Service, REST API, DTOs, exceptions, basic integration | 16-24 hours (2-3 days) |
+| **Phase 2: Policy Enforcement** | PolicyEvaluationService, integration | 8-12 hours (1-2 days) |
+| **Phase 3: Advanced Features** | Configuration, caching, monitoring, health checks | 16-24 hours (2-3 days) |
+| **TOTAL** | | **40-60 hours (5-7 days)** |
+
+**Conservative Estimate**: 6-7 days (48-56 hours)
+
+---
+
+#### 🎯 Success Criteria
+
+**Phase 1 Complete When**:
+- ✅ Patient can download a document via `GET /api/documents/{id}/content`
+- ✅ Document hash is verified (integrity check)
+- ✅ Access is logged in audit system
+- ✅ Circuit breaker works (fails fast after 5 errors)
+
+**Phase 2 Complete When**:
+- ✅ Access is denied if policy prohibits (403 Forbidden)
+- ✅ Pending requests trigger patient notification (202 Accepted)
+- ✅ All policy types work (DOCUMENT_TYPE, SPECIALTY, CLINIC, etc.)
+
+**Phase 3 Complete When**:
+- ✅ Multi-clinic API keys work (from configuration)
+- ✅ Documents are cached in Redis (15-minute TTL)
+- ✅ Metrics are exported (Prometheus endpoint)
+- ✅ Health check endpoint works (`/api/health/peripheral-nodes`)
+
+---
+
+#### 🚀 Next Steps After Implementation
+
+1. **Update ClinicalHistoryService** - Use DocumentRetrievalService instead of returning locator URL
+2. **Add Document Viewer UI** - Frontend component to display/download documents
+3. **Admin Health Dashboard** - Monitor peripheral node connectivity and circuit breaker states
+4. **Document Preview** - Generate thumbnails/previews for PDFs and images
+5. **Streaming for Large Files** - Optimize memory usage for multi-GB documents
+
+---
+
+#### 📝 Notes
+
+- **Leverage Existing Code**: PeripheralNodeClient already has circuit breaker, retry logic, and hash verification ✅
+- **Follow Existing Patterns**: Use same service/resource/DTO structure as RNDC, INUS, Clinic services
+- **Security First**: Hash verification and policy enforcement are non-negotiable
+- **Production Ready**: Circuit breaker, retries, caching, monitoring built-in from the start
+- **Incremental Deployment**: Can deploy phase by phase (Phase 1 → Phase 2 → Phase 3 → Phase 4)
 
 ---
 
@@ -786,10 +1312,10 @@
   - Removed mobile app and Firebase integration
   - Replaced mobile notifications with Patient Pending Access Requests JSP page
   - Updated TODO.md with clear scope boundaries
-- 🔨 2025-10-30: Started Policy Engine + Audit System Sprint (40-56 hours estimated)
-  - Focus: Complete core security and compliance backend features
+- 🔨 2025-10-30: Started Policy Engine + Audit System Sprint (32-40 hours estimated)
+  - Focus: Complete core security and compliance backend features (functional only, no testing)
   - Policy Engine: 60% → 100% (ABAC, RBAC, conflict resolution, time-based, emergency access)
-  - Audit System: 60% → 100% (comprehensive logging, immutable storage, retention, query/export)
+  - Audit System: 60% → 90% (comprehensive logging, immutable storage, retention, query API only - no admin UI or export)
 - ✅ 2025-10-29: Priority Flow #3 Complete - Clinic Management UI (3 JSP pages, 2,600 LOC)
   - Admin clinic listing dashboard with search/filter/pagination
   - Admin clinic registration form with API key generation
@@ -861,20 +1387,19 @@
 - Will use existing local data model
 - RNDC/peripheral node integration to be added in later phase
 
-### 🔨 Next Phase: Security Backend Completion (40-56 hours)
+### 🔨 Next Phase: Security Backend Completion (32-40 hours)
 **Start Date**: After Clinical History completion (2025-11-07)
 **Priority**: Complete Policy Engine + Audit System
 
 **Focus Areas**:
 - Complete Policy Engine implementation (ABAC, RBAC, conflict resolution, time-based, emergency access)
-- Complete Audit System implementation (comprehensive logging, immutable storage, retention, query/export APIs)
-- Comprehensive testing for both systems
+- Complete Audit System implementation (comprehensive logging, immutable storage, retention, query API - no admin UI or export)
+- Functional implementation only, no automated testing
 
 ### Final Phase: Production Deployment (84-100 hours)
 **Priority 1 - Security Backend** (Weeks 2-3):
 - Policy Engine: ABAC, RBAC, conflict resolution, time-based policies, emergency access
-- Audit System: Comprehensive logging, immutable storage, retention policies, query/export APIs
-- Full test coverage (80%+) for both systems
+- Audit System: Comprehensive logging, immutable storage, retention policies, query API (no admin UI, no export)
 
 **Priority 2 - Production Deployment** (Weeks 3-4):
 1. Docker and WildFly production configuration
@@ -884,12 +1409,7 @@
 5. Deployment verification and smoke tests
 
 **Priority 3 - Post-Implementation** (Optional - Advanced Features):
-1. Admin Audit Dashboard UI (optional)
-   - Audit log viewer with search/filter
-   - Export functionality (CSV, JSON, PDF)
-   - Audit timeline visualization
-
-2. Admin Global Policies UI (optional)
+1. Admin Global Policies UI (optional)
    - Policy management interface
    - Policy testing/simulation tool
    - Emergency access review dashboard
@@ -907,11 +1427,13 @@
   - Professional authentication/login (belongs to Clinic/Peripheral component)
   - Mobile app development (React Native, Firebase Cloud Messaging)
   - Firebase integration (push notifications, Cloud Firestore)
-  - Testing coverage requirements (80% coverage, unit tests, integration tests)
+  - Testing coverage requirements (no 80% coverage, no unit tests, no integration tests)
+  - Admin audit log UI (audit dashboard, export functionality)
 - **AUTHENTICATION SCOPE**:
   - HCEN Central: Patient authentication via gub.uy ONLY
   - Professional authentication: Handled by Clinic/Peripheral component (separate project)
 - **ACCESS REQUEST WORKFLOW**: Web-based approval via patient portal JSP page (no mobile notifications)
+- **FOCUS**: Functional implementation only, no automated testing required
 - All communication must use HTTPS (AC002-AC004)
 - Follow defined protocols: gub.uy (OIDC), PDI (SOAP), Peripheral Nodes (REST + API key)
 - Always update this TODO.md after completing tasks using the general-purpose agent
