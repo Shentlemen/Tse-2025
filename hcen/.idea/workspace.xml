@@ -4,12 +4,53 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: user list">
-      <change beforePath="$PROJECT_DIR$/../TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/../TODO.md" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add health provider and interaction with hcen with inuns and rndc">
+      <change afterPath="$PROJECT_DIR$/HCEN_MESSAGING_ARCHITECTURE_ANALYSIS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/INLINE_DOCUMENT_VIEWER_IMPLEMENTATION.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/JMS_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MESSAGING_ANALYSIS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentMetadata.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/document/entity/ClinicalDocument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceConfiguration.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/dto/ClinicServiceRegistrationRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/BaseMessage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationMessage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationMessage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/DuplicateMessageException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/InvalidMessageException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/MessageProcessingException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/listener/DocumentRegistrationListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/listener/UserRegistrationListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/processor/DocumentRegistrationProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/processor/UserRegistrationProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/.claude/settings.local.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/HCEN_INTEGRATION.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/README_API.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/ClinicalDocument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/Patient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V001__create_patients_table.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V002__create_clinical_documents_table.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/jndi.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/clinics.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/clinics.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentContentResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentContentResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,45 +150,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Batch.migrate.executor": "Run",
-    "Batch.run-migrations.executor": "Run",
-    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
-    "Gradle.Build hcen.executor": "Run",
-    "Gradle.Download Sources.executor": "Run",
-    "Gradle.hcen [buildDependents].executor": "Run",
-    "Gradle.hcen [build].executor": "Run",
-    "Gradle.hcen [clean].executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.26436782",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Batch.migrate.executor&quot;: &quot;Run&quot;,
+    &quot;Batch.run-migrations.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.docker-compose-postgres.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build hcen.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [buildDependents].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [clean].executor&quot;: &quot;Run&quot;,
+    &quot;JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/agust/fing/tse/tse-2025/hcen&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.26436782&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql",
-      "mongo"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;,
+      &quot;mongo&quot;
     ],
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
-      "PostgreSQL"
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
+      &quot;PostgreSQL&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>
@@ -363,6 +404,7 @@
       <workItem from="1761865802436" duration="44000" />
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
+      <workItem from="1763003396511" duration="8990000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -638,7 +680,8 @@
     <MESSAGE value="feat: add access policies and audit log" />
     <MESSAGE value="fix: user register, clinic register and onboard process" />
     <MESSAGE value="fix: user list" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: user list" />
+    <MESSAGE value="feat: add health provider and interaction with hcen with inuns and rndc" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add health provider and interaction with hcen with inuns and rndc" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

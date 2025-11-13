@@ -14,6 +14,9 @@ import uy.gub.hcen.audit.entity.AuditLog.EventType;
 import uy.gub.hcen.service.audit.AuditService;
 import uy.gub.hcen.integration.peripheral.PeripheralNodeClient;
 import uy.gub.hcen.integration.peripheral.PeripheralNodeException;
+import uy.gub.hcen.integration.clinic.ClinicServiceClient;
+import uy.gub.hcen.integration.clinic.ClinicServiceException;
+import uy.gub.hcen.integration.clinic.dto.ClinicServiceRegistrationRequest;
 import uy.gub.hcen.service.clinic.dto.*;
 import uy.gub.hcen.service.clinic.exception.ClinicNotFoundException;
 import uy.gub.hcen.service.clinic.exception.ClinicRegistrationException;
@@ -88,6 +91,9 @@ public class ClinicManagementService {
     @Inject
     private PeripheralNodeClient peripheralNodeClient;
 
+    @Inject
+    private ClinicServiceClient clinicServiceClient;
+
     // ================================================================
     // Clinic Registration (CU10)
     // ================================================================
@@ -141,6 +147,23 @@ public class ClinicManagementService {
             Clinic savedClinic = clinicRepository.save(newClinic);
 
             logger.info("Successfully registered clinic with ID: {}", clinicId);
+
+            // Register clinic in Clinic Service (peripheral multi-tenant component)
+            try {
+                ClinicServiceRegistrationRequest clinicServiceRequest = buildClinicServiceRequest(savedClinic);
+                boolean clinicServiceConfirmed = clinicServiceClient.registerClinic(clinicServiceRequest);
+
+                if (clinicServiceConfirmed) {
+                    logger.info("Successfully registered clinic in Clinic Service: {}", clinicId);
+                } else {
+                    logger.warn("Clinic Service did not confirm registration for clinic: {}", clinicId);
+                    // Continue with registration even if clinic service fails (non-critical)
+                }
+            } catch (ClinicServiceException e) {
+                logger.error("Failed to register clinic in Clinic Service: {}", clinicId, e);
+                // Continue with registration even if clinic service fails (non-critical)
+                // The clinic is still registered in HCEN central
+            }
 
             // Log registration in audit trail
             auditService.logEvent(
@@ -618,5 +641,26 @@ public class ClinicManagementService {
         byte[] randomBytes = new byte[64];
         secureRandom.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    /**
+     * Build clinic service registration request from clinic entity
+     *
+     * @param clinic Clinic entity
+     * @return Clinic service registration request
+     */
+    private ClinicServiceRegistrationRequest buildClinicServiceRequest(Clinic clinic) {
+        String description = String.format("Healthcare facility located in %s", clinic.getCity());
+
+        return new ClinicServiceRegistrationRequest(
+                clinic.getClinicId(),           // code (unique clinic ID)
+                clinic.getClinicName(),         // name
+                description,                     // description
+                clinic.getAddress(),            // address
+                clinic.getPhoneNumber(),        // phone
+                clinic.getEmail(),              // email
+                HCEN_CENTRAL_URL,               // hcen_endpoint (same for all clinics)
+                true                            // active
+        );
     }
 }

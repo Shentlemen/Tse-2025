@@ -750,6 +750,310 @@ $env:JWT_SIGNING_KEY_PATH="C:\opt\hcen\keys\jwt-private-pkcs8.pem"
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-10-14
+---
+
+## ActiveMQ Artemis (JMS Broker)
+
+### Overview
+
+HCEN Central uses **ActiveMQ Artemis** (embedded in WildFly) for asynchronous message processing. Peripheral nodes (clinics, health providers) send user registration and document registration messages to JMS queues, which are processed by Message-Driven Beans (MDBs).
+
+### Version
+
+- **ActiveMQ Artemis**: 2.31+ (embedded in WildFly 31+)
+- **Configuration Profile**: `standalone-full.xml` (required for JMS support)
+
+### JMS Queue Configuration
+
+Add the following queue definitions to `standalone-full.xml` under `<subsystem xmlns="urn:jboss:domain:messaging-activemq:...">`:
+
+```xml
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:17.0">
+    <server name="default">
+        <!-- ... existing configuration ... -->
+
+        <!-- JMS Queues for HCEN Message Processing -->
+        <jms-queue name="UserRegistrationQueue"
+                   entries="java:/jms/queue/UserRegistration">
+            <durable>true</durable>
+        </jms-queue>
+
+        <jms-queue name="DocumentRegistrationQueue"
+                   entries="java:/jms/queue/DocumentRegistration">
+            <durable>true</durable>
+        </jms-queue>
+
+        <!-- Dead Letter Queue (DLQ) for failed messages -->
+        <jms-queue name="DLQ"
+                   entries="java:/jms/queue/DLQ">
+            <durable>true</durable>
+        </jms-queue>
+
+        <!-- Expiry Queue for expired messages -->
+        <jms-queue name="ExpiryQueue"
+                   entries="java:/jms/queue/ExpiryQueue">
+            <durable>true</durable>
+        </jms-queue>
+    </server>
+</subsystem>
+```
+
+### Address Settings for Message Redelivery
+
+Configure message redelivery and DLQ behavior:
+
+```xml
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:17.0">
+    <server name="default">
+        <!-- ... existing configuration ... -->
+
+        <address-setting name="jms.queue.UserRegistration"
+                         dead-letter-address="jms.queue.DLQ"
+                         expiry-address="jms.queue.ExpiryQueue"
+                         redelivery-delay="5000"
+                         max-delivery-attempts="5"
+                         max-size-bytes="10485760"
+                         message-counter-history-day-limit="10"/>
+
+        <address-setting name="jms.queue.DocumentRegistration"
+                         dead-letter-address="jms.queue.DLQ"
+                         expiry-address="jms.queue.ExpiryQueue"
+                         redelivery-delay="5000"
+                         max-delivery-attempts="5"
+                         max-size-bytes="10485760"
+                         message-counter-history-day-limit="10"/>
+
+        <!-- Default DLQ setting -->
+        <address-setting name="jms.queue.DLQ"
+                         max-size-bytes="52428800"
+                         address-full-policy="PAGE"/>
+    </server>
+</subsystem>
+```
+
+**Redelivery Configuration Explained**:
+- `redelivery-delay="5000"`: Wait 5 seconds before redelivering failed message
+- `max-delivery-attempts="5"`: Retry up to 5 times before moving to DLQ
+- `max-size-bytes="10485760"`: 10 MB max queue size
+- `message-counter-history-day-limit="10"`: Keep 10 days of message statistics
+
+### CLI Commands to Create Queues
+
+Alternatively, use WildFly CLI to create queues at runtime:
+
+```bash
+# Connect to WildFly CLI
+./bin/jboss-cli.sh --connect
+
+# Create User Registration Queue
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:add(entries=["java:/jms/queue/UserRegistration"], durable=true)
+
+# Create Document Registration Queue
+/subsystem=messaging-activemq/server=default/jms-queue=DocumentRegistrationQueue:add(entries=["java:/jms/queue/DocumentRegistration"], durable=true)
+
+# Configure address settings for UserRegistration queue
+/subsystem=messaging-activemq/server=default/address-setting=jms.queue.UserRegistration:add(dead-letter-address="jms.queue.DLQ", expiry-address="jms.queue.ExpiryQueue", redelivery-delay=5000, max-delivery-attempts=5, max-size-bytes=10485760)
+
+# Configure address settings for DocumentRegistration queue
+/subsystem=messaging-activemq/server=default/address-setting=jms.queue.DocumentRegistration:add(dead-letter-address="jms.queue.DLQ", expiry-address="jms.queue.ExpiryQueue", redelivery-delay=5000, max-delivery-attempts=5, max-size-bytes=10485760)
+
+# Reload server
+reload
+```
+
+### Queue Details
+
+| Queue Name                | JNDI Name                            | Purpose                                       | Max Delivery Attempts | Redelivery Delay |
+|---------------------------|--------------------------------------|-----------------------------------------------|----------------------|------------------|
+| UserRegistrationQueue     | java:/jms/queue/UserRegistration     | User creation events from peripheral nodes    | 5                    | 5000 ms          |
+| DocumentRegistrationQueue | java:/jms/queue/DocumentRegistration | Document creation events from peripheral nodes| 5                    | 5000 ms          |
+| DLQ (Dead Letter Queue)   | java:/jms/queue/DLQ                  | Failed messages after max redelivery attempts | N/A                  | N/A              |
+| ExpiryQueue               | java:/jms/queue/ExpiryQueue          | Expired messages (TTL exceeded)               | N/A                  | N/A              |
+
+### Message Flow
+
+#### User Registration Flow
+
+1. Peripheral node creates user locally
+2. Peripheral node sends JSON message to `UserRegistrationQueue`
+3. `UserRegistrationListener` (MDB) receives message
+4. MDB validates message structure
+5. `UserRegistrationProcessor` processes business logic
+6. `InusService` registers user in INUS database
+7. Transaction committed, message acknowledged
+8. On error: Transaction rolled back, message redelivered (up to 5 times) or moved to DLQ
+
+#### Document Registration Flow
+
+1. Peripheral node creates document in local storage
+2. Peripheral node calculates SHA-256 hash
+3. Peripheral node sends JSON message to `DocumentRegistrationQueue`
+4. `DocumentRegistrationListener` (MDB) receives message
+5. MDB validates message structure
+6. `DocumentRegistrationProcessor` processes business logic
+7. `RndcService` registers document metadata in RNDC database
+8. Transaction committed, message acknowledged
+9. On error: Transaction rolled back, message redelivered (up to 5 times) or moved to DLQ
+
+### Message Format
+
+#### User Registration Message (JSON)
+
+```json
+{
+  "messageId": "msg-550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2025-11-13T10:30:00Z",
+  "sourceSystem": "clinic-001",
+  "eventType": "USER_CREATED",
+  "payload": {
+    "ci": "12345678",
+    "firstName": "Juan",
+    "lastName": "Pérez",
+    "dateOfBirth": "1990-01-15",
+    "email": "juan.perez@example.com",
+    "phoneNumber": "099123456",
+    "clinicId": "clinic-001"
+  }
+}
+```
+
+#### Document Registration Message (JSON)
+
+```json
+{
+  "messageId": "msg-660e8400-e29b-41d4-a716-446655440001",
+  "timestamp": "2025-11-13T10:30:00Z",
+  "sourceSystem": "clinic-001",
+  "eventType": "DOCUMENT_CREATED",
+  "payload": {
+    "patientCI": "12345678",
+    "documentType": "CLINICAL_NOTE",
+    "documentLocator": "https://clinic-001.hcen.uy/api/documents/doc-123",
+    "documentHash": "sha256:a1b2c3d4e5f678901234567890123456789012345678901234567890123456",
+    "createdBy": "doctor@clinic.com",
+    "createdAt": "2025-11-13T10:30:00Z",
+    "clinicId": "clinic-001",
+    "documentTitle": "Consulta general",
+    "documentDescription": "Consulta de control"
+  }
+}
+```
+
+### Error Handling
+
+**Error Types**:
+
+1. **Validation Errors** (Permanent)
+   - Invalid message format
+   - Missing required fields
+   - Invalid data formats (malformed CI, bad URL, invalid hash)
+   - Result: Message moved to DLQ after first attempt
+
+2. **Business Rule Violations** (Permanent)
+   - Age verification failure
+   - Duplicate registration (handled idempotently)
+   - Result: Message moved to DLQ
+
+3. **Transient Errors** (Retry)
+   - Database connection failure
+   - Network timeout
+   - Temporary service unavailability
+   - Result: Message redelivered up to 5 times with 5-second delay
+
+### Monitoring
+
+Monitor queue metrics via WildFly Management Console:
+
+**Queue Metrics**:
+- Queue depth (messages waiting)
+- Message rate (messages/second)
+- DLQ size (failed messages)
+- Consumer count (active MDBs)
+- Message age (oldest message)
+
+**CLI Commands for Monitoring**:
+
+```bash
+# View queue statistics
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:read-resource(include-runtime=true)
+
+# View DLQ messages
+/subsystem=messaging-activemq/server=default/jms-queue=DLQ:count-messages()
+
+# Browse DLQ messages
+/subsystem=messaging-activemq/server=default/jms-queue=DLQ:list-messages()
+```
+
+### Journal Configuration (Production)
+
+For production, configure journal persistence to ensure message durability:
+
+```xml
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:17.0">
+    <server name="default">
+        <journal-type>ASYNCIO</journal-type>
+        <journal-buffer-timeout>4096000</journal-buffer-timeout>
+        <journal-file-size>10485760</journal-file-size>
+        <journal-min-files>2</journal-min-files>
+        <journal-pool-files>10</journal-pool-files>
+        <journal-compact-percentage>30</journal-compact-percentage>
+        <journal-compact-min-files>10</journal-compact-min-files>
+    </server>
+</subsystem>
+```
+
+### Testing JMS Queues
+
+#### Send Test Message to UserRegistrationQueue
+
+Use WildFly CLI to send test messages:
+
+```bash
+# Connect to CLI
+./bin/jboss-cli.sh --connect
+
+# Send test message
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:send-text-message(body='{"messageId":"test-001","timestamp":"2025-11-13T10:00:00Z","sourceSystem":"test","eventType":"USER_CREATED","payload":{"ci":"12345678","firstName":"Test","lastName":"User","dateOfBirth":"1990-01-01","clinicId":"test-clinic"}}')
+```
+
+#### View Queue Metrics
+
+```bash
+# Count messages in queue
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:count-messages()
+
+# List messages
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:list-messages()
+```
+
+### Troubleshooting
+
+**Problem**: Messages stuck in queue, not being consumed
+
+**Solution**:
+1. Check MDB deployment: `./bin/jboss-cli.sh --connect --command="/deployment=hcen.war:read-resource"`
+2. Verify MDB is listening: Check `server.log` for "UserRegistrationListener deployed"
+3. Check consumer count in queue metrics (should be > 0)
+4. Review server logs for MDB exceptions
+
+**Problem**: Messages going to DLQ immediately
+
+**Solution**:
+1. Check message format (must be valid JSON)
+2. Verify message has all required fields
+3. Review DLQ messages to identify validation errors
+4. Check `server.log` for InvalidMessageException
+
+**Problem**: Messages redelivered repeatedly, never succeed
+
+**Solution**:
+1. Check for database connection issues
+2. Verify INUS/RNDC database schemas exist
+3. Check for transaction timeout (increase if needed)
+4. Review processor logs for specific errors
+
+---
+
+**Document Version**: 2.0
+**Last Updated**: 2025-11-13
 **Maintained By**: TSE 2025 Group 9

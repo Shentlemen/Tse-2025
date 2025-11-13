@@ -53,6 +53,15 @@ public class ClinicalHistoryService {
     @Inject
     private AuditService auditService;
 
+    @Inject
+    private uy.gub.hcen.integration.peripheral.PeripheralNodeClient peripheralNodeClient;
+
+    @Inject
+    private uy.gub.hcen.clinic.repository.ClinicRepository clinicRepository;
+
+    @Inject
+    private uy.gub.hcen.service.policy.PolicyEngine policyEngine;
+
     /**
      * Gets paginated clinical history for a patient with optional filters
      *
@@ -249,94 +258,114 @@ public class ClinicalHistoryService {
     }
 
     /**
-     * Gets document content URL (placeholder for future peripheral node integration)
+     * Retrieves actual document content from peripheral node
+     *
+     * <p>This method performs the complete document retrieval flow:
+     * <ol>
+     *   <li>Validates document exists in RNDC and belongs to patient</li>
+     *   <li>Looks up clinic configuration to get API key</li>
+     *   <li>Calls peripheral node to retrieve actual document bytes</li>
+     *   <li>Verifies document integrity using SHA-256 hash</li>
+     *   <li>Returns document bytes for client download</li>
+     * </ol>
+     *
+     * <p>Note: For patients viewing their own documents, policy checks are skipped.
+     * Policy enforcement is applied when professionals access patient documents.
      *
      * @param documentId Document ID
      * @param patientCi Patient's CI (for authorization)
-     * @return Document content response with URL or unavailable message
+     * @return Document content as byte array, or null if unavailable/error
+     * @throws DocumentRetrievalException if retrieval fails (peripheral node down, hash mismatch, etc.)
      */
-    public DocumentContentResponse getDocumentContent(Long documentId, String patientCi) {
-        LOGGER.log(Level.INFO, "Retrieving document content URL for document: {0}", documentId);
+    public byte[] getDocumentContent(Long documentId, String patientCi) {
+        LOGGER.log(Level.INFO, "Retrieving document content for document: {0}, patient: {1}",
+                new Object[]{documentId, patientCi});
 
         try {
+            // Step 1: Get document metadata from RNDC
             Optional<RndcDocument> documentOpt = rndcRepository.findById(documentId);
 
             if (documentOpt.isEmpty()) {
-                return DocumentContentResponse.unavailable("Documento no encontrado");
+                LOGGER.log(Level.WARNING, "Document not found in RNDC: {0}", documentId);
+                throw new DocumentRetrievalException("Documento no encontrado");
             }
 
             RndcDocument document = documentOpt.get();
 
-            // Verify patient owns this document
+            // Step 2: Verify patient owns this document (authorization check)
             if (!document.getPatientCi().equals(patientCi)) {
-                LOGGER.log(Level.WARNING, "Unauthorized content access attempt for document: {0}", documentId);
-                return DocumentContentResponse.unavailable("Acceso no autorizado");
+                LOGGER.log(Level.WARNING, "Unauthorized content access attempt - document: {0}, requestor: {1}, owner: {2}",
+                        new Object[]{documentId, patientCi, document.getPatientCi()});
+                throw new DocumentRetrievalException("Acceso no autorizado");
             }
 
-            // Check if document has content available
+            // Step 3: Validate document has locator URL
             if (document.getDocumentLocator() == null || document.getDocumentLocator().isEmpty()) {
-                return DocumentContentResponse.unavailable("Contenido no disponible");
+                LOGGER.log(Level.WARNING, "Document has no locator URL: {0}", documentId);
+                throw new DocumentRetrievalException("Contenido no disponible - localizador faltante");
             }
 
-            // TODO: Implement peripheral node integration
-            // For now, return the locator URL directly (in production, this should proxy through HCEN)
-            // This is a PLACEHOLDER - actual implementation requires:
-            // 1. Call peripheral node API with authentication
-            // 2. Verify document hash for integrity
-            // 3. Return content or proxy URL
-            // 4. Handle errors from peripheral node
+            // Step 4: Look up clinic to get API key
+            String clinicId = document.getClinicId();
+            Optional<uy.gub.hcen.clinic.entity.Clinic> clinicOpt = clinicRepository.findById(clinicId);
 
-            LOGGER.log(Level.WARNING, "Peripheral node integration not yet implemented. Returning locator URL directly.");
+            if (clinicOpt.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Clinic not found: {0} for document: {1}",
+                        new Object[]{clinicId, documentId});
+                throw new DocumentRetrievalException("Clínica no encontrada");
+            }
 
-            return DocumentContentResponse.available(
-                    document.getDocumentLocator(),
-                    "application/pdf", // TODO: Determine actual content type
-                    document.getDocumentHash()
+            uy.gub.hcen.clinic.entity.Clinic clinic = clinicOpt.get();
+            String apiKey = clinic.getApiKey();
+
+            if (apiKey == null || apiKey.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Clinic {0} has no API key configured", clinicId);
+                throw new DocumentRetrievalException("Configuración de clínica incompleta");
+            }
+
+            // Step 5: Retrieve document from peripheral node with hash verification
+            String documentLocator = document.getDocumentLocator();
+            String expectedHash = document.getDocumentHash();
+
+            LOGGER.log(Level.INFO, "Fetching document from peripheral node - locator: {0}, clinic: {1}",
+                    new Object[]{documentLocator, clinicId});
+
+            byte[] documentBytes = peripheralNodeClient.retrieveDocument(
+                    documentLocator,
+                    apiKey,
+                    expectedHash  // PeripheralNodeClient will verify hash automatically
             );
 
+            LOGGER.log(Level.INFO, "Successfully retrieved document {0} ({1} bytes)",
+                    new Object[]{documentId, documentBytes.length});
+
+            return documentBytes;
+
+        } catch (DocumentRetrievalException e) {
+            // Re-throw business logic exceptions
+            throw e;
+        } catch (uy.gub.hcen.integration.peripheral.PeripheralNodeException e) {
+            LOGGER.log(Level.SEVERE, "Peripheral node error retrieving document: " + documentId, e);
+            throw new DocumentRetrievalException("Error comunicándose con nodo periférico: " + e.getMessage(), e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving document content: " + documentId, e);
-            return DocumentContentResponse.unavailable("Error al recuperar el documento");
+            LOGGER.log(Level.SEVERE, "Unexpected error retrieving document content: " + documentId, e);
+            throw new DocumentRetrievalException("Error inesperado al recuperar documento", e);
         }
     }
 
-    // =========================================================================
-    // PLACEHOLDER METHODS FOR FUTURE PERIPHERAL NODE INTEGRATION
-    // =========================================================================
-
     /**
-     * Fetches document content from peripheral node
-     * TODO: Implement when peripheral node API is ready
-     *
-     * @param locatorUrl Document locator URL from RNDC
-     * @return Document content as byte array or null
+     * Custom exception for document retrieval errors
      */
-    private byte[] fetchDocumentContentFromPeripheral(String locatorUrl) {
-        LOGGER.log(Level.WARNING, "Peripheral node integration not yet implemented. Locator: {0}", locatorUrl);
+    public static class DocumentRetrievalException extends RuntimeException {
+        public DocumentRetrievalException(String message) {
+            super(message);
+        }
 
-        // TODO: Implementation steps:
-        // 1. Parse locator URL to extract clinic ID and document ID
-        // 2. Look up clinic credentials/API key
-        // 3. Make authenticated HTTP request to peripheral node
-        // 4. Download document content
-        // 5. Verify document hash matches RNDC metadata
-        // 6. Return content or throw exception
-
-        return null; // Return null for now
+        public DocumentRetrievalException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
-    /**
-     * Verifies document hash for integrity
-     *
-     * @param content Document content
-     * @param expectedHash Expected hash from RNDC
-     * @return true if hash matches, false otherwise
-     */
-    private boolean verifyDocumentHash(byte[] content, String expectedHash) {
-        // TODO: Implement SHA-256 hash verification
-        LOGGER.log(Level.WARNING, "Document hash verification not yet implemented");
-        return true; // Placeholder
-    }
 
     // =========================================================================
     // MOCK DATA METHODS (FOR DEVELOPMENT/TESTING)

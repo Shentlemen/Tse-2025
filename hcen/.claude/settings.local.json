@@ -32,7 +32,8 @@
       "Bash(nul)",
       "Bash(clinic:*)",
       "Bash(gradlew.bat:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

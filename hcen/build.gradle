@@ -80,6 +80,9 @@ dependencies {
     // Transaction
     providedCompile 'jakarta.transaction:jakarta.transaction-api:2.0.1'
 
+    // JMS (Java Message Service)
+    providedCompile 'jakarta.jms:jakarta.jms-api:3.1.0'
+
     // PostgreSQL Driver (bundled in WAR for Virtuozzo deployment)
     implementation 'org.postgresql:postgresql:42.7.1'
 

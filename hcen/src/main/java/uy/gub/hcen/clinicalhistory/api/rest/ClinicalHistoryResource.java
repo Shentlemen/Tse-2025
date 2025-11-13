@@ -1,17 +1,25 @@
 package uy.gub.hcen.clinicalhistory.api.rest;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import uy.gub.hcen.api.dto.ErrorResponse;
+import uy.gub.hcen.audit.entity.AuditLog;
 import uy.gub.hcen.clinicalhistory.dto.*;
 import uy.gub.hcen.clinicalhistory.service.ClinicalHistoryService;
 import uy.gub.hcen.rndc.entity.DocumentType;
+import uy.gub.hcen.rndc.entity.RndcDocument;
+import uy.gub.hcen.rndc.repository.RndcRepository;
+import uy.gub.hcen.service.audit.AuditService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +69,12 @@ public class ClinicalHistoryResource {
 
     @Inject
     private ClinicalHistoryService clinicalHistoryService;
+
+    @Inject
+    private RndcRepository rndcRepository;
+
+    @Inject
+    private AuditService auditService;
 
     // ================================================================
     // GET /api/clinical-history - Get Clinical History
@@ -266,29 +280,51 @@ public class ClinicalHistoryResource {
     // ================================================================
 
     /**
-     * Retrieves document content URL for download/viewing.
+     * Retrieves actual document content from peripheral node for inline display.
      *
-     * <p>This endpoint returns a URL to retrieve the actual document content.
-     * In the future, this will integrate with peripheral nodes to fetch content.
+     * <p>This endpoint performs the complete document retrieval flow:
+     * <ol>
+     *   <li>Validates patient authorization</li>
+     *   <li>Retrieves document from peripheral node via PeripheralNodeClient</li>
+     *   <li>Verifies document integrity (hash verification)</li>
+     *   <li>For structured formats (JSON/FHIR/HL7): Parses content and returns as JSON</li>
+     *   <li>For binary formats (PDF): Returns with inline disposition for browser display</li>
+     *   <li>Logs all access attempts in audit system</li>
+     * </ol>
+     *
+     * <p>Response Format:
+     * <ul>
+     *   <li>Structured (JSON/FHIR): Returns DocumentContentResponse with parsed content</li>
+     *   <li>Binary (PDF): Returns raw bytes with Content-Disposition: inline</li>
+     * </ul>
      *
      * <p>Example:
      * GET /api/clinical-history/documents/123/content?patientCi=12345678
      *
      * @param documentId Document ID
      * @param patientCi Patient's CI (for authorization)
-     * @return 200 OK with DocumentContentResponse
-     *         404 Not Found if document doesn't exist or content unavailable
-     *         500 Internal Server Error if operation fails
+     * @param request HTTP servlet request (for IP address and user agent extraction)
+     * @return 200 OK with document content (JSON response or binary PDF)
+     *         400 Bad Request if patientCi is missing
+     *         403 Forbidden if access is denied
+     *         404 Not Found if document doesn't exist
+     *         503 Service Unavailable if peripheral node is down
+     *         500 Internal Server Error for hash mismatches or system errors
      */
     @GET
     @Path("/documents/{documentId}/content")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, "application/pdf", "application/xml", "application/fhir+json"})
     public Response getDocumentContent(
             @PathParam("documentId") Long documentId,
-            @QueryParam("patientCi") String patientCi) {
+            @QueryParam("patientCi") String patientCi,
+            @Context HttpServletRequest request) {
 
         LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/content - patientCi: {1}",
                 new Object[]{documentId, patientCi});
+
+        // Extract IP address and user agent for audit logging
+        String ipAddress = extractIpAddress(request);
+        String userAgent = extractUserAgent(request);
 
         try {
             // Validate patientCi
@@ -299,27 +335,312 @@ public class ClinicalHistoryResource {
                         .build();
             }
 
-            // TODO: Extract patientCi from JWT SecurityContext
+            // TODO: Extract patientCi from JWT SecurityContext instead of query param
+            // For now, accept it as query param for development
+            // In production:
+            // @Context SecurityContext securityContext;
+            // String patientCi = securityContext.getUserPrincipal().getName();
 
-            // Call service
-            DocumentContentResponse content = clinicalHistoryService.getDocumentContent(documentId, patientCi);
-
-            if (content == null || !content.isAvailable()) {
-                LOGGER.log(Level.WARNING, "Document content not available: {0}", documentId);
-                return Response.ok(content != null ? content :
-                        DocumentContentResponse.unavailable("Contenido no disponible")).build();
+            // Get document metadata from RNDC
+            Optional<RndcDocument> documentOpt = rndcRepository.findById(documentId);
+            if (documentOpt.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Document not found: {0}", documentId);
+                auditService.logDocumentAccess(
+                        patientCi,
+                        patientCi,
+                        documentId,
+                        null,
+                        AuditLog.ActionOutcome.FAILURE,
+                        ipAddress,
+                        userAgent
+                );
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(ErrorResponse.notFound("Document", documentId.toString()))
+                        .build();
             }
 
-            LOGGER.log(Level.INFO, "Returning document content URL: {0}", documentId);
+            RndcDocument document = documentOpt.get();
 
-            return Response.ok(content).build();
+            // Call service to retrieve document bytes from peripheral node
+            byte[] documentBytes = clinicalHistoryService.getDocumentContent(documentId, patientCi);
+
+            // Determine content type from document type
+            String contentType = determineContentType(document.getDocumentType());
+
+            // Log successful access
+            auditService.logDocumentAccess(
+                    patientCi,
+                    patientCi,
+                    documentId,
+                    document.getDocumentType(),
+                    AuditLog.ActionOutcome.SUCCESS,
+                    ipAddress,
+                    userAgent
+            );
+
+            LOGGER.log(Level.INFO, "Retrieved document content: {0} ({1} bytes, type: {2})",
+                    new Object[]{documentId, documentBytes.length, contentType});
+
+            // Check if this is a binary format (PDF) - return as binary for inline display
+            if (contentType.equals("application/pdf")) {
+                String filename = "document_" + documentId + ".pdf";
+
+                LOGGER.log(Level.INFO, "Returning PDF for inline display: {0}", filename);
+
+                return Response.ok(documentBytes, contentType)
+                        .header("Content-Disposition", "inline; filename=\"" + filename + "\"")
+                        .header("Content-Length", documentBytes.length)
+                        .header("X-Frame-Options", "SAMEORIGIN")
+                        .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                        .header("Pragma", "no-cache")
+                        .header("Expires", "0")
+                        .build();
+            }
+
+            // For structured formats (JSON/FHIR/HL7), parse and return as JSON response
+            Object parsedContent = parseDocumentContent(documentBytes, contentType);
+
+            // Build metadata
+            DocumentMetadata metadata = buildDocumentMetadata(document);
+
+            // Create response DTO
+            DocumentContentResponse response = DocumentContentResponse.inline(
+                    documentId,
+                    document.getDocumentType().name(),
+                    contentType,
+                    parsedContent,
+                    metadata
+            );
+
+            LOGGER.log(Level.INFO, "Returning structured content for inline display: {0}", documentId);
+
+            return Response.ok(response, MediaType.APPLICATION_JSON)
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
+                    .build();
+
+        } catch (ClinicalHistoryService.DocumentRetrievalException e) {
+            LOGGER.log(Level.WARNING, "Document retrieval failed: {0}", e.getMessage());
+
+            // Log failed access
+            auditService.logAccessEvent(
+                    patientCi,
+                    "PATIENT",
+                    "DOCUMENT",
+                    documentId.toString(),
+                    AuditLog.ActionOutcome.FAILURE,
+                    ipAddress,
+                    userAgent,
+                    null
+            );
+
+            // Map business exceptions to appropriate HTTP status codes
+            if (e.getMessage().contains("no autorizado")) {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(ErrorResponse.forbidden("Access denied to document " + documentId))
+                        .build();
+            } else if (e.getMessage().contains("no encontrado")) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(ErrorResponse.notFound("Document", documentId.toString()))
+                        .build();
+            } else if (e.getMessage().contains("nodo periférico")) {
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                        .entity(ErrorResponse.internalServerError("Peripheral node unavailable: " + e.getMessage()))
+                        .build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(ErrorResponse.internalServerError("Document retrieval failed: " + e.getMessage()))
+                        .build();
+            }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving document content: " + documentId, e);
+            LOGGER.log(Level.SEVERE, "Unexpected error retrieving document content: " + documentId, e);
+
+            // Log failed access
+            auditService.logAccessEvent(
+                    patientCi,
+                    "PATIENT",
+                    "DOCUMENT",
+                    documentId.toString(),
+                    AuditLog.ActionOutcome.FAILURE,
+                    ipAddress,
+                    userAgent,
+                    null
+            );
+
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(ErrorResponse.internalServerError("Failed to retrieve document content: " + e.getMessage()))
+                    .entity(ErrorResponse.internalServerError("Unexpected error: " + e.getMessage()))
                     .build();
         }
+    }
+
+    /**
+     * Parses document content based on content type
+     *
+     * @param documentBytes Raw document bytes
+     * @param contentType Content type (MIME type)
+     * @return Parsed content object (JsonNode for JSON, String for XML/text)
+     */
+    private Object parseDocumentContent(byte[] documentBytes, String contentType) {
+        try {
+            String contentString = new String(documentBytes, java.nio.charset.StandardCharsets.UTF_8);
+
+            // Parse JSON/FHIR content
+            if (contentType.contains("json") || contentType.contains("fhir")) {
+                LOGGER.log(Level.FINE, "Parsing JSON content");
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                return mapper.readTree(contentString);
+            }
+
+            // Return XML/HL7 as formatted string
+            if (contentType.contains("xml") || contentType.contains("hl7")) {
+                LOGGER.log(Level.FINE, "Returning XML content as string");
+                return contentString;
+            }
+
+            // Default: return as string
+            return contentString;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to parse document content, returning as string", e);
+            // Fallback: return as base64 string if parsing fails
+            return java.util.Base64.getEncoder().encodeToString(documentBytes);
+        }
+    }
+
+    /**
+     * Builds document metadata from RNDC document entity
+     *
+     * @param document RNDC document entity
+     * @return DocumentMetadata DTO
+     */
+    private DocumentMetadata buildDocumentMetadata(RndcDocument document) {
+        DocumentMetadata metadata = new DocumentMetadata();
+
+        // Set basic metadata
+        metadata.setClinicName(document.getClinicId()); // TODO: Lookup actual clinic name
+        metadata.setProfessionalName(document.getCreatedBy());
+        metadata.setCreatedAt(document.getCreatedAt());
+        metadata.setDocumentType(document.getDocumentType().getDisplayName());
+        metadata.setDocumentHash(document.getDocumentHash());
+        metadata.setClinicId(document.getClinicId());
+
+        // TODO: Enrich with patient name from INUS
+        // TODO: Enrich with professional details (specialty) from professional registry
+
+        return metadata;
+    }
+
+    /**
+     * Determines content type (MIME type) from document type
+     *
+     * <p>Content Type Mapping:
+     * <ul>
+     *   <li>FHIR-compatible types: application/fhir+json</li>
+     *   <li>Traditional documents: application/pdf</li>
+     *   <li>Structured data: application/json</li>
+     * </ul>
+     */
+    private String determineContentType(DocumentType documentType) {
+        switch (documentType) {
+            // FHIR-compatible structured data (inline display)
+            case ALLERGY_RECORD:
+            case VITAL_SIGNS:
+                return "application/fhir+json";
+
+            // PDF documents (inline display in browser)
+            case CLINICAL_NOTE:
+            case DISCHARGE_SUMMARY:
+            case PRESCRIPTION:
+            case VACCINATION_RECORD:
+            case REFERRAL:
+            case INFORMED_CONSENT:
+            case SURGICAL_REPORT:
+            case PATHOLOGY_REPORT:
+            case CONSULTATION:
+            case EMERGENCY_REPORT:
+            case PROGRESS_NOTE:
+            case TREATMENT_PLAN:
+            case LAB_RESULT:
+            case IMAGING:
+            case DIAGNOSTIC_REPORT:
+                return "application/pdf";
+
+            default:
+                return "application/json"; // Default to JSON for unknown types
+        }
+    }
+
+    /**
+     * Determines file extension from document type
+     */
+    private String determineFileExtension(DocumentType documentType) {
+        switch (documentType) {
+            case CLINICAL_NOTE:
+            case DISCHARGE_SUMMARY:
+            case PRESCRIPTION:
+            case VACCINATION_RECORD:
+            case REFERRAL:
+            case INFORMED_CONSENT:
+            case SURGICAL_REPORT:
+            case PATHOLOGY_REPORT:
+            case CONSULTATION:
+            case EMERGENCY_REPORT:
+            case PROGRESS_NOTE:
+            case TREATMENT_PLAN:
+            case LAB_RESULT:
+            case IMAGING:
+            case DIAGNOSTIC_REPORT:
+                return ".pdf";
+
+            case ALLERGY_RECORD:
+            case VITAL_SIGNS:
+                return ".json";
+
+            default:
+                return ".bin";
+        }
+    }
+
+    /**
+     * Extracts IP address from HTTP request
+     */
+    private String extractIpAddress(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        // Check for proxy headers (X-Forwarded-For, X-Real-IP)
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress != null && !ipAddress.isEmpty()) {
+            // X-Forwarded-For may contain multiple IPs, take the first one
+            return ipAddress.split(",")[0].trim();
+        }
+
+        ipAddress = request.getHeader("X-Real-IP");
+        if (ipAddress != null && !ipAddress.isEmpty()) {
+            return ipAddress;
+        }
+
+        // Fallback to remote address
+        return request.getRemoteAddr();
+    }
+
+    /**
+     * Extracts user agent from HTTP request
+     */
+    private String extractUserAgent(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        String userAgent = request.getHeader("User-Agent");
+        // Truncate if too long (database column might have length limit)
+        if (userAgent != null && userAgent.length() > 500) {
+            return userAgent.substring(0, 500);
+        }
+        return userAgent;
     }
 
     // ================================================================
