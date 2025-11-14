@@ -53,14 +53,15 @@ public class TestSpecialtyServlet extends HttpServlet {
                            ", Clínica: " + (specialty.getClinic() != null ? specialty.getClinic().getName() : "NULL") + ")</p>");
             }
             
-            // Probar consulta por clínica
-            out.println("<h2>Prueba 2: getSpecialtiesByClinic(" + clinicId + ")</h2>");
+            // Nota: Las especialidades ahora son globales
+            out.println("<h2>Prueba 2: getSpecialtiesByClinic(" + clinicId + ") - DEPRECATED</h2>");
+            out.println("<p><strong>Nota:</strong> Este método está deprecated. Las especialidades son globales y no se filtran por clínica.</p>");
             List<Specialty> specialtiesByClinic = specialtyService.getSpecialtiesByClinic(clinicId);
-            out.println("<p><strong>Especialidades por clínica:</strong> " + specialtiesByClinic.size() + "</p>");
+            out.println("<p><strong>Especialidades devueltas (todas, sin filtrar):</strong> " + specialtiesByClinic.size() + "</p>");
             
             for (Specialty specialty : specialtiesByClinic) {
                 out.println("<p>- " + specialty.getName() + " (ID: " + specialty.getId() + 
-                           ", Clínica: " + (specialty.getClinic() != null ? specialty.getClinic().getName() : "NULL") + ")</p>");
+                           ", Clínica asociada (legacy): " + (specialty.getClinic() != null ? specialty.getClinic().getName() : "NULL") + ")</p>");
             }
             
         } catch (Exception e) {

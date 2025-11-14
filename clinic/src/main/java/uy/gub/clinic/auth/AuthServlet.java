@@ -222,7 +222,7 @@ public class AuthServlet extends HttpServlet {
                 
             } else if ("PROFESSIONAL".equals(role)) {
                 logger.info("Redirigiendo profesional de clínica {} a dashboard", clinicName);
-                response.sendRedirect(request.getContextPath() + "/professional/dashboard.jsp");
+                response.sendRedirect(request.getContextPath() + "/professional/dashboard");
                 
             } else {
                 logger.error("Rol no reconocido: {}", role);

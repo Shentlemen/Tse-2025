@@ -65,7 +65,9 @@ public class DashboardServlet extends HttpServlet {
             // Obtener estadísticas según el rol
             long professionalsCount;
             long patientsCount;
-            long specialtiesCount;
+            // Las especialidades ahora son globales (sin filtrar por clínica)
+            long specialtiesCount = specialtyService.getAllSpecialties().stream()
+                    .filter(s -> s.getActive()).count();
 
             if (clinicId != null && clinicId == 0L) {
                 // Super Admin - ver todos los datos
@@ -73,16 +75,12 @@ public class DashboardServlet extends HttpServlet {
                         .filter(p -> p.getActive()).count();
                 patientsCount = patientService.getAllPatients().stream()
                         .filter(p -> p.getActive()).count();
-                specialtiesCount = specialtyService.getAllSpecialties().stream()
-                        .filter(s -> s.getActive()).count();
             } else {
                 // Administrador de clínica - datos de su clínica
                 professionalsCount = professionalService.getProfessionalsByClinic(clinicId).stream()
                         .filter(p -> p.getActive()).count();
                 patientsCount = patientService.getPatientsByClinic(clinicId).stream()
                         .filter(p -> p.getActive()).count();
-                specialtiesCount = specialtyService.getSpecialtiesByClinic(clinicId).stream()
-                        .filter(s -> s.getActive()).count();
             }
 
             // Obtener documentos

@@ -511,9 +511,12 @@
                         <!-- Sección 7: Archivos Adjuntos -->
                         <div class="form-section">
                             <h5><i class="fas fa-paperclip me-2"></i>Archivos Adjuntos</h5>
+                            <div id="existingAttachments" class="mb-3">
+                                <!-- Los archivos existentes se mostrarán aquí cuando se esté editando -->
+                            </div>
                             <div class="mb-3">
-                                <label class="form-label">Seleccionar Archivos</label>
-                                <input type="file" class="form-control" name="attachments" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <label class="form-label">Agregar Nuevos Archivos</label>
+                                <input type="file" class="form-control" name="attachments" id="attachmentsInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                 <small class="form-text text-muted">Máximo 10MB por archivo. Formatos permitidos: PDF, imágenes, documentos</small>
                             </div>
                             <div id="attachmentsPreview"></div>
@@ -857,14 +860,45 @@
                                             for (int i = 0; i < attachmentsNode.size(); i++) {
                                                 com.fasterxml.jackson.databind.JsonNode attachment = attachmentsNode.get(i);
                                                 String fileName = attachment.has("fileName") ? attachment.get("fileName").asText() : "Archivo " + (i + 1);
-                                                String filePath = attachment.has("filePath") ? attachment.get("filePath").asText() : "";
+                                                String mimeType = attachment.has("mimeType") ? attachment.get("mimeType").asText() : "";
+                                                String iconClass = "fas fa-file";
+                                                
+                                                // Determinar icono según tipo de archivo
+                                                if (mimeType.contains("pdf")) {
+                                                    iconClass = "fas fa-file-pdf text-danger";
+                                                } else if (mimeType.contains("image")) {
+                                                    iconClass = "fas fa-file-image text-info";
+                                                } else if (mimeType.contains("word") || mimeType.contains("document")) {
+                                                    iconClass = "fas fa-file-word text-primary";
+                                                } else if (mimeType.contains("excel") || mimeType.contains("spreadsheet")) {
+                                                    iconClass = "fas fa-file-excel text-success";
+                                                }
+                                                
                                                 Long docId = docViewAtt.getId();
+                                                String downloadUrl = request.getContextPath() + "/admin/documents?action=download&id=" + docId + "&fileIndex=" + i;
+                                                String deleteUrl = request.getContextPath() + "/admin/documents?action=deleteAttachment&id=" + docId + "&fileIndex=" + i;
                                     %>
-                                    <a href="<c:url value='/admin/documents?action=download&id=${doc.id}'/>" 
-                                       class="list-group-item list-group-item-action" 
-                                       target="_blank">
-                                        <i class="fas fa-file-pdf me-2"></i>${fileName}
-                                    </a>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <a href="<%= downloadUrl %>" class="text-decoration-none flex-grow-1" target="_blank">
+                                            <i class="<%= iconClass %> me-2"></i><%= fileName %>
+                                            <% if (attachment.has("fileSize")) { 
+                                                long fileSize = attachment.get("fileSize").asLong();
+                                                String sizeStr = "";
+                                                if (fileSize < 1024) {
+                                                    sizeStr = fileSize + " B";
+                                                } else if (fileSize < 1024 * 1024) {
+                                                    sizeStr = String.format("%.1f KB", fileSize / 1024.0);
+                                                } else {
+                                                    sizeStr = String.format("%.1f MB", fileSize / (1024.0 * 1024.0));
+                                                }
+                                            %>
+                                            <small class="text-muted ms-2"><%= sizeStr %></small>
+                                            <% } %>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger ms-2" onclick="deleteAttachment('<%= docId %>', <%= i %>, '<%= fileName %>', true)" title="Eliminar archivo">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                     <%
                                             }
                                         }
@@ -924,6 +958,8 @@
                 selectedDoc.getVitalSigns().replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") : "";
             String prescriptionsStr = selectedDoc.getPrescriptions() != null && !selectedDoc.getPrescriptions().isEmpty() ? 
                 selectedDoc.getPrescriptions().replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") : "";
+            String attachmentsStr = selectedDoc.getAttachments() != null && !selectedDoc.getAttachments().isEmpty() ? 
+                selectedDoc.getAttachments().replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") : "";
         %>
         var editDocumentData = {
             id: '<%= selectedDoc.getId() %>',
@@ -942,9 +978,9 @@
             treatment: '<%= escapeJs.apply(selectedDoc.getTreatment()) %>',
             observations: '<%= escapeJs.apply(selectedDoc.getObservations()) %>',
             vitalSigns: <%= vitalSignsStr.isEmpty() ? "null" : "'" + vitalSignsStr + "'" %>,
-            prescriptions: <%= prescriptionsStr.isEmpty() ? "null" : "'" + prescriptionsStr + "'" %>
+            prescriptions: <%= prescriptionsStr.isEmpty() ? "null" : "'" + prescriptionsStr + "'" %>,
+            attachments: <%= attachmentsStr.isEmpty() ? "null" : "'" + attachmentsStr + "'" %>
         };
-        console.log('editDocumentData cargado:', editDocumentData);
         <% } %>
     </script>
     
@@ -983,12 +1019,131 @@
             }
         }
         
+        function deleteAttachment(documentId, fileIndex, fileName, isViewModal) {
+            if (!confirm('¿Está seguro de eliminar el archivo "' + fileName + '"?')) {
+                return;
+            }
+            
+            const deleteUrl = '<c:url value="/admin/documents"/>?action=deleteAttachment&id=' + documentId + '&fileIndex=' + fileIndex;
+            
+            fetch(deleteUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Si estamos en el modal de vista, recargar la página para actualizar
+                    if (isViewModal) {
+                        window.location.reload();
+                    } else {
+                        // Si estamos en el modal de edición, recargar los archivos existentes
+                        const doc = typeof editDocumentData !== 'undefined' ? editDocumentData : null;
+                        if (doc && doc.attachments) {
+                            try {
+                                let attachments = JSON.parse(doc.attachments);
+                                attachments = attachments.filter((att, idx) => idx !== fileIndex);
+                                doc.attachments = JSON.stringify(attachments);
+                                
+                                // Recargar la sección de archivos existentes
+                                const existingAttachmentsDiv = document.getElementById('existingAttachments');
+                                if (existingAttachmentsDiv && attachments.length > 0) {
+                                    let html = '<label class="form-label">Archivos Existentes</label><div class="list-group mb-3">';
+                                    attachments.forEach((att, idx) => {
+                                        const attFileName = att.fileName || 'Archivo ' + (idx + 1);
+                                        const mimeType = att.mimeType || '';
+                                        let iconClass = 'fas fa-file';
+                                        
+                                        if (mimeType.includes('pdf')) {
+                                            iconClass = 'fas fa-file-pdf text-danger';
+                                        } else if (mimeType.includes('image')) {
+                                            iconClass = 'fas fa-file-image text-info';
+                                        } else if (mimeType.includes('word') || mimeType.includes('document')) {
+                                            iconClass = 'fas fa-file-word text-primary';
+                                        }
+                                        
+                                        let sizeStr = '';
+                                        if (att.fileSize) {
+                                            const size = parseInt(att.fileSize);
+                                            if (size < 1024) {
+                                                sizeStr = size + ' B';
+                                            } else if (size < 1024 * 1024) {
+                                                sizeStr = (size / 1024).toFixed(1) + ' KB';
+                                            } else {
+                                                sizeStr = (size / (1024 * 1024)).toFixed(1) + ' MB';
+                                            }
+                                        }
+                                        
+                                        html += '<div class="list-group-item d-flex justify-content-between align-items-center">';
+                                        html += '<span><i class="' + iconClass + ' me-2"></i>' + attFileName + '</span>';
+                                        html += '<div class="d-flex align-items-center gap-2">';
+                                        if (sizeStr) {
+                                            html += '<small class="text-muted">' + sizeStr + '</small>';
+                                        }
+                                        html += '<button class="btn btn-sm btn-danger" onclick="deleteAttachment(' + documentId + ', ' + idx + ', \'' + attFileName.replace(/'/g, "\\'") + '\', false)" title="Eliminar archivo">';
+                                        html += '<i class="fas fa-trash"></i>';
+                                        html += '</button>';
+                                        html += '</div>';
+                                        html += '</div>';
+                                    });
+                                    html += '</div>';
+                                    existingAttachmentsDiv.innerHTML = html;
+                                } else if (existingAttachmentsDiv) {
+                                    existingAttachmentsDiv.innerHTML = '';
+                                }
+                            } catch (e) {
+                                // Error al actualizar, recargar la página
+                                window.location.reload();
+                            }
+                        } else {
+                            // Si no hay más archivos, ocultar la sección
+                            const existingAttachmentsDiv = document.getElementById('existingAttachments');
+                            if (existingAttachmentsDiv) {
+                                existingAttachmentsDiv.innerHTML = '';
+                            }
+                        }
+                    }
+                } else {
+                    alert('Error al eliminar el archivo: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar archivo:', error);
+                alert('Error al eliminar el archivo. Por favor, intente nuevamente.');
+            });
+        }
+        
         // Asignar al objeto window inmediatamente
         window.viewDocument = viewDocument;
         window.editDocument = editDocument;
         window.deleteDocument = deleteDocument;
+        window.deleteAttachment = deleteAttachment;
         
         let prescriptionIndex = 1;
+        
+        // Función para calcular el siguiente índice disponible basándose en los campos existentes
+        function getNextPrescriptionIndex() {
+            const container = document.getElementById('prescriptionsContainer');
+            if (!container) return 0;
+            
+            const inputs = container.querySelectorAll('input[name^="prescription_medication_"]');
+            let maxIndex = -1;
+            
+            inputs.forEach(input => {
+                const name = input.name;
+                const match = name.match(/prescription_medication_(\d+)/);
+                if (match) {
+                    const index = parseInt(match[1], 10);
+                    if (index > maxIndex) {
+                        maxIndex = index;
+                    }
+                }
+            });
+            
+            return maxIndex + 1;
+        }
         
         // Auto-seleccionar especialidad cuando se selecciona un profesional
         document.addEventListener('DOMContentLoaded', function() {
@@ -1028,31 +1183,72 @@
         
         function addPrescription() {
             const container = document.getElementById('prescriptionsContainer');
-            if (!container) return;
+            if (!container) {
+                return;
+            }
+            
+            // Calcular el siguiente índice disponible
+            const nextIndex = getNextPrescriptionIndex();
             
             const div = document.createElement('div');
             div.className = 'prescription-item row g-3 mb-2';
-            div.innerHTML = `
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="prescription_medication_${prescriptionIndex}" placeholder="Medicamento">
-                </div>
-                <div class="col-md-2">
-                    <input type="text" class="form-control" name="prescription_dosage_${prescriptionIndex}" placeholder="Dosis">
-                </div>
-                <div class="col-md-2">
-                    <input type="text" class="form-control" name="prescription_frequency_${prescriptionIndex}" placeholder="Frecuencia">
-                </div>
-                <div class="col-md-2">
-                    <input type="text" class="form-control" name="prescription_duration_${prescriptionIndex}" placeholder="Duración">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-sm btn-danger" onclick="removePrescription(this)">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
+            
+            // Crear los elementos manualmente para evitar problemas con template literals
+            const colMed = document.createElement('div');
+            colMed.className = 'col-md-4';
+            const inputMed = document.createElement('input');
+            inputMed.type = 'text';
+            inputMed.className = 'form-control';
+            inputMed.name = 'prescription_medication_' + nextIndex;
+            inputMed.placeholder = 'Medicamento';
+            colMed.appendChild(inputMed);
+            
+            const colDosage = document.createElement('div');
+            colDosage.className = 'col-md-2';
+            const inputDosage = document.createElement('input');
+            inputDosage.type = 'text';
+            inputDosage.className = 'form-control';
+            inputDosage.name = 'prescription_dosage_' + nextIndex;
+            inputDosage.placeholder = 'Dosis';
+            colDosage.appendChild(inputDosage);
+            
+            const colFreq = document.createElement('div');
+            colFreq.className = 'col-md-2';
+            const inputFreq = document.createElement('input');
+            inputFreq.type = 'text';
+            inputFreq.className = 'form-control';
+            inputFreq.name = 'prescription_frequency_' + nextIndex;
+            inputFreq.placeholder = 'Frecuencia';
+            colFreq.appendChild(inputFreq);
+            
+            const colDur = document.createElement('div');
+            colDur.className = 'col-md-2';
+            const inputDur = document.createElement('input');
+            inputDur.type = 'text';
+            inputDur.className = 'form-control';
+            inputDur.name = 'prescription_duration_' + nextIndex;
+            inputDur.placeholder = 'Duración';
+            colDur.appendChild(inputDur);
+            
+            const colBtn = document.createElement('div');
+            colBtn.className = 'col-md-2';
+            const btnRemove = document.createElement('button');
+            btnRemove.type = 'button';
+            btnRemove.className = 'btn btn-sm btn-danger';
+            btnRemove.onclick = function() { removePrescription(this); };
+            btnRemove.innerHTML = '<i class="fas fa-times"></i>';
+            colBtn.appendChild(btnRemove);
+            
+            div.appendChild(colMed);
+            div.appendChild(colDosage);
+            div.appendChild(colFreq);
+            div.appendChild(colDur);
+            div.appendChild(colBtn);
+            
             container.appendChild(div);
-            prescriptionIndex++;
+            
+            // Actualizar el índice global para mantener consistencia
+            prescriptionIndex = nextIndex + 1;
         }
         
         function removePrescription(button) {
@@ -1063,6 +1259,7 @@
         window.addPrescription = addPrescription;
         window.removePrescription = removePrescription;
         window.calculateBMI = calculateBMI;
+        window.deleteAttachment = deleteAttachment;
         
         // Limpiar formulario al cerrar modal
         document.addEventListener('DOMContentLoaded', function() {
@@ -1074,11 +1271,15 @@
                     const documentId = document.getElementById('documentId');
                     const modalTitle = document.getElementById('modalTitle');
                     const prescriptionsContainer = document.getElementById('prescriptionsContainer');
+                    const existingAttachmentsDiv = document.getElementById('existingAttachments');
+                    const attachmentsInput = document.getElementById('attachmentsInput');
                     
                     if (form) form.reset();
                     if (formAction) formAction.value = 'create';
                     if (documentId) documentId.value = '';
                     if (modalTitle) modalTitle.textContent = 'Nuevo Documento Clínico';
+                    if (existingAttachmentsDiv) existingAttachmentsDiv.innerHTML = '';
+                    if (attachmentsInput) attachmentsInput.value = '';
                     if (prescriptionsContainer) {
                         prescriptionsContainer.innerHTML = `
                             <div class="prescription-item row g-3 mb-2">
@@ -1101,8 +1302,11 @@
                                 </div>
                             </div>
                         `;
+                        // Recalcular el índice basándose en los campos existentes
+                        prescriptionIndex = getNextPrescriptionIndex() + 1;
+                    } else {
+                        prescriptionIndex = 1;
                     }
-                    prescriptionIndex = 1;
                 });
             }
         });
@@ -1112,7 +1316,6 @@
         window.addEventListener('load', function() {
             // Asegurarse de que Bootstrap esté disponible
             if (typeof bootstrap === 'undefined') {
-                console.error('Bootstrap no está cargado');
                 return;
             }
             
@@ -1128,8 +1331,6 @@
                         setTimeout(function() {
                             window.history.replaceState({}, document.title, window.location.pathname);
                         }, 100);
-                    } else {
-                        console.error('Modal de vista no encontrado');
                     }
                 } else if (modalAction === 'edit' && typeof editDocumentData !== 'undefined') {
                     var doc = editDocumentData;
@@ -1216,7 +1417,7 @@
                                 }
                             }
                         } catch (e) {
-                            console.error('Error al parsear signos vitales:', e);
+                            // Error al parsear signos vitales, ignorar
                         }
                     }
                     
@@ -1299,10 +1500,73 @@
                                     container.appendChild(div);
                                     prescriptionIndex = 1;
                                 }
+                                
+                                // Actualizar prescriptionIndex basándose en los campos existentes después de cargar
+                                prescriptionIndex = getNextPrescriptionIndex() + 1;
                             }
                         } catch (e) {
-                            console.error('Error al parsear prescripciones:', e);
+                            // Error al parsear prescripciones, ignorar
                         }
+                    }
+                    
+                    // Cargar archivos adjuntos existentes si hay
+                    const existingAttachmentsDiv = document.getElementById('existingAttachments');
+                    if (existingAttachmentsDiv && doc.attachments && doc.attachments !== null && doc.attachments !== 'null' && doc.attachments !== '') {
+                        try {
+                            let attachments;
+                            if (typeof doc.attachments === 'string') {
+                                attachments = JSON.parse(doc.attachments);
+                            } else {
+                                attachments = doc.attachments;
+                            }
+                            
+                            if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+                                let html = '<label class="form-label">Archivos Existentes</label><div class="list-group mb-3">';
+                                attachments.forEach((att, idx) => {
+                                    const fileName = att.fileName || 'Archivo ' + (idx + 1);
+                                    const mimeType = att.mimeType || '';
+                                    let iconClass = 'fas fa-file';
+                                    
+                                    if (mimeType.includes('pdf')) {
+                                        iconClass = 'fas fa-file-pdf text-danger';
+                                    } else if (mimeType.includes('image')) {
+                                        iconClass = 'fas fa-file-image text-info';
+                                    } else if (mimeType.includes('word') || mimeType.includes('document')) {
+                                        iconClass = 'fas fa-file-word text-primary';
+                                    }
+                                    
+                                    let sizeStr = '';
+                                    if (att.fileSize) {
+                                        const size = parseInt(att.fileSize);
+                                        if (size < 1024) {
+                                            sizeStr = size + ' B';
+                                        } else if (size < 1024 * 1024) {
+                                            sizeStr = (size / 1024).toFixed(1) + ' KB';
+                                        } else {
+                                            sizeStr = (size / (1024 * 1024)).toFixed(1) + ' MB';
+                                        }
+                                    }
+                                    
+                                    html += '<div class="list-group-item d-flex justify-content-between align-items-center">';
+                                    html += '<span><i class="' + iconClass + ' me-2"></i>' + fileName + '</span>';
+                                    html += '<div class="d-flex align-items-center gap-2">';
+                                    if (sizeStr) {
+                                        html += '<small class="text-muted">' + sizeStr + '</small>';
+                                    }
+                                    html += '<button class="btn btn-sm btn-danger" onclick="deleteAttachment(' + doc.id + ', ' + idx + ', \'' + fileName.replace(/'/g, "\\'") + '\', false)" title="Eliminar archivo">';
+                                    html += '<i class="fas fa-trash"></i>';
+                                    html += '</button>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
+                                html += '</div>';
+                                existingAttachmentsDiv.innerHTML = html;
+                            }
+                        } catch (e) {
+                            // Error al parsear archivos adjuntos, ignorar
+                        }
+                    } else if (existingAttachmentsDiv) {
+                        existingAttachmentsDiv.innerHTML = '';
                     }
                     
                     // Asignar tipo de documento ANTES de abrir el modal
@@ -1335,9 +1599,7 @@
                                 
                                 // Método 4: Forzar actualización mediante clonado (último recurso)
                                 if (selectEl.value !== value || selectEl.selectedIndex !== optionIndex) {
-                                    console.log('Forzando actualización mediante clonado del select');
                                     const parent = selectEl.parentNode;
-                                    const nextSibling = selectEl.nextSibling;
                                     
                                     // Crear nuevo select con todos los atributos
                                     const newSelect = document.createElement('select');
@@ -1363,20 +1625,13 @@
                                     
                                     // Reemplazar el select
                                     parent.replaceChild(newSelect, selectEl);
-                                    console.log('Select clonado y reemplazado. Nuevo valor:', newSelect.value);
                                     return true;
                                 }
                                 
-                                // Verificar que se asignó correctamente
-                                const finalValue = selectEl.value;
-                                const finalIndex = selectEl.selectedIndex;
-                                console.log('Valor asignado - value:', finalValue, 'selectedIndex:', finalIndex, 'esperado:', value);
-                                
-                                return finalValue === value || finalIndex === optionIndex;
+                                return selectEl.value === value || selectEl.selectedIndex === optionIndex;
                             }
                             return false;
                         } catch (e) {
-                            console.error('Error al asignar tipo de documento:', e);
                             return false;
                         }
                     }
@@ -1384,7 +1639,6 @@
                     // Intentar asignar ANTES de abrir el modal
                     if (documentTypeEl && docTypeValue) {
                         setDocumentTypeValue(documentTypeEl, docTypeValue);
-                        console.log('Tipo de documento asignado ANTES de abrir modal:', docTypeValue);
                     }
                     
                     // Abrir modal de edición
@@ -1399,8 +1653,6 @@
                             if (currentSelectEl && docTypeValue) {
                                 const success = setDocumentTypeValue(currentSelectEl, docTypeValue);
                                 if (success) {
-                                    console.log('Tipo de documento verificado/corregido:', docTypeValue, 'selectedIndex:', currentSelectEl.selectedIndex, 'value:', currentSelectEl.value);
-                                    
                                     // Forzar actualización visual disparando eventos
                                     const changeEvent = new Event('change', { bubbles: true, cancelable: true });
                                     currentSelectEl.dispatchEvent(changeEvent);
@@ -1415,8 +1667,6 @@
                                     if (documentTypeEl !== currentSelectEl) {
                                         documentTypeEl = currentSelectEl;
                                     }
-                                } else {
-                                    console.warn('No se pudo asignar tipo de documento:', docTypeValue);
                                 }
                             }
                         }
@@ -1452,8 +1702,6 @@
                         setTimeout(function() {
                             window.history.replaceState({}, document.title, window.location.pathname);
                         }, 100);
-                    } else {
-                        console.error('Modal de edición no encontrado');
                     }
                 }
             }

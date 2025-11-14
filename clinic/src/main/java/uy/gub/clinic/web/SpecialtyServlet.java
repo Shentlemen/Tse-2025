@@ -51,10 +51,10 @@ public class SpecialtyServlet extends HttpServlet {
                 System.out.println("ClinicId desde sesión: " + clinicId);
             }
             
-            // Obtener especialidades según el contexto
-            System.out.println("DEBUG SpecialtyServlet: Obteniendo especialidades para clínica ID: " + clinicId);
-            System.out.println("Llamando a specialtyService.getSpecialtiesByClinic(" + clinicId + ")...");
-            List<Specialty> specialties = specialtyService.getSpecialtiesByClinic(clinicId);
+            // Las especialidades ahora son globales (sin filtrar por clínica)
+            System.out.println("DEBUG SpecialtyServlet: Obteniendo todas las especialidades (globales)");
+            System.out.println("Llamando a specialtyService.getAllSpecialties()...");
+            List<Specialty> specialties = specialtyService.getAllSpecialties();
             System.out.println("Especialidades obtenidas: " + specialties.size());
 
             for (Specialty specialty : specialties) {
@@ -157,10 +157,8 @@ public class SpecialtyServlet extends HttpServlet {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
         
-        if (clinicId == null) {
-            throw new IllegalArgumentException("No se pudo determinar la clínica del usuario");
-        }
-        
+        // Las especialidades ahora son globales, no se requiere clinicId
+        // Se mantiene por compatibilidad pero puede ser null
         System.out.println("Llamando a specialtyService.registerSpecialty...");
         
         Specialty specialty = specialtyService.registerSpecialty(name, code, description, clinicId);

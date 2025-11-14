@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
     @NamedQuery(name = "AccessRequest.findAll", query = "SELECT r FROM AccessRequest r"),
     @NamedQuery(name = "AccessRequest.findByPatient", query = "SELECT r FROM AccessRequest r WHERE r.patient.id = :patientId"),
     @NamedQuery(name = "AccessRequest.findByProfessional", query = "SELECT r FROM AccessRequest r WHERE r.professional.id = :professionalId"),
-    @NamedQuery(name = "AccessRequest.findByStatus", query = "SELECT r FROM AccessRequest r WHERE r.status = :status")
+    @NamedQuery(name = "AccessRequest.findByStatus", query = "SELECT r FROM AccessRequest r WHERE r.status = :status"),
+    @NamedQuery(name = "AccessRequest.findByProfessionalAndStatus", query = "SELECT r FROM AccessRequest r WHERE r.professional.id = :professionalId AND r.status = :status")
 })
 public class AccessRequest {
     
@@ -56,6 +57,10 @@ public class AccessRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "specialty_id")
+    private Specialty specialty; // Especialidad sobre la cual se solicitan los documentos
     
     // Constructores
     public AccessRequest() {
@@ -164,6 +169,14 @@ public class AccessRequest {
     
     public void setClinic(Clinic clinic) {
         this.clinic = clinic;
+    }
+    
+    public Specialty getSpecialty() {
+        return specialty;
+    }
+    
+    public void setSpecialty(Specialty specialty) {
+        this.specialty = specialty;
     }
     
     @Override

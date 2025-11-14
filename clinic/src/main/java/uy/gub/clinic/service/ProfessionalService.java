@@ -146,6 +146,15 @@ public class ProfessionalService {
      */
     public Optional<Professional> getProfessionalById(Long id) {
         Professional professional = entityManager.find(Professional.class, id);
+        if (professional != null) {
+            // Cargar relaciones lazy para evitar LazyInitializationException
+            if (professional.getClinic() != null) {
+                professional.getClinic().getName(); // Forzar carga
+            }
+            if (professional.getSpecialty() != null) {
+                professional.getSpecialty().getName(); // Forzar carga
+            }
+        }
         return Optional.ofNullable(professional);
     }
     
@@ -157,17 +166,10 @@ public class ProfessionalService {
                                          String email, String licenseNumber, 
                                          String phone, Long specialtyId) {
         
-        System.out.println("=== ProfessionalService.updateProfessional ===");
-        System.out.println("ID: " + id);
-        System.out.println("SpecialtyId recibido: " + specialtyId);
-        
         Professional professional = entityManager.find(Professional.class, id);
         if (professional == null) {
             throw new IllegalArgumentException("Profesional no encontrado con ID: " + id);
         }
-        
-        System.out.println("Profesional encontrado: " + professional.getFullName());
-        System.out.println("Especialidad actual: " + (professional.getSpecialty() != null ? professional.getSpecialty().getName() : "NULL"));
         
         // Actualizar campos
         if (name != null) professional.setName(name);
@@ -179,15 +181,12 @@ public class ProfessionalService {
         // Actualizar especialidad si se proporciona
         if (specialtyId != null) {
             Specialty specialty = entityManager.find(Specialty.class, specialtyId);
-            System.out.println("Especialidad encontrada: " + (specialty != null ? specialty.getName() : "NULL"));
             if (specialty != null) {
                 professional.setSpecialty(specialty);
-                System.out.println("Especialidad asignada al profesional");
             }
         }
         
         entityManager.merge(professional);
-        System.out.println("Profesional guardado en la base de datos");
         return professional;
     }
     

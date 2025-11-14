@@ -61,6 +61,10 @@ dependencies {
     // JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0'
+    
+    // HAPI FHIR for FHIR resources (includes FHIR R4 model classes)
+    implementation 'ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.10.0'
+    implementation 'ca.uhn.hapi.fhir:hapi-fhir-base:6.10.0'
 
     // SLF4J Logging (WildFly provides implementation)
     providedCompile 'org.slf4j:slf4j-api:2.0.9'

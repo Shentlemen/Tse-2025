@@ -203,17 +203,44 @@
                     <h2>
                         <i class="fas fa-user-cog me-2"></i>Gestión de Usuarios
                     </h2>
-                    <c:if test="${sessionScope.role == 'SUPER_ADMIN'}">
-                        <span class="badge badge-super-admin">
-                            <i class="fas fa-crown me-1"></i>Vista Completa
-                        </span>
-                    </c:if>
+                    <div class="d-flex align-items-center gap-2">
+                        <c:if test="${sessionScope.role == 'SUPER_ADMIN'}">
+                            <span class="badge badge-super-admin">
+                                <i class="fas fa-crown me-1"></i>Vista Completa
+                            </span>
+                        </c:if>
+                        <c:if test="${sessionScope.role == 'ADMIN_CLINIC' or sessionScope.role == 'SUPER_ADMIN'}">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+                            </button>
+                        </c:if>
+                    </div>
                 </div>
 
                 <c:if test="${sessionScope.role == 'SUPER_ADMIN'}">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Vista Completa:</strong> Estás viendo todos los usuarios del sistema.
+                    </div>
+                </c:if>
+                
+                <!-- Mensajes de éxito/error -->
+                <c:if test="${not empty success}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>${success}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </c:if>
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>${error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </c:if>
+                <c:if test="${param.success == 'created'}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>Usuario creado exitosamente
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 </c:if>
 
@@ -456,6 +483,108 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-1"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear Nuevo Usuario -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createUserForm" method="POST" action="<c:url value='/admin/users'/>">
+                    <input type="hidden" name="action" value="create">
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Puedes crear usuarios con rol de Administrador o Profesional. 
+                            Los usuarios profesionales no requieren estar vinculados a un profesional existente.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createUsername" class="form-label">Usuario *</label>
+                                    <input type="text" class="form-control" id="createUsername" name="username" required>
+                                    <small class="form-text text-muted">Nombre de usuario único para iniciar sesión</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createPassword" class="form-label">Contraseña *</label>
+                                    <input type="password" class="form-control" id="createPassword" name="password" required minlength="6">
+                                    <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createFirstName" class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="createFirstName" name="firstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createLastName" class="form-label">Apellido *</label>
+                                    <input type="text" class="form-control" id="createLastName" name="lastName" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createEmail" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="createEmail" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="createRole" class="form-label">Rol *</label>
+                                    <select class="form-select" id="createRole" name="role" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option value="ADMIN_CLINIC">Administrador</option>
+                                        <option value="PROFESSIONAL">Profesional</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="createClinicId" class="form-label">Clínica *</label>
+                                    <select class="form-select" id="createClinicId" name="clinicId" required ${sessionScope.role == 'ADMIN_CLINIC' ? 'disabled' : ''}>
+                                        <option value="">Seleccionar...</option>
+                                        <c:forEach var="clinic" items="${clinics}">
+                                            <option value="${clinic.id}" ${sessionScope.role == 'ADMIN_CLINIC' and sessionScope.clinicId == clinic.id ? 'selected' : ''}>
+                                                ${clinic.name}
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                    <c:if test="${sessionScope.role == 'ADMIN_CLINIC'}">
+                                        <input type="hidden" name="clinicId" value="${sessionScope.clinicId}">
+                                        <small class="form-text text-muted">Solo puedes crear usuarios para tu propia clínica</small>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Crear Usuario
                         </button>
                     </div>
                 </form>
@@ -801,6 +930,25 @@
                     tempForm.submit();
                 });
             }
+            
+            // Limpiar formulario de creación al cerrar el modal
+            const createUserModal = document.getElementById('createUserModal');
+            if (createUserModal) {
+                createUserModal.addEventListener('hidden.bs.modal', function() {
+                    const form = document.getElementById('createUserForm');
+                    if (form) {
+                        form.reset();
+                        // Si es ADMIN_CLINIC, restaurar la clínica seleccionada
+                        <c:if test="${sessionScope.role == 'ADMIN_CLINIC' and sessionScope.clinicId != null}">
+                        const clinicSelect = document.getElementById('createClinicId');
+                        if (clinicSelect) {
+                            clinicSelect.value = '${sessionScope.clinicId}';
+                        }
+                        </c:if>
+                    }
+                });
+            }
+            
         });
     </script>
 </body>

@@ -68,7 +68,8 @@ public class ProfessionalServlet extends HttpServlet {
             
             // Cargar especialidades de la clínica para el formulario
             System.out.println("DEBUG: Obteniendo especialidades para clínica ID: " + clinicId);
-            List<Specialty> specialties = specialtyService.getSpecialtiesByClinic(clinicId);
+            // Las especialidades ahora son globales (sin filtrar por clínica)
+            List<Specialty> specialties = specialtyService.getAllSpecialties();
             request.setAttribute("specialties", specialties);
             System.out.println("Especialidades cargadas para clínica " + clinicId + ": " + specialties.size());
             
