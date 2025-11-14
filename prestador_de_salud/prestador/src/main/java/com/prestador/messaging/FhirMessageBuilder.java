@@ -338,8 +338,7 @@ public class FhirMessageBuilder {
         envelope.put("timestamp", LocalDateTime.now().toString());
         envelope.put("sourceSystem", sourceSystem);
         envelope.put("eventType", eventType);
-        envelope.put("fhirVersion", "R4");
-        envelope.put("resource", new org.json.JSONObject(resourceJson));
+        envelope.put("payload", new org.json.JSONObject(resourceJson)); // Changed from "resource" to "payload" for HCEN compatibility
 
         return envelope.toString();
     }

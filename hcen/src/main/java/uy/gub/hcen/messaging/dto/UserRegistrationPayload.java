@@ -1,5 +1,7 @@
 package uy.gub.hcen.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -17,6 +19,7 @@ import java.util.Objects;
  * @version 1.0
  * @since 2025-11-13
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserRegistrationPayload implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -26,7 +29,10 @@ public class UserRegistrationPayload implements Serializable {
      * <p>
      * Format: 7-8 digits, optionally with dots and dash (e.g., "1.234.567-8")
      * Normalized format: digits only (e.g., "12345678")
+     * <p>
+     * Note: Can also be received as "identifier" from FHIR-based senders
      */
+    @JsonProperty(value = "ci")
     private String ci;
 
     /**
@@ -99,6 +105,15 @@ public class UserRegistrationPayload implements Serializable {
 
     public void setCi(String ci) {
         this.ci = ci;
+    }
+
+    /**
+     * Setter for identifier field (alias for ci).
+     * Used when messages come from FHIR-based senders that use "identifier" instead of "ci".
+     */
+    @JsonProperty("id")
+    public void setIdentifier(String identifier) {
+        this.ci = identifier;
     }
 
     public String getFirstName() {

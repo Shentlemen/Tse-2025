@@ -98,7 +98,7 @@ public class MessageValidator {
         validateBaseMessage(message);
 
         // Validate event type
-        if (!"USER_CREATED".equals(message.getEventType())) {
+        if (!"patient-create".equals(message.getEventType())) {
             throw new InvalidMessageException(
                     "Invalid event type for user registration: " + message.getEventType(),
                     message.getMessageId(),

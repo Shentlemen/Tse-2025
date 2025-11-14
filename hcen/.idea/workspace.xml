@@ -4,27 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add health provider and interaction with hcen with inuns and rndc">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: service broker connection">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/HcenMessageSender.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/HcenMessageSender.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/ClinicalDocumentServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/ClinicalDocumentServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/PatientServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/PatientServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/FhirMessageBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/FhirMessageBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/FhirMessageBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/FhirMessageBuilder.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/META-INF/MANIFEST.MF" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/META-INF/jboss-deployment-structure.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/HcenMessageSender.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/HcenMessageSender.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/ClinicalDocumentServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/ClinicalDocumentServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/PatientServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/PatientServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/jboss-deployment-structure.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/jboss-deployment-structure.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/FhirMessageBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/FhirMessageBuilder.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -427,7 +417,7 @@
       <workItem from="1761865802436" duration="44000" />
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
-      <workItem from="1763003396511" duration="29991000" />
+      <workItem from="1763003396511" duration="31417000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -685,7 +675,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763083102381</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="fix: service broker connection">
+      <option name="closed" value="true" />
+      <created>1763094712797</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1763094712797</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -720,7 +718,8 @@
     <MESSAGE value="fix: user register, clinic register and onboard process" />
     <MESSAGE value="fix: user list" />
     <MESSAGE value="feat: add health provider and interaction with hcen with inuns and rndc" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add health provider and interaction with hcen with inuns and rndc" />
+    <MESSAGE value="fix: service broker connection" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: service broker connection" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

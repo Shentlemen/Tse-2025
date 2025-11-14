@@ -1,5 +1,6 @@
 package uy.gub.hcen.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import uy.gub.hcen.rndc.entity.DocumentType;
 
 import java.io.Serializable;
@@ -22,6 +23,7 @@ import java.util.Objects;
  * @version 1.0
  * @since 2025-11-13
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DocumentRegistrationPayload implements Serializable {
 
     private static final long serialVersionUID = 1L;
