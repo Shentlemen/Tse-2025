@@ -38,6 +38,9 @@ public class PatientServlet extends HttpServlet {
     @EJB
     private PatientService patientService;
 
+    @EJB
+    private HcenMessageSender messageSender;
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -83,7 +86,7 @@ public class PatientServlet extends HttpServlet {
             // Send patient registration message to HCEN (FHIR format)
             try {
                 if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
-                    HcenMessageSender.sendPatientRegistration(
+                    messageSender.sendPatientRegistration(
                             patient.getDocumentNumber(),
                             patient.getName(),
                             patient.getLastName(),

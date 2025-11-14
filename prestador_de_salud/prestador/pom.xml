@@ -20,6 +20,12 @@
   </properties>
 
   <dependencies>
+      <dependency>
+          <groupId>jakarta.annotation</groupId>
+          <artifactId>jakarta.annotation-api</artifactId>
+          <version>3.0.0</version> <!-- or a compatible version for your WildFly -->
+          <scope>provided</scope>
+      </dependency>
     <!-- Jakarta EE API para WildFly 33 -->
     <dependency>
       <groupId>jakarta.servlet</groupId>

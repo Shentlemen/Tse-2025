@@ -4,6 +4,7 @@
         <dependencies>
             <module name="org.postgresql" />
             <module name="org.apache.activemq.artemis"/>
+            <module name="jakarta.jms.api"/>
         </dependencies>
     </deployment>
 </jboss-deployment-structure>

@@ -39,6 +39,9 @@ public class ClinicalDocumentServlet extends HttpServlet {
     @EJB
     private ClinicalDocumentService documentService;
 
+    @EJB
+    private HcenMessageSender messageSender;
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -119,7 +122,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
                         String documentLocatorUrl = baseUrl + "/api/documents/" + document.getId();
 
                         // Send metadata to HCEN (FHIR format)
-                        HcenMessageSender.sendDocumentMetadata(
+                        messageSender.sendDocumentMetadata(
                                 patient.getDocumentNumber(),  // Patient CI
                                 document.getId(),              // Local document ID
                                 document.getDocumentType(),    // Document type
