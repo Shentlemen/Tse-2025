@@ -13,9 +13,9 @@ import java.util.List;
 @Table(name = "specialties")
 @NamedQueries({
     @NamedQuery(name = "Specialty.findAll", query = "SELECT s FROM Specialty s ORDER BY s.name"),
-    @NamedQuery(name = "Specialty.findActive", query = "SELECT s FROM Specialty s WHERE s.active = true ORDER BY s.name"),
-    @NamedQuery(name = "Specialty.findByClinic", query = "SELECT s FROM Specialty s WHERE s.clinic.id = :clinicId ORDER BY s.name"),
-    @NamedQuery(name = "Specialty.findActiveByClinic", query = "SELECT s FROM Specialty s WHERE s.clinic.id = :clinicId AND s.active = true ORDER BY s.name")
+    @NamedQuery(name = "Specialty.findActive", query = "SELECT s FROM Specialty s WHERE s.active = true ORDER BY s.name")
+    // Nota: Specialty.findByClinic y Specialty.findActiveByClinic han sido removidos
+    // porque las especialidades ahora son globales y no se filtran por clínica
 })
 public class Specialty {
     
@@ -40,8 +40,10 @@ public class Specialty {
     private Boolean active = true;
     
     // Relaciones
+    // NOTA: Las especialidades ahora son globales, pero mantenemos la relación opcional
+    // por compatibilidad con la base de datos existente
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clinic_id", nullable = false)
+    @JoinColumn(name = "clinic_id", nullable = true)
     private Clinic clinic;
     
     @OneToMany(mappedBy = "specialty", fetch = FetchType.LAZY)

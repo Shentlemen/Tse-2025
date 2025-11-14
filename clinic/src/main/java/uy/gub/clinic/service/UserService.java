@@ -224,6 +224,48 @@ public class UserService {
     }
     
     /**
+     * Cambiar username de usuario
+     */
+    @Transactional
+    public void changeUsername(Long userId, String newUsername) {
+        try {
+            User user = entityManager.find(User.class, userId);
+            if (user == null) {
+                throw new IllegalArgumentException("Usuario no encontrado: " + userId);
+            }
+            
+            // Validar que el nuevo username no esté vacío
+            if (newUsername == null || newUsername.trim().isEmpty()) {
+                throw new IllegalArgumentException("El nombre de usuario no puede estar vacío");
+            }
+            
+            newUsername = newUsername.trim();
+            
+            // Verificar que el nuevo username no esté en uso por otro usuario
+            Optional<User> existingUser = findByUsername(newUsername);
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new IllegalArgumentException("El nombre de usuario ya está en uso: " + newUsername);
+            }
+            
+            // Si el username no cambió, no hacer nada
+            if (newUsername.equals(user.getUsername())) {
+                return;
+            }
+            
+            String oldUsername = user.getUsername();
+            user.setUsername(newUsername);
+            entityManager.merge(user);
+            entityManager.flush();
+            
+            logger.info("Username actualizado para usuario ID {}: {} -> {}", userId, oldUsername, newUsername);
+            
+        } catch (Exception e) {
+            logger.error("Error al cambiar username para usuario: {}", userId, e);
+            throw e;
+        }
+    }
+    
+    /**
      * Actualizar último login
      */
     @Transactional

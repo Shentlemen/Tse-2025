@@ -130,6 +130,32 @@ public class PatientService {
     }
     
     /**
+     * Obtiene un paciente por número de cédula
+     */
+    public Optional<Patient> getPatientByDocumentNumber(String documentNumber) {
+        if (documentNumber == null || documentNumber.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        
+        TypedQuery<Patient> query = entityManager.createNamedQuery(
+            "Patient.findByDocumentActive", Patient.class);
+        query.setParameter("documentNumber", documentNumber.trim());
+        
+        List<Patient> results = query.getResultList();
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Patient patient = results.get(0);
+        // Cargar relaciones lazy
+        if (patient.getClinic() != null) {
+            patient.getClinic().getName();
+        }
+        
+        return Optional.of(patient);
+    }
+    
+    /**
      * Actualiza un paciente existente
      */
     @Transactional

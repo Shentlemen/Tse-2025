@@ -216,6 +216,21 @@ public class UserManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
+            // Verificar permisos
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("user") == null) {
+                response.sendRedirect(request.getContextPath() + "/");
+                return;
+            }
+            
+            String currentRole = (String) session.getAttribute("role");
+            Long currentClinicId = (Long) session.getAttribute("clinicId");
+            
+            if (!"ADMIN_CLINIC".equals(currentRole) && !"SUPER_ADMIN".equals(currentRole)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado");
+                return;
+            }
+            
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String email = request.getParameter("email");
@@ -223,24 +238,61 @@ public class UserManagementServlet extends HttpServlet {
             String lastName = request.getParameter("lastName");
             String role = request.getParameter("role");
             String clinicIdStr = request.getParameter("clinicId");
-            String professionalIdStr = request.getParameter("professionalId");
             
             // Validaciones básicas
             if (username == null || username.trim().isEmpty()) {
                 request.setAttribute("error", "El nombre de usuario es requerido");
-                handleCreateUserForm(request, response);
+                handleListUsers(request, response);
                 return;
             }
             
             if (password == null || !PasswordUtil.isValidPassword(password)) {
                 request.setAttribute("error", "La contraseña debe tener al menos 6 caracteres");
-                handleCreateUserForm(request, response);
+                handleListUsers(request, response);
                 return;
             }
             
             if (role == null || role.trim().isEmpty()) {
                 request.setAttribute("error", "El rol es requerido");
-                handleCreateUserForm(request, response);
+                handleListUsers(request, response);
+                return;
+            }
+            
+            // Validar que el rol sea ADMIN_CLINIC o PROFESSIONAL
+            if (!"ADMIN_CLINIC".equals(role) && !"PROFESSIONAL".equals(role)) {
+                request.setAttribute("error", "El rol debe ser Administrador o Profesional");
+                handleListUsers(request, response);
+                return;
+            }
+            
+            // Validar clínica
+            if (clinicIdStr == null || clinicIdStr.trim().isEmpty()) {
+                request.setAttribute("error", "La clínica es requerida");
+                handleListUsers(request, response);
+                return;
+            }
+            
+            Long clinicId;
+            try {
+                clinicId = Long.parseLong(clinicIdStr);
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "ID de clínica inválido");
+                handleListUsers(request, response);
+                return;
+            }
+            
+            // Si es ADMIN_CLINIC, solo puede crear usuarios para su propia clínica
+            if ("ADMIN_CLINIC".equals(currentRole) && currentClinicId != null && !currentClinicId.equals(clinicId)) {
+                request.setAttribute("error", "No tienes permisos para crear usuarios en otra clínica");
+                handleListUsers(request, response);
+                return;
+            }
+            
+            // Verificar que la clínica existe
+            Optional<Clinic> clinicOpt = clinicService.getClinicById(clinicId);
+            if (clinicOpt.isEmpty()) {
+                request.setAttribute("error", "Clínica no encontrada");
+                handleListUsers(request, response);
                 return;
             }
             
@@ -253,42 +305,25 @@ public class UserManagementServlet extends HttpServlet {
             user.setLastName(lastName != null ? lastName.trim() : null);
             user.setRole(role);
             user.setActive(true);
-            
-            // Configurar clínica si es necesario
-            if (clinicIdStr != null && !clinicIdStr.trim().isEmpty()) {
-                try {
-                    Long clinicId = Long.parseLong(clinicIdStr);
-                    Optional<Clinic> clinic = clinicService.getClinicById(clinicId);
-                    if (clinic.isPresent()) {
-                        user.setClinic(clinic.get());
-                    }
-                } catch (NumberFormatException e) {
-                    logger.warn("ID de clínica inválido: {}", clinicIdStr);
-                }
-            }
-            
-            // Configurar profesional si es necesario
-            if (professionalIdStr != null && !professionalIdStr.trim().isEmpty()) {
-                try {
-                    Long professionalId = Long.parseLong(professionalIdStr);
-                    Optional<Professional> professional = professionalService.getProfessionalById(professionalId);
-                    if (professional.isPresent()) {
-                        user.setProfessional(professional.get());
-                    }
-                } catch (NumberFormatException e) {
-                    logger.warn("ID de profesional inválido: {}", professionalIdStr);
-                }
-            }
+            user.setClinic(clinicOpt.get());
+            // No establecer professional - los usuarios profesionales no requieren estar vinculados a un Professional entity
             
             userService.createUser(user);
             
-            request.setAttribute("success", "Usuario creado exitosamente");
-            response.sendRedirect(request.getContextPath() + "/admin/users?action=list");
+            logger.info("Usuario creado: {} con rol {} para clínica {} por usuario {}", 
+                       username, role, clinicOpt.get().getName(), session.getAttribute("user"));
             
+            request.setAttribute("success", "Usuario creado exitosamente: " + username);
+            response.sendRedirect(request.getContextPath() + "/admin/users?success=created");
+            
+        } catch (IllegalArgumentException e) {
+            logger.warn("Error de validación al crear usuario: {}", e.getMessage());
+            request.setAttribute("error", "Error al crear usuario: " + e.getMessage());
+            handleListUsers(request, response);
         } catch (Exception e) {
             logger.error("Error al crear usuario", e);
             request.setAttribute("error", "Error al crear usuario: " + e.getMessage());
-            handleCreateUserForm(request, response);
+            handleListUsers(request, response);
         }
     }
     

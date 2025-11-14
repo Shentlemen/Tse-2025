@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%
     // Validación básica de sesión
     if (session == null || session.getAttribute("user") == null) {
@@ -167,7 +168,7 @@
                         <i class="fas fa-user me-2"></i>${sessionScope.user}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">
+                        <li><a class="dropdown-item" href="<c:url value='/professional/profile'/>">
                             <i class="fas fa-user me-2"></i>Mi Perfil
                         </a></li>
                         <li><a class="dropdown-item" href="<c:url value='/auth/logout'/>">
@@ -188,28 +189,18 @@
                         <h6 class="text-white-50 mb-3">PROFESIONAL</h6>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link active" href="<c:url value='/professional/dashboard.jsp'/>">
+                                <a class="nav-link active" href="<c:url value='/professional/dashboard'/>">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/professional/patients.jsp'/>">
-                                    <i class="fas fa-users me-2"></i>Mis Pacientes
+                                <a class="nav-link" href="<c:url value='/professional/patients'/>">
+                                    <i class="fas fa-users me-2"></i>Pacientes
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/professional/documents.jsp'/>">
-                                    <i class="fas fa-file-medical me-2"></i>Documentos
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/professional/requests.jsp'/>">
+                                <a class="nav-link" href="<c:url value='/professional/requests'/>">
                                     <i class="fas fa-exchange-alt me-2"></i>Solicitudes
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<c:url value='/professional/history.jsp'/>">
-                                    <i class="fas fa-history me-2"></i>Historia Clínica
                                 </a>
                             </li>
                         </ul>
@@ -231,57 +222,43 @@
 
                 <!-- Estadísticas -->
                 <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card stat-card">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="stat-icon me-3">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0">24</h4>
-                                    <small class="opacity-75">Pacientes Activos</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card stat-card">
                             <div class="card-body d-flex align-items-center">
                                 <div class="stat-icon me-3">
                                     <i class="fas fa-file-medical"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">156</h4>
+                                    <h4 class="mb-0">${totalDocuments != null ? totalDocuments : 0}</h4>
                                     <small class="opacity-75">Documentos Creados</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card stat-card">
                             <div class="card-body d-flex align-items-center">
                                 <div class="stat-icon me-3">
                                     <i class="fas fa-clock"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">8</h4>
+                                    <h4 class="mb-0">${pendingRequests != null ? pendingRequests : 0}</h4>
                                     <small class="opacity-75">Solicitudes Pendientes</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card stat-card">
                             <div class="card-body d-flex align-items-center">
                                 <div class="stat-icon me-3">
-                                    <i class="fas fa-calendar-check"></i>
+                                    <i class="fas fa-file-medical"></i>
                                 </div>
                                 <div>
-                                    <h4 class="mb-0">12</h4>
-                                    <small class="opacity-75">Citas Hoy</small>
+                                    <h4 class="mb-0">${recentDocuments != null ? recentDocuments.size() : 0}</h4>
+                                    <small class="opacity-75">Documentos Recientes</small>
                                 </div>
                             </div>
                         </div>
@@ -290,89 +267,8 @@
 
                 <!-- Contenido Principal -->
                 <div class="row">
-                    <!-- Pacientes Recientes -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-white">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-users me-2"></i>Pacientes Recientes
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="patient-card">
-                                    <div class="d-flex align-items-center">
-                                        <div class="patient-avatar me-3">
-                                            AS
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">Ana Silva</h6>
-                                            <small class="text-muted">
-                                                <i class="fas fa-id-card me-1"></i>12345678
-                                                <span class="ms-2">
-                                                    <i class="fas fa-birthday-cake me-1"></i>38 años
-                                                </span>
-                                            </small>
-                                        </div>
-                                        <div class="text-end">
-                                            <small class="text-muted">Última consulta</small>
-                                            <div>Hace 2 días</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="patient-card">
-                                    <div class="d-flex align-items-center">
-                                        <div class="patient-avatar me-3">
-                                            RM
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">Roberto Martínez</h6>
-                                            <small class="text-muted">
-                                                <i class="fas fa-id-card me-1"></i>87654321
-                                                <span class="ms-2">
-                                                    <i class="fas fa-birthday-cake me-1"></i>45 años
-                                                </span>
-                                            </small>
-                                        </div>
-                                        <div class="text-end">
-                                            <small class="text-muted">Última consulta</small>
-                                            <div>Hace 5 días</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="patient-card">
-                                    <div class="d-flex align-items-center">
-                                        <div class="patient-avatar me-3">
-                                            LF
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">Lucía Fernández</h6>
-                                            <small class="text-muted">
-                                                <i class="fas fa-id-card me-1"></i>11223344
-                                                <span class="ms-2">
-                                                    <i class="fas fa-birthday-cake me-1"></i>31 años
-                                                </span>
-                                            </small>
-                                        </div>
-                                        <div class="text-end">
-                                            <small class="text-muted">Última consulta</small>
-                                            <div>Hace 1 semana</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="text-center mt-3">
-                                    <a href="<c:url value='/professional/patients.jsp'/>" class="btn btn-outline-primary">
-                                        <i class="fas fa-eye me-2"></i>Ver Todos los Pacientes
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Documentos y Solicitudes -->
-                    <div class="col-md-6">
+                    <!-- Documentos Recientes -->
+                    <div class="col-md-12">
                         <div class="card">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0">
@@ -380,41 +276,53 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="document-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Consulta Cardiológica</strong>
-                                            <br><small class="text-muted">Ana Silva - 15/12/2024</small>
+                                <c:choose>
+                                    <c:when test="${empty recentDocuments}">
+                                        <div class="alert alert-info text-center" role="alert">
+                                            <i class="fas fa-file-medical fa-3x mb-3 d-block"></i>
+                                            <h5>No hay documentos recientes</h5>
+                                            <p class="mb-0">Aún no has creado ningún documento clínico.</p>
                                         </div>
-                                        <span class="status-badge status-approved">Completado</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="document-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Electrocardiograma</strong>
-                                            <br><small class="text-muted">Roberto Martínez - 14/12/2024</small>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="row">
+                                            <c:forEach var="doc" items="${recentDocuments}">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="document-item">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <strong>${doc.title != null ? doc.title : 'Sin título'}</strong>
+                                                                <br>
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-user me-1"></i>${doc.patient.fullName}
+                                                                    <c:if test="${doc.dateOfVisit != null}">
+                                                                        <%
+                                                                            uy.gub.clinic.entity.ClinicalDocument docItem = (uy.gub.clinic.entity.ClinicalDocument) pageContext.getAttribute("doc");
+                                                                            if (docItem != null && docItem.getDateOfVisit() != null) {
+                                                                                java.util.Date visitDate = java.sql.Date.valueOf(docItem.getDateOfVisit());
+                                                                                pageContext.setAttribute("docVisitDate", visitDate);
+                                                                        %>
+                                                                            - <fmt:formatDate value="${docVisitDate}" pattern="dd/MM/yyyy"/>
+                                                                        <%
+                                                                            }
+                                                                        %>
+                                                                    </c:if>
+                                                                </small>
+                                                                <c:if test="${not empty doc.documentType}">
+                                                                    <br><span class="badge bg-info mt-1">${doc.documentType}</span>
+                                                                </c:if>
+                                                            </div>
+                                                            <a href="<c:url value='/professional/patient-documents'/>?patientId=${doc.patient.id}&action=view&documentId=${doc.id}" 
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye me-1"></i>Ver
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </c:forEach>
                                         </div>
-                                        <span class="status-badge status-pending">En Proceso</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="document-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Ecocardiograma</strong>
-                                            <br><small class="text-muted">Lucía Fernández - 13/12/2024</small>
-                                        </div>
-                                        <span class="status-badge status-approved">Completado</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newDocumentModal">
-                                        <i class="fas fa-plus me-2"></i>Nuevo Documento
-                                    </button>
-                                </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>
@@ -424,77 +332,98 @@
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header bg-white">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="fas fa-exchange-alt me-2"></i>Solicitudes de Acceso Pendientes
                                 </h5>
+                                <a href="<c:url value='/professional/requests'/>" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-2"></i>Ver Todas
+                                </a>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Paciente</th>
-                                                <th>Tipo de Documento</th>
-                                                <th>Clínica Origen</th>
-                                                <th>Fecha Solicitud</th>
-                                                <th>Estado</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="patient-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
-                                                            AS
-                                                        </div>
-                                                        <span>Ana Silva</span>
-                                                    </div>
-                                                </td>
-                                                <td>Resonancia Magnética</td>
-                                                <td>Centro Neurológico</td>
-                                                <td>13/12/2024</td>
-                                                <td><span class="status-badge status-pending">Pendiente</span></td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-success" title="Aprobar">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                        <button class="btn btn-outline-danger" title="Rechazar">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="patient-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
-                                                            RM
-                                                        </div>
-                                                        <span>Roberto Martínez</span>
-                                                    </div>
-                                                </td>
-                                                <td>Tomografía Computada</td>
-                                                <td>Hospital Central</td>
-                                                <td>12/12/2024</td>
-                                                <td><span class="status-badge status-pending">Pendiente</span></td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-success" title="Aprobar">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                        <button class="btn btn-outline-danger" title="Rechazar">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${empty pendingRequestsList}">
+                                        <div class="alert alert-info text-center" role="alert">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            <h5>No hay solicitudes pendientes</h5>
+                                            <p class="mb-0">No tiene solicitudes de acceso a documentos pendientes de aprobación.</p>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Paciente</th>
+                                                        <th>Especialidad</th>
+                                                        <th>Fecha Solicitud</th>
+                                                        <th>Motivo</th>
+                                                        <th>Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <c:forEach var="request" items="${pendingRequestsList}" begin="0" end="4">
+                                                        <tr>
+                                                            <td>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="patient-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                                        <c:set var="patientName" value="${request.patient.fullName}"/>
+                                                                        <c:set var="initials" value="${fn:substring(patientName, 0, 1)}${fn:substring(patientName, fn:indexOf(patientName, ' ') + 1, fn:indexOf(patientName, ' ') + 2)}"/>
+                                                                        ${initials}
+                                                                    </div>
+                                                                    <span>${request.patient.fullName}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <c:if test="${request.specialty != null}">
+                                                                    <span class="badge bg-info">${request.specialty.name}</span>
+                                                                </c:if>
+                                                                <c:if test="${request.specialty == null}">
+                                                                    <span class="text-muted">Todas</span>
+                                                                </c:if>
+                                                            </td>
+                                                            <td>
+                                                                <%
+                                                                    uy.gub.clinic.entity.AccessRequest reqItem = (uy.gub.clinic.entity.AccessRequest) pageContext.getAttribute("request");
+                                                                    if (reqItem != null && reqItem.getRequestedAt() != null) {
+                                                                        java.time.LocalDateTime requestedAt = reqItem.getRequestedAt();
+                                                                        java.util.Date requestedDate = java.sql.Timestamp.valueOf(requestedAt);
+                                                                        pageContext.setAttribute("requestedDate", requestedDate);
+                                                                %>
+                                                                    <fmt:formatDate value="${requestedDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                <%
+                                                                    } else {
+                                                                %>
+                                                                    <span class="text-muted">N/A</span>
+                                                                <%
+                                                                    }
+                                                                %>
+                                                            </td>
+                                                            <td>
+                                                                <c:if test="${not empty request.reason}">
+                                                                    ${fn:substring(request.reason, 0, 40)}${fn:length(request.reason) > 40 ? '...' : ''}
+                                                                </c:if>
+                                                                <c:if test="${empty request.reason}">
+                                                                    <span class="text-muted">Sin motivo</span>
+                                                                </c:if>
+                                                            </td>
+                                                            <td>
+                                                                <span class="status-badge status-pending">Pendiente</span>
+                                                            </td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <c:if test="${pendingRequestsList.size() > 5}">
+                                            <div class="text-center mt-3">
+                                                <a href="<c:url value='/professional/requests'/>" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye me-2"></i>Ver Todas las Solicitudes (${pendingRequestsList.size()})
+                                                </a>
+                                            </div>
+                                        </c:if>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>

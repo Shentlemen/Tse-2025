@@ -112,7 +112,27 @@ public class ClinicalDocumentService {
             TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
                 "ClinicalDocument.findByPatient", ClinicalDocument.class);
             query.setParameter("patientId", patientId);
-            return query.getResultList();
+            List<ClinicalDocument> documents = query.getResultList();
+            
+            // Cargar relaciones lazy para evitar LazyInitializationException
+            for (ClinicalDocument doc : documents) {
+                if (doc.getPatient() != null) {
+                    doc.getPatient().getName(); // Cargar Patient
+                    if (doc.getPatient().getClinic() != null) {
+                        doc.getPatient().getClinic().getName(); // Cargar Clinic del Patient
+                    }
+                }
+                if (doc.getProfessional() != null) {
+                    doc.getProfessional().getName(); // Cargar Professional
+                    if (doc.getProfessional().getClinic() != null) {
+                        doc.getProfessional().getClinic().getName(); // Cargar Clinic del Professional
+                    }
+                }
+                if (doc.getClinic() != null) doc.getClinic().getName();
+                if (doc.getSpecialty() != null) doc.getSpecialty().getName();
+            }
+            
+            return documents;
         } catch (Exception e) {
             logger.error("Error al obtener documentos por paciente: {}", patientId, e);
             return List.of();
@@ -127,7 +147,29 @@ public class ClinicalDocumentService {
             TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
                 "ClinicalDocument.findByProfessional", ClinicalDocument.class);
             query.setParameter("professionalId", professionalId);
-            return query.getResultList();
+            
+            List<ClinicalDocument> results = query.getResultList();
+            
+            // Cargar relaciones lazy
+            for (ClinicalDocument doc : results) {
+                if (doc.getPatient() != null) {
+                    doc.getPatient().getFullName(); // Acceder para cargar
+                }
+                if (doc.getProfessional() != null) {
+                    doc.getProfessional().getFullName(); // Acceder para cargar
+                    if (doc.getProfessional().getSpecialty() != null) {
+                        doc.getProfessional().getSpecialty().getName(); // Acceder para cargar
+                    }
+                }
+                if (doc.getSpecialty() != null) {
+                    doc.getSpecialty().getName(); // Acceder para cargar
+                }
+                if (doc.getClinic() != null) {
+                    doc.getClinic().getName(); // Acceder para cargar
+                }
+            }
+            
+            return results;
         } catch (Exception e) {
             logger.error("Error al obtener documentos por profesional: {}", professionalId, e);
             return List.of();
@@ -205,10 +247,8 @@ public class ClinicalDocumentService {
                 throw new IllegalArgumentException("El profesional no pertenece a la clínica especificada");
             }
             
-            // Validar que la especialidad pertenezca a la clínica
-            if (!specialty.getClinic().getId().equals(clinic.getId())) {
-                throw new IllegalArgumentException("La especialidad no pertenece a la clínica especificada");
-            }
+            // Las especialidades ahora son globales, no es necesario validar que pertenezcan a la clínica
+            // (se mantiene la validación de que la especialidad existe)
             
             // Establecer relaciones
             document.setPatient(patient);
