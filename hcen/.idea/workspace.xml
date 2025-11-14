@@ -5,52 +5,113 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add health provider and interaction with hcen with inuns and rndc">
-      <change afterPath="$PROJECT_DIR$/HCEN_MESSAGING_ARCHITECTURE_ANALYSIS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/INLINE_DOCUMENT_VIEWER_IMPLEMENTATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/JMS_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MESSAGING_ANALYSIS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentMetadata.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/document/entity/ClinicalDocument.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/dto/ClinicServiceRegistrationRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/BaseMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/DuplicateMessageException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/InvalidMessageException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/exception/MessageProcessingException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/listener/DocumentRegistrationListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/listener/UserRegistrationListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/processor/DocumentRegistrationProcessor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/processor/UserRegistrationProcessor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/.claude/settings.local.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/HCEN_INTEGRATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/README_API.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/ClinicalDocument.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/Patient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/META-INF/persistence.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V001__create_patients_table.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V002__create_clinical_documents_table.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/jndi.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/webapp/WEB-INF/jboss-web.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/../TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/INFRASTRUCTURE_REQUIREMENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/JMS_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/JMS_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentContentResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/dto/DocumentContentResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/document/entity/ClinicalDocument.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/api/rest/InusResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/inus/api/rest/InusResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/api/rest/RndcResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/api/rest/RndcResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jboss-deployment-structure.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/index.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/index.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pdi-mock/hcen-pdi/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../pdi-mock/hcen-pdi/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/ClinicalDocument.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/ClinicalDocument.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/Patient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/entity/Patient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/HcenMessageSender.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/PatientServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V001__create_patients_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V001__create_patients_table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V002__create_clinical_documents_table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/resources/db/migration/V002__create_clinical_documents_table.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/Servlet/SaludServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/Servlet/SaludServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/NuevoServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/NuevoServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/SvHistoriaclinica.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/SvHistoriaclinica.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/TestServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/example/prestador/TestServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/newpackage/TestServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/newpackage/TestServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/javadoc-bundle-options/element-list" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-archiver/pom.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-javadoc-plugin-stale-data.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador-javadoc.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador-sources.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/Servlet/SaludServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/Servlet/SaludServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/NuevoServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/NuevoServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/SvHistoriaclinica.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/SvHistoriaclinica.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/TestServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/example/prestador/TestServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/newpackage/TestServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/newpackage/TestServlet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/SaludServlet.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/class-use/SaludServlet.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-summary.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-tree.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/Servlet/package-use.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allclasses-index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allclasses.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/allpackages-index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/SvHistoriaclinica.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/class-use/SvHistoriaclinica.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-summary.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-tree.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/com/example/prestador/package-use.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/constant-values.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/deprecated-list.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/element-list" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/help-doc.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/index-all.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/external/jquery/jquery.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_55_fbf9ee_1x400.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_65_dadada_1x400.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_75_dadada_1x400.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_75_e6e6e6_1x400.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_glass_95_fef1ec_1x400.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-bg_highlight-soft_75_cccccc_1x100.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_222222_256x240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_2e83ff_256x240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_454545_256x240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_888888_256x240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/images/ui-icons_cd0a0a_256x240.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-3.5.1.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.min.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.structure.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jquery-ui.structure.min.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils-ie.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils-ie.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip-utils/dist/jszip-utils.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip/dist/jszip.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/jquery/jszip/dist/jszip.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/member-search-index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/member-search-index.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/TestServlet.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/class-use/TestServlet.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-summary.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-tree.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/newpackage/package-use.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/overview-summary.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/overview-tree.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/package-search-index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/package-search-index.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/resources/glass.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/resources/x.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/script.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/search.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/serialized-form.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/stylesheet.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/type-search-index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/reports/apidocs/type-search-index.zip" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -196,6 +257,7 @@
           <value>
             <map>
               <entry key="JBoss/WildFly 37.0.0.Final" value="STOPPED" />
+              <entry key="JBoss/WildFly 37.0.0.Final LOCAL" value="STOPPED" />
             </map>
           </value>
         </entry>
@@ -291,7 +353,7 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="JBoss/WildFly 37.0.0.Final" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+    <configuration name="JBoss/WildFly 37.0.0.Final LOCAL" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false">
       <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/hcen/" />
       <option name="COMMON_VM_ARGUMENTS" value="-Djboss.server.default.config=standalone-full.xml -Dmp.openapi.extensions.smallrye.openapi.ui.enable=true -Djboss.bind.address=0.0.0.0" />
       <option name="UPDATING_POLICY" value="restart-server" />
@@ -364,12 +426,60 @@
         </option>
       </method>
     </configuration>
+    <configuration name="JBoss/WildFly 37.0.0.Final" type="JBossConfiguration" factoryName="Remote" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="LOCAL" value="false" />
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/hcen/" />
+      <option name="UPDATING_POLICY" value="hot-swap-classes" />
+      <deployment>
+        <artifact name="Gradle : fing.hcen : hcen-1.0-SNAPSHOT.war">
+          <settings DEPLOYMENT_METHOD="Staging" />
+        </artifact>
+      </deployment>
+      <server-settings>
+        <data>
+          <option name="credentialAlias" value="0bd88b57-0abe-4684-8661-3ced1a77135b" />
+          <option name="managementPort" value="9990" />
+          <option name="serverGroup" value="" />
+          <option name="stagingRemotePath" value="" />
+          <option name="transportStagingTarget">
+            <TransportTarget>
+              <option name="id" value="2141730e-91a3-4d62-9e27-d3ae4c14659c" />
+              <id>2141730e-91a3-4d62-9e27-d3ae4c14659c</id>
+            </TransportTarget>
+          </option>
+          <option name="username" value="admin" />
+          <username>admin</username>
+          <credential-alias>0bd88b57-0abe-4684-8661-3ced1a77135b</credential-alias>
+          <management-port>9990</management-port>
+          <server-group />
+          <transport-target>
+            <TransportTarget>
+              <option name="id" value="2141730e-91a3-4d62-9e27-d3ae4c14659c" />
+              <id>2141730e-91a3-4d62-9e27-d3ae4c14659c</id>
+            </TransportTarget>
+          </transport-target>
+          <staging-path />
+        </data>
+      </server-settings>
+      <predefined_log_file enabled="true" id="JBoss" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="60086" />
+        <option name="LOCAL" value="false" />
+      </RunnerSettings>
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="Gradle : fing.hcen : hcen-1.0-SNAPSHOT.war" />
+        </option>
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Batch.migrate" />
       <item itemvalue="Batch.run-migrations" />
       <item itemvalue="Gradle.hcen [buildDependents]" />
       <item itemvalue="Gradle.hcen [clean]" />
       <item itemvalue="Gradle.hcen [build]" />
+      <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final LOCAL" />
       <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final" />
     </list>
     <recent_temporary>
@@ -404,7 +514,7 @@
       <workItem from="1761865802436" duration="44000" />
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
-      <workItem from="1763003396511" duration="8990000" />
+      <workItem from="1763003396511" duration="24365000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -646,7 +756,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762310583561</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="feat: add health provider and interaction with hcen with inuns and rndc">
+      <option name="closed" value="true" />
+      <created>1763039711386</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1763039711386</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

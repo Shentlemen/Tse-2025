@@ -2,10 +2,8 @@ package com.prestador.servlet;
 
 import com.prestador.entity.Patient;
 import com.prestador.messaging.HcenMessageSender;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import com.prestador.service.PatientService;
+import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +13,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
@@ -37,21 +34,9 @@ import java.util.logging.Logger;
 public class PatientServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PatientServlet.class.getName());
-    private static EntityManagerFactory emf;
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        emf = Persistence.createEntityManagerFactory("prestador-pu");
-    }
-
-    @Override
-    public void destroy() {
-        if (emf != null && emf.isOpen()) {
-            emf.close();
-        }
-        super.destroy();
-    }
+    @EJB
+    private PatientService patientService;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -89,57 +74,44 @@ public class PatientServlet extends HttpServlet {
             patient.setClinicId(json.getLong("clinicId"));
             patient.setActive(json.optBoolean("active", true));
 
-            // Persist to database
-            EntityManager em = emf.createEntityManager();
-            EntityTransaction tx = em.getTransaction();
+            // Persist to database using EJB service (automatic transaction management)
+            patient = patientService.createPatient(patient);
 
+            LOGGER.log(Level.INFO, "Patient created successfully - ID: {0}, CI: {1}",
+                    new Object[]{patient.getId(), patient.getDocumentNumber()});
+
+            // Send patient registration message to HCEN (FHIR format)
             try {
-                tx.begin();
-                em.persist(patient);
-                tx.commit();
-
-                LOGGER.log(Level.INFO, "Patient created successfully - ID: {0}, CI: {1}",
-                        new Object[]{patient.getId(), patient.getDocumentNumber()});
-
-                // Send patient registration message to HCEN
-                try {
-                    if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
-                        HcenMessageSender.sendPatientRegistration(
-                                patient.getDocumentNumber(),
-                                patient.getName(),
-                                patient.getLastName(),
-                                patient.getBirthDate() != null ? patient.getBirthDate().toString() : null,
-                                patient.getEmail(),
-                                patient.getPhone(),
-                                patient.getClinicId()
-                        );
-                        LOGGER.log(Level.INFO, "Patient registration message sent to HCEN - CI: {0}",
-                                patient.getDocumentNumber());
-                    } else {
-                        LOGGER.log(Level.WARNING,
-                                "Patient created without document number, skipping HCEN registration - Patient ID: {0}",
-                                patient.getId());
-                    }
-                } catch (Exception msgEx) {
-                    // Log but don't fail the request - patient is already saved
+                if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
+                    HcenMessageSender.sendPatientRegistration(
+                            patient.getDocumentNumber(),
+                            patient.getName(),
+                            patient.getLastName(),
+                            patient.getBirthDate(),
+                            patient.getGender(),
+                            patient.getEmail(),
+                            patient.getPhone(),
+                            patient.getAddress(),
+                            patient.getClinicId()
+                    );
+                    LOGGER.log(Level.INFO, "FHIR patient registration message sent to HCEN - CI: {0}",
+                            patient.getDocumentNumber());
+                } else {
                     LOGGER.log(Level.WARNING,
-                            "Failed to send patient registration to HCEN (patient already saved locally) - CI: " +
-                            patient.getDocumentNumber(), msgEx);
+                            "Patient created without document number, skipping HCEN registration - Patient ID: {0}",
+                            patient.getId());
                 }
-
-                // Return created patient
-                JSONObject responseJson = patientToJson(patient);
-                response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write(responseJson.toString());
-
-            } catch (Exception e) {
-                if (tx.isActive()) {
-                    tx.rollback();
-                }
-                throw e;
-            } finally {
-                em.close();
+            } catch (Exception msgEx) {
+                // Log but don't fail the request - patient is already saved
+                LOGGER.log(Level.WARNING,
+                        "Failed to send patient registration to HCEN (patient already saved locally) - CI: " +
+                        patient.getDocumentNumber(), msgEx);
             }
+
+            // Return created patient
+            JSONObject responseJson = patientToJson(patient);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write(responseJson.toString());
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -160,40 +132,32 @@ public class PatientServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
 
         try {
-            EntityManager em = emf.createEntityManager();
+            if (pathInfo == null || pathInfo.equals("/")) {
+                // List all patients
+                List<Patient> patients = patientService.findAll();
 
-            try {
-                if (pathInfo == null || pathInfo.equals("/")) {
-                    // List all patients
-                    List<Patient> patients = em.createQuery(
-                        "SELECT p FROM Patient p ORDER BY p.id", Patient.class)
-                        .getResultList();
-
-                    org.json.JSONArray jsonArray = new org.json.JSONArray();
-                    for (Patient patient : patients) {
-                        jsonArray.put(patientToJson(patient));
-                    }
-
-                    response.getWriter().write(jsonArray.toString());
-
-                } else {
-                    // Get specific patient
-                    String idStr = pathInfo.substring(1);
-                    Long id = Long.parseLong(idStr);
-
-                    Patient patient = em.find(Patient.class, id);
-
-                    if (patient != null) {
-                        response.getWriter().write(patientToJson(patient).toString());
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        JSONObject error = new JSONObject();
-                        error.put("error", "Patient not found");
-                        response.getWriter().write(error.toString());
-                    }
+                org.json.JSONArray jsonArray = new org.json.JSONArray();
+                for (Patient patient : patients) {
+                    jsonArray.put(patientToJson(patient));
                 }
-            } finally {
-                em.close();
+
+                response.getWriter().write(jsonArray.toString());
+
+            } else {
+                // Get specific patient
+                String idStr = pathInfo.substring(1);
+                Long id = Long.parseLong(idStr);
+
+                Patient patient = patientService.findById(id);
+
+                if (patient != null) {
+                    response.getWriter().write(patientToJson(patient).toString());
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    JSONObject error = new JSONObject();
+                    error.put("error", "Patient not found");
+                    response.getWriter().write(error.toString());
+                }
             }
 
         } catch (Exception e) {

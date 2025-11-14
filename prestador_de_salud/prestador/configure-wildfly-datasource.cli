@@ -1,0 +1,34 @@
+# WildFly CLI Script to configure HealthProvider DataSource
+# Run this with: ./bin/jboss-cli.sh --connect --file=configure-wildfly-datasource.cli
+
+# Add PostgreSQL JDBC Driver Module (if not already added)
+/subsystem=datasources/jdbc-driver=postgresql:add( \
+    driver-name=postgresql, \
+    driver-module-name=org.postgresql, \
+    driver-class-name=org.postgresql.Driver, \
+    driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource \
+)
+
+# Create HealthProvider DataSource
+data-source add \
+    --name=HealthProviderDS \
+    --jndi-name=java:jboss/datasources/HealthProviderDS \
+    --driver-name=postgresql \
+    --connection-url=jdbc:postgresql://localhost:5432/health_provider \
+    --user-name=postgres \
+    --password=postgres \
+    --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker \
+    --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter \
+    --background-validation=true \
+    --background-validation-millis=60000 \
+    --flush-strategy=FailingConnectionOnly \
+    --min-pool-size=5 \
+    --max-pool-size=20 \
+    --pool-prefill=true \
+    --enabled=true
+
+# Test connection
+/subsystem=datasources/data-source=HealthProviderDS:test-connection-in-pool
+
+# Reload server
+reload

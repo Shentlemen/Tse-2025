@@ -23,7 +23,7 @@ import java.util.Objects;
 @Entity
 @Table(
     name = "clinical_documents",
-    schema = "public",
+    schema = "health_provider",
     indexes = {
         @Index(name = "idx_clinical_documents_patient_id", columnList = "patient_id"),
         @Index(name = "idx_clinical_documents_clinic_id", columnList = "clinic_id"),

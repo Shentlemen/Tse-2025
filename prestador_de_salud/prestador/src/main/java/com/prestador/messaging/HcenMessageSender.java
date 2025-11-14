@@ -2,7 +2,7 @@ package com.prestador.messaging;
 
 import org.json.JSONObject;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.time.LocalDateTime;
@@ -32,50 +32,49 @@ public class HcenMessageSender {
     private static final String PRESTADOR_SOURCE_SYSTEM = "prestador-de-salud";
 
     /**
-     * Send patient registration message to HCEN
+     * Send patient registration message to HCEN (FHIR format)
      *
      * @param ci Patient document number (CI)
      * @param firstName Patient first name
      * @param lastName Patient last name
-     * @param dateOfBirth Date of birth (YYYY-MM-DD)
+     * @param birthDate Date of birth
+     * @param gender Gender
      * @param email Email address
      * @param phoneNumber Phone number
+     * @param address Address
      * @param clinicId Clinic identifier
      */
     public static void sendPatientRegistration(
             String ci,
             String firstName,
             String lastName,
-            String dateOfBirth,
+            java.time.LocalDate birthDate,
+            String gender,
             String email,
             String phoneNumber,
+            String address,
             Long clinicId) {
 
         String messageId = "msg-" + UUID.randomUUID().toString();
 
         try {
-            // Build message JSON
-            JSONObject message = new JSONObject();
-            message.put("messageId", messageId);
-            message.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            message.put("sourceSystem", PRESTADOR_SOURCE_SYSTEM);
-            message.put("eventType", "USER_CREATED");
+            // Build FHIR Patient resource
+            String fhirPatient = FhirMessageBuilder.buildPatientResource(
+                    ci, firstName, lastName, birthDate, gender,
+                    email, phoneNumber, address, clinicId
+            );
 
-            JSONObject payload = new JSONObject();
-            payload.put("ci", ci);
-            payload.put("firstName", firstName);
-            payload.put("lastName", lastName);
-            payload.put("dateOfBirth", dateOfBirth);
-            payload.put("email", email);
-            payload.put("phoneNumber", phoneNumber);
-            payload.put("clinicId", "clinic-" + clinicId);
-
-            message.put("payload", payload);
+            // Wrap in message envelope
+            String message = FhirMessageBuilder.wrapInMessageEnvelope(
+                    fhirPatient,
+                    "patient-create",
+                    PRESTADOR_SOURCE_SYSTEM
+            );
 
             // Send message
-            sendToQueue(USER_REGISTRATION_QUEUE, message.toString());
+            sendToQueue(USER_REGISTRATION_QUEUE, message);
 
-            LOGGER.log(Level.INFO, "Sent patient registration to HCEN - Message ID: {0}, CI: {1}",
+            LOGGER.log(Level.INFO, "Sent FHIR patient registration to HCEN - Message ID: {0}, CI: {1}",
                     new Object[]{messageId, ci});
 
         } catch (Exception e) {
@@ -85,7 +84,7 @@ public class HcenMessageSender {
     }
 
     /**
-     * Send clinical document metadata to HCEN RNDC
+     * Send clinical document metadata to HCEN RNDC (FHIR format)
      *
      * @param patientCI Patient document number (CI)
      * @param documentId Local document ID
@@ -105,7 +104,7 @@ public class HcenMessageSender {
             String documentTitle,
             String documentDescription,
             String createdBy,
-            String createdAt,
+            LocalDateTime createdAt,
             Long clinicId,
             Long specialtyId,
             String documentLocatorUrl) {
@@ -113,40 +112,36 @@ public class HcenMessageSender {
         String messageId = "msg-" + UUID.randomUUID().toString();
 
         try {
-            // Build message JSON
-            JSONObject message = new JSONObject();
-            message.put("messageId", messageId);
-            message.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            message.put("sourceSystem", PRESTADOR_SOURCE_SYSTEM);
-            message.put("eventType", "DOCUMENT_CREATED");
-
-            JSONObject payload = new JSONObject();
-            payload.put("patientCI", patientCI);
-            payload.put("documentType", documentType);
-
-            // Document locator - URL to retrieve this document from prestador
-            payload.put("documentLocator", documentLocatorUrl);
-
             // Generate document hash (simplified - in production use actual file hash)
-            payload.put("documentHash", "sha256:" + generateSimpleHash(documentId.toString()));
+            String documentHash = "sha256:" + generateSimpleHash(documentId.toString());
 
-            payload.put("createdBy", createdBy != null ? createdBy : "professional@prestador.uy");
-            payload.put("createdAt", createdAt);
-            payload.put("clinicId", "clinic-" + clinicId);
-            payload.put("documentTitle", documentTitle);
-            payload.put("documentDescription", documentDescription);
+            // Build FHIR DocumentReference resource
+            String fhirDocRef = FhirMessageBuilder.buildDocumentReferenceResource(
+                    patientCI,
+                    documentId,
+                    documentType,
+                    documentTitle,
+                    documentDescription,
+                    documentLocatorUrl,
+                    documentHash,
+                    createdBy != null ? createdBy : "professional@prestador.uy",
+                    createdAt,
+                    clinicId,
+                    specialtyId
+            );
 
-            if (specialtyId != null) {
-                payload.put("specialtyId", specialtyId);
-            }
-
-            message.put("payload", payload);
+            // Wrap in message envelope
+            String message = FhirMessageBuilder.wrapInMessageEnvelope(
+                    fhirDocRef,
+                    "document-create",
+                    PRESTADOR_SOURCE_SYSTEM
+            );
 
             // Send message
-            sendToQueue(DOCUMENT_REGISTRATION_QUEUE, message.toString());
+            sendToQueue(DOCUMENT_REGISTRATION_QUEUE, message);
 
             LOGGER.log(Level.INFO,
-                    "Sent document metadata to HCEN - Message ID: {0}, Patient CI: {1}, Document ID: {2}",
+                    "Sent FHIR document metadata to HCEN - Message ID: {0}, Patient CI: {1}, Document ID: {2}",
                     new Object[]{messageId, patientCI, documentId});
 
         } catch (Exception e) {

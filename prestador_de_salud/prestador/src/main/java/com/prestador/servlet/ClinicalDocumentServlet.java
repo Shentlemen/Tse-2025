@@ -3,10 +3,8 @@ package com.prestador.servlet;
 import com.prestador.entity.ClinicalDocument;
 import com.prestador.entity.Patient;
 import com.prestador.messaging.HcenMessageSender;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import com.prestador.service.ClinicalDocumentService;
+import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -37,21 +35,9 @@ import java.util.logging.Logger;
 public class ClinicalDocumentServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ClinicalDocumentServlet.class.getName());
-    private static EntityManagerFactory emf;
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        emf = Persistence.createEntityManagerFactory("prestador-pu");
-    }
-
-    @Override
-    public void destroy() {
-        if (emf != null && emf.isOpen()) {
-            emf.close();
-        }
-        super.destroy();
-    }
+    @EJB
+    private ClinicalDocumentService documentService;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -113,22 +99,16 @@ public class ClinicalDocumentServlet extends HttpServlet {
 
             document.setAttachments(json.optString("attachments", null));
 
-            // Persist to database
-            EntityManager em = emf.createEntityManager();
-            EntityTransaction tx = em.getTransaction();
+            // Persist to database using EJB service (automatic transaction management)
+            document = documentService.createDocument(document);
 
+            LOGGER.log(Level.INFO, "Clinical document created successfully - ID: {0}, Patient ID: {1}, Type: {2}",
+                    new Object[]{document.getId(), document.getPatientId(), document.getDocumentType()});
+
+            // Send document metadata to HCEN RNDC
             try {
-                tx.begin();
-                em.persist(document);
-                tx.commit();
-
-                LOGGER.log(Level.INFO, "Clinical document created successfully - ID: {0}, Patient ID: {1}, Type: {2}",
-                        new Object[]{document.getId(), document.getPatientId(), document.getDocumentType()});
-
-                // Send document metadata to HCEN RNDC
-                try {
-                    // Get patient CI for HCEN registration
-                    Patient patient = em.find(Patient.class, document.getPatientId());
+                // Get patient CI for HCEN registration
+                Patient patient = documentService.findPatientById(document.getPatientId());
 
                     if (patient != null && patient.getDocumentNumber() != null &&
                         !patient.getDocumentNumber().trim().isEmpty()) {
@@ -138,7 +118,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
                                 ":" + request.getServerPort() + request.getContextPath();
                         String documentLocatorUrl = baseUrl + "/api/documents/" + document.getId();
 
-                        // Send metadata to HCEN
+                        // Send metadata to HCEN (FHIR format)
                         HcenMessageSender.sendDocumentMetadata(
                                 patient.getDocumentNumber(),  // Patient CI
                                 document.getId(),              // Local document ID
@@ -146,7 +126,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
                                 document.getTitle(),           // Document title
                                 document.getDescription(),     // Document description
                                 "professional-" + document.getProfessionalId(), // Created by
-                                document.getCreatedAt().toString(), // Creation timestamp
+                                document.getCreatedAt(),       // Creation timestamp (LocalDateTime)
                                 document.getClinicId(),        // Clinic ID
                                 document.getSpecialtyId(),     // Specialty ID (optional)
                                 documentLocatorUrl             // URL to retrieve document from prestador
@@ -169,19 +149,10 @@ public class ClinicalDocumentServlet extends HttpServlet {
                             document.getId(), msgEx);
                 }
 
-                // Return created document
-                JSONObject responseJson = documentToJson(document);
-                response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write(responseJson.toString());
-
-            } catch (Exception e) {
-                if (tx.isActive()) {
-                    tx.rollback();
-                }
-                throw e;
-            } finally {
-                em.close();
-            }
+            // Return created document
+            JSONObject responseJson = documentToJson(document);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write(responseJson.toString());
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -202,41 +173,32 @@ public class ClinicalDocumentServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
 
         try {
-            EntityManager em = emf.createEntityManager();
+            if (pathInfo == null || pathInfo.equals("/")) {
+                // List all documents
+                List<ClinicalDocument> documents = documentService.findAll();
 
-            try {
-                if (pathInfo == null || pathInfo.equals("/")) {
-                    // List all documents
-                    List<ClinicalDocument> documents = em.createQuery(
-                        "SELECT d FROM ClinicalDocument d ORDER BY d.dateOfVisit DESC, d.id",
-                        ClinicalDocument.class)
-                        .getResultList();
-
-                    org.json.JSONArray jsonArray = new org.json.JSONArray();
-                    for (ClinicalDocument document : documents) {
-                        jsonArray.put(documentToJson(document));
-                    }
-
-                    response.getWriter().write(jsonArray.toString());
-
-                } else {
-                    // Get specific document
-                    String idStr = pathInfo.substring(1);
-                    Long id = Long.parseLong(idStr);
-
-                    ClinicalDocument document = em.find(ClinicalDocument.class, id);
-
-                    if (document != null) {
-                        response.getWriter().write(documentToJson(document).toString());
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        JSONObject error = new JSONObject();
-                        error.put("error", "Clinical document not found");
-                        response.getWriter().write(error.toString());
-                    }
+                org.json.JSONArray jsonArray = new org.json.JSONArray();
+                for (ClinicalDocument document : documents) {
+                    jsonArray.put(documentToJson(document));
                 }
-            } finally {
-                em.close();
+
+                response.getWriter().write(jsonArray.toString());
+
+            } else {
+                // Get specific document
+                String idStr = pathInfo.substring(1);
+                Long id = Long.parseLong(idStr);
+
+                ClinicalDocument document = documentService.findById(id);
+
+                if (document != null) {
+                    response.getWriter().write(documentToJson(document).toString());
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    JSONObject error = new JSONObject();
+                    error.put("error", "Clinical document not found");
+                    response.getWriter().write(error.toString());
+                }
             }
 
         } catch (Exception e) {

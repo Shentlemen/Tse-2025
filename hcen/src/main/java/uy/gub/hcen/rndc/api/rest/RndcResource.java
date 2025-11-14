@@ -1,12 +1,18 @@
 package uy.gub.hcen.rndc.api.rest;
 
+import ca.uhn.fhir.parser.DataFormatException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hl7.fhir.r4.model.DocumentReference;
 import uy.gub.hcen.api.dto.ErrorResponse;
+import uy.gub.hcen.fhir.converter.FhirDocumentReferenceConverter;
+import uy.gub.hcen.fhir.exception.FhirConversionException;
+import uy.gub.hcen.fhir.parser.FhirParserFactory;
 import uy.gub.hcen.rndc.dto.*;
 import uy.gub.hcen.rndc.entity.DocumentStatus;
 import uy.gub.hcen.rndc.entity.DocumentType;
@@ -67,6 +73,11 @@ public class RndcResource {
     private static final Logger LOGGER = Logger.getLogger(RndcResource.class.getName());
 
     /**
+     * FHIR JSON content type for FHIR DocumentReference resources
+     */
+    private static final String FHIR_JSON_CONTENT_TYPE = "application/fhir+json";
+
+    /**
      * Maximum page size to prevent excessive memory usage
      */
     private static final int MAX_PAGE_SIZE = 100;
@@ -79,6 +90,14 @@ public class RndcResource {
     @Inject
     private RndcService rndcService;
 
+    @Inject
+    private FhirParserFactory fhirParserFactory;
+
+    @Inject
+    private FhirDocumentReferenceConverter fhirDocumentReferenceConverter;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     // ================================================================
     // Document Registration (AC014)
     // ================================================================
@@ -89,12 +108,16 @@ public class RndcResource {
      * This endpoint is called by peripheral nodes (clinics, health providers) to register
      * document metadata. The actual document remains in peripheral storage.
      * <p>
+     * Supports TWO content types for backward compatibility:
+     * 1. application/json - Custom HCEN JSON format (DocumentRegistrationRequest)
+     * 2. application/fhir+json - FHIR R4 DocumentReference resource
+     * <p>
      * Idempotent Behavior: If a document with the same locator already exists,
      * returns the existing document (200 OK) instead of creating a duplicate.
      * <p>
      * POST /api/rndc/documents
      * <p>
-     * Request Body:
+     * Request Body (application/json):
      * <pre>
      * {
      *   "patientCi": "12345678",
@@ -108,27 +131,50 @@ public class RndcResource {
      * }
      * </pre>
      * <p>
+     * Request Body (application/fhir+json):
+     * - FHIR R4 DocumentReference resource with LOINC coding
+     * <p>
      * Success Response (201 Created):
      * - Headers: Location: /api/rndc/documents/{id}
      * - Body: DocumentResponse
      * <p>
      * Error Responses:
-     * - 400 Bad Request: Validation errors
+     * - 400 Bad Request: Validation errors or invalid FHIR resource
      * - 409 Conflict: Duplicate registration (if not idempotent)
      * - 500 Internal Server Error: System error
      *
-     * @param request Document registration request
+     * @param requestBody Raw request body (JSON string)
+     * @param contentType Content-Type header
      * @return Response with DocumentResponse (201 Created) or ErrorResponse (error)
      */
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, FHIR_JSON_CONTENT_TYPE})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response registerDocument(@Valid DocumentRegistrationRequest request) {
-        LOGGER.log(Level.INFO, "Document registration request received - Patient CI: {0}, Type: {1}, Clinic: {2}",
-                new Object[]{request.getPatientCi(), request.getDocumentType(), request.getClinicId()});
+    public Response registerDocument(
+            String requestBody,
+            @HeaderParam("Content-Type") String contentType) {
+
+        LOGGER.log(Level.INFO, "Document registration request received with Content-Type: {0}", contentType);
 
         try {
-            // Call service layer to register document
+            DocumentRegistrationRequest request;
+
+            // Determine content type and parse accordingly
+            if (contentType != null && contentType.contains("fhir+json")) {
+                // FHIR DocumentReference resource format
+                LOGGER.log(Level.INFO, "Parsing FHIR DocumentReference resource");
+                request = parseFhirDocumentReference(requestBody);
+
+            } else {
+                // Custom JSON format (default)
+                LOGGER.log(Level.INFO, "Parsing custom JSON format");
+                request = parseCustomJson(requestBody);
+            }
+
+            LOGGER.log(Level.INFO, "Document registration request parsed - Patient CI: {0}, Type: {1}, Clinic: {2}",
+                    new Object[]{request.getPatientCi(), request.getDocumentType(), request.getClinicId()});
+
+            // Call service layer to register document (same service layer for both formats)
             RndcDocument document = rndcService.registerDocument(
                     request.getPatientCi(),
                     request.getDocumentType(),
@@ -153,6 +199,22 @@ public class RndcResource {
                     .entity(response)
                     .build();
 
+        } catch (FhirConversionException e) {
+            LOGGER.log(Level.WARNING, "FHIR conversion error: " + e.getMessage());
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.badRequest(
+                            "Invalid FHIR DocumentReference resource: " + e.getMessage()))
+                    .build();
+
+        } catch (DataFormatException e) {
+            LOGGER.log(Level.WARNING, "FHIR parsing error: " + e.getMessage());
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.badRequest(
+                            "Malformed FHIR JSON: " + e.getMessage()))
+                    .build();
+
         } catch (DocumentRegistrationException e) {
             LOGGER.log(Level.WARNING, "Document registration failed: " + e.getMessage());
 
@@ -174,6 +236,40 @@ public class RndcResource {
                             "System error during document registration"))
                     .build();
         }
+    }
+
+    /**
+     * Parse FHIR DocumentReference resource from JSON string.
+     *
+     * @param requestBody FHIR JSON string
+     * @return DocumentRegistrationRequest DTO
+     * @throws FhirConversionException if FHIR parsing or conversion fails
+     */
+    private DocumentRegistrationRequest parseFhirDocumentReference(String requestBody)
+            throws FhirConversionException {
+
+        try {
+            // Parse FHIR DocumentReference resource using HAPI FHIR
+            DocumentReference documentReference =
+                    fhirParserFactory.parseJsonResource(DocumentReference.class, requestBody);
+
+            // Convert FHIR DocumentReference to DocumentRegistrationRequest
+            return fhirDocumentReferenceConverter.toDocumentRegistrationRequest(documentReference);
+
+        } catch (DataFormatException e) {
+            throw new FhirConversionException("Failed to parse FHIR DocumentReference JSON", e);
+        }
+    }
+
+    /**
+     * Parse custom JSON format (DocumentRegistrationRequest).
+     *
+     * @param requestBody JSON string
+     * @return DocumentRegistrationRequest DTO
+     * @throws Exception if JSON parsing fails
+     */
+    private DocumentRegistrationRequest parseCustomJson(String requestBody) throws Exception {
+        return objectMapper.readValue(requestBody, DocumentRegistrationRequest.class);
     }
 
     // ================================================================

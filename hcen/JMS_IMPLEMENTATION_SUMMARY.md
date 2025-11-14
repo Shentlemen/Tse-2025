@@ -16,13 +16,25 @@ This document summarizes the JMS (Java Message Service) implementation for HCEN 
 
 Two JMS queues were configured to receive messages from peripheral nodes:
 
+Run the Wildfly in admin mode using:
+```bash
+>./standalone.bat --server-config=standalone-full.xml --admin-only
+```
+
+Then on a separate terminal connect to it:
+```bash
+./jboss-cli.bat --connect
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:add(entries=["java:/jms/queue/UserRegistration"])
+/subsystem=messaging-activemq/server=default/jms-queue=DocumentRegistrationQueue:add(entries=["java:/jms/queue/DocumentRegistration"])
+ ```
+
 | Queue Name | JNDI Name | Purpose |
 |------------|-----------|---------|
 | `UserRegistrationQueue` | `java:/jms/queue/UserRegistration` | User creation events |
 | `DocumentRegistrationQueue` | `java:/jms/queue/DocumentRegistration` | Document creation events |
 
 ### 2. Message DTOs (6 classes)
-
+[standalone-full.xml](../../../../../../Program%20Files/wildfly-37.0.0.Final/standalone/configuration/standalone-full.xml)
 **Package**: `uy.gub.hcen.messaging.dto`
 
 - `BaseMessage` - Base class with common fields (messageId, timestamp, sourceSystem, eventType)

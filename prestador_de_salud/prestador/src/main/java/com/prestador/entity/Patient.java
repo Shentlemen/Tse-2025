@@ -24,7 +24,7 @@ import java.util.Objects;
 @Entity
 @Table(
     name = "patients",
-    schema = "public",
+    schema = "health_provider",
     indexes = {
         @Index(name = "idx_patients_document_number", columnList = "document_number"),
         @Index(name = "idx_patients_inus_id", columnList = "inus_id"),
@@ -197,7 +197,7 @@ public class Patient implements Serializable {
         return birthDate;
     }
 
-    public void setBirthDate(Local birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 

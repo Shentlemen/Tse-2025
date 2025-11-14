@@ -1,5 +1,7 @@
 package uy.gub.hcen.inus.api.rest;
 
+import ca.uhn.fhir.parser.DataFormatException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -8,7 +10,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.hl7.fhir.r4.model.Patient;
 import uy.gub.hcen.api.dto.ErrorResponse;
+import uy.gub.hcen.fhir.converter.FhirPatientConverter;
+import uy.gub.hcen.fhir.exception.FhirConversionException;
+import uy.gub.hcen.fhir.parser.FhirParserFactory;
 import uy.gub.hcen.inus.dto.*;
 import uy.gub.hcen.inus.entity.InusUser;
 import uy.gub.hcen.inus.entity.UserStatus;
@@ -59,8 +65,21 @@ public class InusResource {
 
     private static final Logger LOGGER = Logger.getLogger(InusResource.class.getName());
 
+    /**
+     * FHIR JSON content type for FHIR Patient resources
+     */
+    private static final String FHIR_JSON_CONTENT_TYPE = "application/fhir+json";
+
     @Inject
     private InusService inusService;
+
+    @Inject
+    private FhirParserFactory fhirParserFactory;
+
+    @Inject
+    private FhirPatientConverter fhirPatientConverter;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Context
     private UriInfo uriInfo;
@@ -75,7 +94,11 @@ public class InusResource {
      * This endpoint is called by peripheral nodes (clinics, health providers),
      * admins, or patients themselves to register new patients in the national user index.
      * <p>
-     * Request Body: UserRegistrationRequest (JSON)
+     * Supports TWO content types for backward compatibility:
+     * 1. application/json - Custom HCEN JSON format (UserRegistrationRequest)
+     * 2. application/fhir+json - FHIR R4 Patient resource
+     * <p>
+     * Request Body (application/json):
      * - ci: Cédula de Identidad (required)
      * - firstName: User's first name (required)
      * - lastName: User's last name (required)
@@ -84,21 +107,45 @@ public class InusResource {
      * - phoneNumber: Phone number (optional)
      * - clinicId: ID of clinic registering the user (optional)
      * <p>
+     * Request Body (application/fhir+json):
+     * - FHIR R4 Patient resource with Uruguay national ID identifier
+     * <p>
      * Response:
      * - 201 Created: User successfully registered, body contains UserResponse
-     * - 400 Bad Request: Validation error
+     * - 400 Bad Request: Validation error or invalid FHIR resource
      * - 409 Conflict: User already exists (idempotent - returns existing user)
      * - 500 Internal Server Error: System error
      *
-     * @param request User registration request
+     * @param requestBody    Raw request body (JSON string)
+     * @param contentType    Content-Type header
      * @return Response with UserResponse and Location header
      */
     @POST
-    public Response registerUser(@Valid UserRegistrationRequest request) {
-        LOGGER.log(Level.INFO, "Processing user registration request for CI: {0}", request.getCi());
+    @Consumes({MediaType.APPLICATION_JSON, FHIR_JSON_CONTENT_TYPE})
+    public Response registerUser(
+            String requestBody,
+            @HeaderParam("Content-Type") String contentType) {
+
+        LOGGER.log(Level.INFO, "Processing user registration request with Content-Type: {0}", contentType);
 
         try {
-            // Call service to register user
+            UserRegistrationRequest request;
+
+            // Determine content type and parse accordingly
+            if (contentType != null && contentType.contains("fhir+json")) {
+                // FHIR Patient resource format
+                LOGGER.log(Level.INFO, "Parsing FHIR Patient resource");
+                request = parseFhirPatient(requestBody);
+
+            } else {
+                // Custom JSON format (default)
+                LOGGER.log(Level.INFO, "Parsing custom JSON format");
+                request = parseCustomJson(requestBody);
+            }
+
+            LOGGER.log(Level.INFO, "User registration request parsed - CI: {0}", request.getCi());
+
+            // Call service to register user (same service layer for both formats)
             InusUser user = inusService.registerUser(
                     request.getCi(),
                     request.getFirstName(),
@@ -123,6 +170,22 @@ public class InusResource {
             // Return 201 Created with Location header
             return Response.created(location)
                     .entity(response)
+                    .build();
+
+        } catch (FhirConversionException e) {
+            LOGGER.log(Level.WARNING, "FHIR conversion error: " + e.getMessage());
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.badRequest(
+                            "Invalid FHIR Patient resource: " + e.getMessage()))
+                    .build();
+
+        } catch (DataFormatException e) {
+            LOGGER.log(Level.WARNING, "FHIR parsing error: " + e.getMessage());
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.badRequest(
+                            "Malformed FHIR JSON: " + e.getMessage()))
                     .build();
 
         } catch (UserRegistrationException e) {
@@ -160,6 +223,39 @@ public class InusResource {
                             "An unexpected error occurred during user registration"))
                     .build();
         }
+    }
+
+    /**
+     * Parse FHIR Patient resource from JSON string.
+     *
+     * @param requestBody FHIR JSON string
+     * @return UserRegistrationRequest DTO
+     * @throws FhirConversionException if FHIR parsing or conversion fails
+     */
+    private UserRegistrationRequest parseFhirPatient(String requestBody)
+            throws FhirConversionException {
+
+        try {
+            // Parse FHIR Patient resource using HAPI FHIR
+            Patient patient = fhirParserFactory.parseJsonResource(Patient.class, requestBody);
+
+            // Convert FHIR Patient to UserRegistrationRequest
+            return fhirPatientConverter.toUserRegistrationRequest(patient);
+
+        } catch (DataFormatException e) {
+            throw new FhirConversionException("Failed to parse FHIR Patient JSON", e);
+        }
+    }
+
+    /**
+     * Parse custom JSON format (UserRegistrationRequest).
+     *
+     * @param requestBody JSON string
+     * @return UserRegistrationRequest DTO
+     * @throws Exception if JSON parsing fails
+     */
+    private UserRegistrationRequest parseCustomJson(String requestBody) throws Exception {
+        return objectMapper.readValue(requestBody, UserRegistrationRequest.class);
     }
 
     // ================================================================
