@@ -101,6 +101,58 @@
             border: none;
             font-weight: 600;
         }
+        
+        .document-icon {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .btn-view-document {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view-document:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-action-secondary {
+            background-color: #ffffff;
+            border: 1.5px solid #6c757d;
+            color: #495057;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+        }
+        
+        .btn-action-upload {
+            background-color: #ffffff;
+            border: 1.5px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-upload:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -271,7 +323,7 @@
                                             <c:forEach var="doc" items="${recentDocuments}">
                                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                                     <div>
-                                                        <i class="fas fa-file-medical text-primary me-2"></i>
+                                                        <i class="fas fa-file-medical document-icon me-2"></i>
                                                         <strong>${doc.title}</strong>
                                                         <br>
                                                         <small class="text-muted">
@@ -299,7 +351,7 @@
                                                             %>
                                                         </small>
                                                     </div>
-                                                    <a href="<c:url value='/admin/documents'/>" class="btn btn-sm btn-outline-primary">
+                                                    <a href="<c:url value='/admin/documents'/>?action=view&id=${doc.id}" class="btn btn-sm btn-view-document">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 </div>
@@ -334,11 +386,11 @@
                                         <i class="fas fa-user-plus me-2"></i>Agregar Profesional
                                     </a>
                                     
-                                    <a href="<c:url value='/admin/patients-list'/>#addPatientModal" class="btn btn-outline-primary" onclick="openPatientModal()">
+                                    <a href="<c:url value='/admin/patients-list'/>#addPatientModal" class="btn btn-action-secondary" onclick="openPatientModal()">
                                         <i class="fas fa-user-plus me-2"></i>Registrar Paciente
                                     </a>
                                     
-                                    <a href="<c:url value='/admin/documents'/>" class="btn btn-outline-primary">
+                                    <a href="<c:url value='/admin/documents'/>?action=add" class="btn btn-action-upload">
                                         <i class="fas fa-file-upload me-2"></i>Subir Documento
                                     </a>
                                 </div>

@@ -152,6 +152,86 @@
             background: #f8d7da;
             color: #721c24;
         }
+        
+        /* Estilos modernos para modales */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem 2rem;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-header .btn-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            background: #ffffff;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .modal-footer .btn {
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-footer .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: white;
+        }
+        
+        .modal-footer .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .modal-footer .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 <body>
@@ -253,8 +333,8 @@
                     <div class="col-md-4">
                         <div class="card stat-card">
                             <div class="card-body d-flex align-items-center">
-                                <div class="stat-icon me-3">
-                                    <i class="fas fa-file-medical"></i>
+                                <div class="stat-icon me-3" style="background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5);">
+                                    <i class="fas fa-file-lines"></i>
                                 </div>
                                 <div>
                                     <h4 class="mb-0">${recentDocuments != null ? recentDocuments.size() : 0}</h4>
@@ -272,14 +352,14 @@
                         <div class="card">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-file-medical me-2"></i>Documentos Recientes
+                                    <i class="fas fa-file-lines me-2" style="color: #3498db;"></i>Documentos Recientes
                                 </h5>
                             </div>
                             <div class="card-body">
                                 <c:choose>
                                     <c:when test="${empty recentDocuments}">
                                         <div class="alert alert-info text-center" role="alert">
-                                            <i class="fas fa-file-medical fa-3x mb-3 d-block"></i>
+                                            <i class="fas fa-file-lines fa-3x mb-3 d-block" style="color: #3498db; opacity: 0.6;"></i>
                                             <h5>No hay documentos recientes</h5>
                                             <p class="mb-0">Aún no has creado ningún documento clínico.</p>
                                         </div>
@@ -440,7 +520,7 @@
                     <h5 class="modal-title">
                         <i class="fas fa-file-medical me-2"></i>Crear Nuevo Documento
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form>
                     <div class="modal-body">

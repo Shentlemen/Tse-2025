@@ -89,6 +89,137 @@
         .status-inactive {
             color: #f44336;
         }
+        
+        /* Estilos profesionales para botones de acción */
+        .btn-action-view {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-view:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-action-edit {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-edit:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-action-delete {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-delete:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-action-activate {
+            background-color: #d1e7dd;
+            border: 1px solid #198754;
+            color: #0f5132;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-activate:hover {
+            background-color: #198754;
+            border-color: #198754;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+        }
+        
+        /* Estilos modernos para modales */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem 2rem;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-header .btn-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            background: #ffffff;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .modal-footer .btn {
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-footer .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: white;
+        }
+        
+        .modal-footer .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 <body>
@@ -281,7 +412,7 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <div class="avatar-circle bg-primary text-white me-3">
+                                                            <div class="avatar-circle me-3">
                                                                 ${fn:substring(professional.name, 0, 1)}${fn:substring(professional.lastName, 0, 1)}
                                                             </div>
                                                             <div>
@@ -305,23 +436,23 @@
                                                     </td>
                                                     <td>
                                                         <div class="btn-group" role="group">
-                                                            <button class="btn btn-sm btn-outline-primary" title="Ver detalles" 
+                                                            <button class="btn btn-sm btn-action-view" title="Ver detalles" 
                                                                     onclick="viewProfessional('${professional.id}')">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-outline-warning" title="Editar" 
+                                                            <button class="btn btn-sm btn-action-edit" title="Editar" 
                                                                     onclick="editProfessional('${professional.id}')">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
                                                             <c:choose>
                                                                 <c:when test="${professional.active}">
-                                                                    <button class="btn btn-sm btn-outline-danger" title="Desactivar" 
+                                                                    <button class="btn btn-sm btn-action-delete" title="Desactivar" 
                                                                             onclick="toggleProfessionalStatus('${professional.id}', false)">
                                                                         <i class="fas fa-ban"></i>
                                                                     </button>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <button class="btn btn-sm btn-outline-success" title="Activar" 
+                                                                    <button class="btn btn-sm btn-action-activate" title="Activar" 
                                                                             onclick="toggleProfessionalStatus('${professional.id}', true)">
                                                                         <i class="fas fa-check"></i>
                                                                     </button>
@@ -452,7 +583,7 @@
     <div class="modal fade" id="viewProfessionalModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-user-md me-2"></i>Detalles del Profesional
                     </h5>
@@ -555,27 +686,41 @@
 
     <style>
         .avatar-circle {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
         }
         
         /* Estilos para el modal de detalles */
         .professional-avatar-large {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 2rem;
+            font-weight: 600;
+            font-size: 2.2rem;
             margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.4);
         }
         
         .detail-item {
@@ -722,7 +867,7 @@
             
             modalBody.innerHTML = 
                 '<div class="text-center mb-4">' +
-                    '<div class="professional-avatar-large bg-primary text-white">' +
+                    '<div class="professional-avatar-large">' +
                         initials +
                     '</div>' +
                     '<h4 class="mt-3 mb-1">' + data.fullName + '</h4>' +
