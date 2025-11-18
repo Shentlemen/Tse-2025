@@ -540,9 +540,9 @@
                 const stats = await apiCall(`/patients/` + patientCi + `/statistics`);
                 if (stats) {
                     document.getElementById('myDocuments').textContent = stats.totalDocuments || '0';
-                    document.getElementById('myPolicies').textContent = stats.policyCount || '0';
-                    document.getElementById('recentAccesses').textContent = stats.recentAccessCount || '0';
-                    document.getElementById('pendingApprovals').textContent = stats.pendingApprovalCount || '0';
+                    document.getElementById('myPolicies').textContent = stats.activePolicies || '0';
+                    document.getElementById('recentAccesses').textContent = stats.recentAccess || '0';
+                    document.getElementById('pendingApprovals').textContent = stats.pendingApprovals || '0';
                 }
 
             } catch (error) {

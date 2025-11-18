@@ -33,7 +33,8 @@
       "Bash(clinic:*)",
       "Bash(gradlew.bat:*)",
       "Bash(grep:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(.gradlew.bat build -x test)"
     ],
     "deny": [],
     "ask": []

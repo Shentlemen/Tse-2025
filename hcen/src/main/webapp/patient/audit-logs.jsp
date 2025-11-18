@@ -629,6 +629,36 @@
         }
 
         /**
+         * Extract patient CI from JWT token
+         */
+        function getPatientCi() {
+            const token = getToken();
+            if (!token) return null;
+
+            try {
+                const payload = parseJwt(token);
+                return payload.sub || payload.ci;
+            } catch (e) {
+                console.error('Error parsing token:', e);
+                return null;
+            }
+        }
+
+        /**
+         * Parse JWT token to extract payload
+         */
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join('')
+            );
+            return JSON.parse(jsonPayload);
+        }
+
+        /**
          * Make authenticated API call
          */
         async function apiCall(endpoint, options = {}) {
@@ -706,7 +736,13 @@
          */
         async function loadStatistics() {
             try {
-                const stats = await apiCall('/audit-logs/stats');
+                const patientCi = getPatientCi();
+                if (!patientCi) {
+                    showError('No se pudo identificar al paciente');
+                    return;
+                }
+
+                const stats = await apiCall('/audit-logs/stats?patientCi=' + patientCi);
 
                 if (stats) {
                     document.getElementById('totalEvents').textContent = stats.totalEvents || '0';
@@ -734,10 +770,17 @@
             document.getElementById('pagination').style.display = 'none';
 
             try {
+                const patientCi = getPatientCi();
+                if (!patientCi) {
+                    showError('No se pudo identificar al paciente');
+                    return;
+                }
+
                 // Build query parameters
                 const params = new URLSearchParams({
                     page: currentPage,
-                    size: pageSize
+                    size: pageSize,
+                    patientCi: patientCi
                 });
 
                 if (filters.fromDate) params.append('fromDate', filters.fromDate);
@@ -897,14 +940,41 @@
          */
         function formatTimestamp(timestamp) {
             if (!timestamp) return 'N/A';
-            const date = new Date(timestamp);
-            return date.toLocaleString('es-UY', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+
+            try {
+                let date;
+
+                // Check if it's an array (LocalDateTime from backend: [year, month, day, hour, minute, second, nanosecond])
+                if (Array.isArray(timestamp) && timestamp.length >= 3) {
+                    // Create date from array: [year, month (1-based), day, hour, minute, second]
+                    const [year, month, day, hour = 0, minute = 0, second = 0] = timestamp;
+                    date = new Date(year, month - 1, day, hour, minute, second);
+                } else if (typeof timestamp === 'string') {
+                    // Handle ISO string format
+                    date = new Date(timestamp);
+                } else if (typeof timestamp === 'number') {
+                    // Handle timestamp
+                    date = new Date(timestamp);
+                } else {
+                    return 'N/A';
+                }
+
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    return 'N/A';
+                }
+
+                return date.toLocaleString('es-UY', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                console.error('Error formatting timestamp:', e, timestamp);
+                return 'N/A';
+            }
         }
 
         /**
@@ -921,7 +991,7 @@
             prevBtn.disabled = !response.hasPrevious;
             nextBtn.disabled = !response.hasNext;
 
-            paginationInfo.textContent = `Página ${'$'}{response.page + 1} de ${'$'}{response.totalPages || 1} (${'$'}{response.totalCount} registros)`;
+            paginationInfo.textContent = `Página ${'$'}{response.page + 1} de ${'$'}{response.totalPages || 1} (mostrando ${'$'}{response.logs.length} de ${'$'}{response.totalCount} registros)`;
         }
 
         /**

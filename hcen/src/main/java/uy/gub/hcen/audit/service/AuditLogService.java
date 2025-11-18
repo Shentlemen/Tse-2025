@@ -108,27 +108,55 @@ public class AuditLogService {
                 }
             }
 
-            // Query audit logs
-            // Note: This queries for events where the patient's data was involved
-            // The repository should filter by details.patientCi field
-            List<AuditLog> logs = auditLogRepository.search(
-                    eventTypeEnum,
-                    null,  // actorId - we want to see all actors who accessed patient data
-                    null,  // resourceType - all resource types
-                    fromDateTime,
-                    toDateTime,
-                    null,  // outcome - all outcomes
-                    page,
-                    size
-            );
+            // Query audit logs using patient-specific method
+            // This filters by patientCi at the database level for proper pagination
+            List<AuditLog> patientLogs;
 
-            // Filter logs to only include those related to this patient
-            // Since search() doesn't filter by patient, we need to do it here
-            List<AuditLog> patientLogs = filterLogsByPatient(logs, patientCi);
+            if (fromDateTime != null || toDateTime != null || eventTypeEnum != null) {
+                // When filters are applied, use search and then filter
+                // TODO: Enhance repository to support patient filtering with date/event filters
+                List<AuditLog> logs = auditLogRepository.search(
+                        eventTypeEnum,
+                        null,  // actorId - we want to see all actors who accessed patient data
+                        null,  // resourceType - all resource types
+                        fromDateTime,
+                        toDateTime,
+                        null,  // outcome - all outcomes
+                        0,     // Get all results for filtering
+                        Integer.MAX_VALUE
+                );
+                // Filter by patient in memory
+                patientLogs = filterLogsByPatient(logs, patientCi);
 
-            // Get total count (for now, we'll use the filtered list size as an approximation)
-            // TODO: Add repository method to count patient-specific logs
-            long totalCount = patientLogs.size();
+                // Apply pagination manually after filtering
+                int start = page * size;
+                int end = Math.min(start + size, patientLogs.size());
+                patientLogs = (start < patientLogs.size())
+                    ? patientLogs.subList(start, end)
+                    : Collections.emptyList();
+            } else {
+                // No filters - use optimized patient access history method with pagination
+                patientLogs = auditLogRepository.getPatientAccessHistory(patientCi, page, size);
+            }
+
+            // Get total count - need to query all and filter for accurate count
+            // This is inefficient but necessary until we add a count method to repository
+            List<AuditLog> allLogs = auditLogRepository.getPatientAccessHistory(patientCi, 0, Integer.MAX_VALUE);
+            if (fromDateTime != null || toDateTime != null || eventTypeEnum != null) {
+                // Apply same filters for count
+                List<AuditLog> allSearchLogs = auditLogRepository.search(
+                        eventTypeEnum,
+                        null,
+                        null,
+                        fromDateTime,
+                        toDateTime,
+                        null,
+                        0,
+                        Integer.MAX_VALUE
+                );
+                allLogs = filterLogsByPatient(allSearchLogs, patientCi);
+            }
+            long totalCount = allLogs.size();
 
             // Convert to DTOs
             List<AuditLogResponse> responses = patientLogs.stream()

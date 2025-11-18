@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * @version 1.0
  * @since 2025-11-04
  */
-@Path("/api/audit-logs")
+@Path("/audit-logs")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuditLogResource {
@@ -91,14 +91,18 @@ public class AuditLogResource {
             @QueryParam("eventType") String eventType,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("20") int size,
+            @QueryParam("patientCi") String patientCiParam,
             @Context SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "GET audit logs - fromDate: {0}, toDate: {1}, eventType: {2}, page: {3}, size: {4}",
                 new Object[]{fromDateStr, toDateStr, eventType, page, size});
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from query param first (for development), then from SecurityContext
+            String patientCi = patientCiParam;
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))
@@ -189,13 +193,18 @@ public class AuditLogResource {
     @GET
     @Path("/stats")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAuditStatistics(@Context SecurityContext securityContext) {
+    public Response getAuditStatistics(
+            @QueryParam("patientCi") String patientCiParam,
+            @Context SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "GET audit statistics");
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from query param first (for development), then from SecurityContext
+            String patientCi = patientCiParam;
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))

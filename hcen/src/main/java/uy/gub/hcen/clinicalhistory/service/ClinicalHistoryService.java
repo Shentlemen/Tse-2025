@@ -288,18 +288,25 @@ public class ClinicalHistoryService {
             long totalDocs = rndcRepository.countByPatientCiAndStatus(patientCi, DocumentStatus.ACTIVE);
             stats.setTotalDocuments(totalDocs);
 
-            // 2. Active policies (within validity period)
-            long activePolicies = accessPolicyRepository.countActiveByPatientCi(patientCi);
+            // 2. Active policies (GRANTED status, regardless of date constraints)
+            // For dashboard, we count all GRANTED policies to give patient visibility
+            long activePolicies = countGrantedPolicies(patientCi);
+            LOGGER.log(Level.INFO, "Setting activePolicies to: {0}", activePolicies);
             stats.setActivePolicies(activePolicies);
+            LOGGER.log(Level.INFO, "After setting, stats.getActivePolicies() = {0}", stats.getActivePolicies());
 
             // 3. Recent access by professionals (last 30 days)
             LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
             long recentAccess = auditLogRepository.countRecentAccessByPatient(patientCi, thirtyDaysAgo);
+            LOGGER.log(Level.INFO, "Setting recentAccess to: {0}", recentAccess);
             stats.setRecentAccess(recentAccess);
+            LOGGER.log(Level.INFO, "After setting, stats.getRecentAccess() = {0}", stats.getRecentAccess());
 
             // 4. Pending access request approvals
             long pendingApprovals = accessRequestRepository.countPendingByPatientCi(patientCi);
+            LOGGER.log(Level.INFO, "Setting pendingApprovals to: {0}", pendingApprovals);
             stats.setPendingApprovals(pendingApprovals);
+            LOGGER.log(Level.INFO, "After setting, stats.getPendingApprovals() = {0}", stats.getPendingApprovals());
 
             LOGGER.log(Level.INFO, "Dashboard statistics for patient {0}: {1}",
                     new Object[]{patientCi, stats});
@@ -541,6 +548,42 @@ public class ClinicalHistoryService {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error retrieving FHIR document: " + documentId, e);
             throw new DocumentRetrievalException("Error inesperado al recuperar documento FHIR", e);
+        }
+    }
+
+    /**
+     * Counts GRANTED policies for a patient (for dashboard statistics).
+     * This counts policies with GRANTED status regardless of date constraints,
+     * providing better visibility to patients about their active permissions.
+     *
+     * @param patientCi Patient's CI
+     * @return Count of GRANTED policies
+     */
+    private long countGrantedPolicies(String patientCi) {
+        try {
+            // Get all policies and count those with GRANTED status
+            List<uy.gub.hcen.policy.entity.AccessPolicy> allPolicies =
+                    accessPolicyRepository.findAllByPatientCi(patientCi);
+
+            LOGGER.log(Level.INFO, "Found {0} total policies for patient {1}",
+                    new Object[]{allPolicies.size(), patientCi});
+
+            long grantedCount = allPolicies.stream()
+                    .filter(policy -> {
+                        boolean isGranted = policy.getStatus() == uy.gub.hcen.policy.entity.PolicyStatus.GRANTED;
+                        LOGGER.log(Level.INFO, "Policy ID {0}: status={1}, isGranted={2}",
+                                new Object[]{policy.getId(), policy.getStatus(), isGranted});
+                        return isGranted;
+                    })
+                    .count();
+
+            LOGGER.log(Level.INFO, "Counted {0} GRANTED policies for patient {1}",
+                    new Object[]{grantedCount, patientCi});
+
+            return grantedCount;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting granted policies for patient: " + patientCi, e);
+            return 0;
         }
     }
 

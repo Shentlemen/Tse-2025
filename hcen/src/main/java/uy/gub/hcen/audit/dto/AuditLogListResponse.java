@@ -77,6 +77,24 @@ public class AuditLogListResponse {
     }
 
     /**
+     * Jackson-compatible getter for hasNext (for JSON serialization)
+     *
+     * @return true if there are more pages after the current one
+     */
+    public boolean getHasNext() {
+        return hasNext();
+    }
+
+    /**
+     * Jackson-compatible getter for hasPrevious (for JSON serialization)
+     *
+     * @return true if there are pages before the current one
+     */
+    public boolean getHasPrevious() {
+        return hasPrevious();
+    }
+
+    /**
      * Gets the next page number (if exists)
      *
      * @return Next page number or current page if no next exists

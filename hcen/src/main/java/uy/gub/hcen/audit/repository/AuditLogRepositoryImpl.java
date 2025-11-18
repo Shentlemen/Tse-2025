@@ -253,24 +253,35 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
     @Override
     public long countRecentAccessByPatient(String patientCi, LocalDateTime since) {
         try {
-            // Count ACCESS events for DOCUMENT resources belonging to this patient,
-            // where the actor is NOT the patient themselves (access by professionals)
+            LOGGER.log(Level.INFO, "Counting recent access for patient: {0} since: {1}",
+                    new Object[]{patientCi, since});
+
+            // Count ACCESS events for DOCUMENT resources belonging to this patient
+            // Includes all access (by patient and professionals) with SUCCESS outcome
             TypedQuery<Long> query = entityManager.createQuery(
                     "SELECT COUNT(a) FROM AuditLog a WHERE a.eventType = :eventType " +
                     "AND a.resourceType = 'DOCUMENT' " +
                     "AND a.details LIKE :patientCiPattern " +
-                    "AND a.actorId <> :patientCi " +
+                    "AND a.actionOutcome = :outcome " +
                     "AND a.timestamp >= :since",
                     Long.class
             );
             query.setParameter("eventType", EventType.ACCESS);
-            query.setParameter("patientCiPattern", "%\"patientCi\":\"" + patientCi + "\"%");
-            query.setParameter("patientCi", patientCi);
+            String patternValue = "%\"patientCi\":\"" + patientCi + "\"%";
+            query.setParameter("patientCiPattern", patternValue);
+            query.setParameter("outcome", ActionOutcome.SUCCESS);
             query.setParameter("since", since);
 
-            return query.getSingleResult();
+            LOGGER.log(Level.INFO, "Query pattern: {0}", patternValue);
+
+            long count = query.getSingleResult();
+
+            LOGGER.log(Level.INFO, "Found {0} recent access events for patient {1}",
+                    new Object[]{count, patientCi});
+
+            return count;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error counting recent access by patient", e);
+            LOGGER.log(Level.SEVERE, "Error counting recent access by patient: " + patientCi, e);
             return 0;
         }
     }
