@@ -47,6 +47,12 @@ public class Clinic {
     @Column(name = "hcen_endpoint")
     private String hcenEndpoint;
     
+    @Column(name = "hcen_jms_url")
+    private String hcenJmsUrl; // URL para conexión JMS con HCEN (ej: http-remoting://localhost:8080)
+    
+    @Column(name = "api_key")
+    private String apiKey; // API key para autenticación REST con HCEN
+    
     @Column(name = "logo_path")
     private String logoPath;
     
@@ -157,6 +163,22 @@ public class Clinic {
     
     public void setHcenEndpoint(String hcenEndpoint) {
         this.hcenEndpoint = hcenEndpoint;
+    }
+    
+    public String getHcenJmsUrl() {
+        return hcenJmsUrl;
+    }
+    
+    public void setHcenJmsUrl(String hcenJmsUrl) {
+        this.hcenJmsUrl = hcenJmsUrl;
+    }
+    
+    public String getApiKey() {
+        return apiKey;
+    }
+    
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
     
     public String getLogoPath() {

@@ -104,19 +104,14 @@ public class ProfessionalService {
      * Obtiene profesionales por clínica
      */
     public List<Professional> getProfessionalsByClinic(Long clinicId) {
-        List<Professional> professionals;
-        
-        // Si clinicId es 0, significa que es super administrador - devolver todos los profesionales
-        if (clinicId != null && clinicId == 0L) {
-            TypedQuery<Professional> query = entityManager.createNamedQuery(
-                "Professional.findAll", Professional.class);
-            professionals = query.getResultList();
-        } else {
-            TypedQuery<Professional> query = entityManager.createNamedQuery(
-                "Professional.findByClinic", Professional.class);
-            query.setParameter("clinicId", clinicId);
-            professionals = query.getResultList();
+        if (clinicId == null) {
+            throw new IllegalArgumentException("clinicId no puede ser null");
         }
+        
+        TypedQuery<Professional> query = entityManager.createNamedQuery(
+            "Professional.findByClinic", Professional.class);
+        query.setParameter("clinicId", clinicId);
+        List<Professional> professionals = query.getResultList();
         
         // Cargar las relaciones lazy para evitar LazyInitializationException
         for (Professional professional : professionals) {

@@ -1,12 +1,16 @@
 package uy.gub.clinic.service;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.entity.Patient;
+import uy.gub.clinic.integration.HcenJmsService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,8 +22,13 @@ import java.util.Optional;
 @Stateless
 public class PatientService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PatientService.class);
+
     @PersistenceContext(unitName = "clinicPU")
     private EntityManager entityManager;
+    
+    @Inject
+    private HcenJmsService hcenJmsService;
 
     /**
      * Registra un nuevo paciente en el sistema
@@ -72,6 +81,24 @@ public class PatientService {
         entityManager.persist(patient);
         entityManager.flush();
         
+        // Enviar registro al HCEN (INUS) vía JMS
+        // Solo si el paciente tiene número de documento (CI)
+        if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
+            try {
+                // Cargar la clínica completa para obtener configuración
+                Clinic loadedClinic = entityManager.find(Clinic.class, clinicId);
+                if (loadedClinic != null) {
+                    hcenJmsService.sendUserRegistration(patient, loadedClinic);
+                    logger.info("Patient registration sent to HCEN - Patient ID: {}, CI: {}", 
+                        patient.getId(), patient.getDocumentNumber());
+                }
+            } catch (Exception e) {
+                // No fallar la creación del paciente si falla el envío al HCEN
+                logger.error("Failed to send patient registration to HCEN - Patient: {}", 
+                    patient.getDocumentNumber(), e);
+            }
+        }
+        
         return patient;
     }
     
@@ -97,19 +124,14 @@ public class PatientService {
      * Obtiene pacientes por clínica
      */
     public List<Patient> getPatientsByClinic(Long clinicId) {
-        List<Patient> patients;
-        
-        // Si clinicId es 0, significa que es super administrador - devolver todos los pacientes
-        if (clinicId != null && clinicId == 0L) {
-            TypedQuery<Patient> query = entityManager.createNamedQuery(
-                "Patient.findAll", Patient.class);
-            patients = query.getResultList();
-        } else {
-            TypedQuery<Patient> query = entityManager.createNamedQuery(
-                "Patient.findByClinic", Patient.class);
-            query.setParameter("clinicId", clinicId);
-            patients = query.getResultList();
+        if (clinicId == null) {
+            throw new IllegalArgumentException("clinicId no puede ser null");
         }
+        
+        TypedQuery<Patient> query = entityManager.createNamedQuery(
+            "Patient.findByClinic", Patient.class);
+        query.setParameter("clinicId", clinicId);
+        List<Patient> patients = query.getResultList();
         
         // Cargar las relaciones lazy para evitar LazyInitializationException
         for (Patient patient : patients) {

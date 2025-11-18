@@ -110,17 +110,16 @@ public class UserManagementServlet extends HttpServlet {
             System.out.println("ClinicId desde sesión: " + clinicId);
             System.out.println("Role desde sesión: " + role);
             
-            List<User> users;
-            
-            // Si es Super Admin (clinicId = 0), mostrar todos los usuarios
-            if (clinicId != null && clinicId == 0L) {
-                System.out.println("Es Super Admin - obteniendo todos los usuarios");
-                users = userService.findAllActive();
-            } else {
-                // Para administradores normales, filtrar por clínica
-                System.out.println("Es administrador normal - filtrando por clínica: " + clinicId);
-                users = userService.findByClinic(clinicId);
+            // Validar que clinicId esté presente
+            if (clinicId == null) {
+                request.setAttribute("error", "Error de sesión: Clínica no identificada");
+                request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+                return;
             }
+            
+            // Filtrar usuarios por clínica
+            System.out.println("Filtrando usuarios por clínica: " + clinicId);
+            List<User> users = userService.findByClinic(clinicId);
             
             System.out.println("Usuarios obtenidos: " + users.size());
             

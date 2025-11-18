@@ -166,4 +166,15 @@
         <url-pattern>/admin/documents/*</url-pattern>
     </servlet-mapping>
 
+    <!-- Mapeo del Servlet de Notificaciones de Access Requests del HCEN -->
+    <servlet>
+        <servlet-name>AccessRequestNotificationServlet</servlet-name>
+        <servlet-class>uy.gub.clinic.web.api.AccessRequestNotificationServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AccessRequestNotificationServlet</servlet-name>
+        <url-pattern>/api/clinic/access-requests/notifications</url-pattern>
+    </servlet-mapping>
+
 </web-app>
