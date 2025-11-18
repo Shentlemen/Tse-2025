@@ -277,19 +277,18 @@ public class ClinicalDocumentService {
             if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
                 try {
                     // Construir URL base para documentLocator
-                    // En producción esto debería venir de configuración
-                    String documentBaseUrl = clinic.getHcenEndpoint();
+                    // El documentLocator apuntará a: {baseUrl}/api/documents/{documentId}
+                    // Usar variable de sistema 'clinic.base.url' o fallback a localhost
+                    String documentBaseUrl = System.getProperty("clinic.base.url");
                     if (documentBaseUrl == null || documentBaseUrl.isEmpty()) {
-                        // Fallback a URL por defecto
+                        // Fallback a URL por defecto si no está configurada
                         documentBaseUrl = "http://localhost:8080/clinic";
-                    } else {
-                        // Extraer URL base si es endpoint completo
-                        if (documentBaseUrl.contains("/api")) {
-                            documentBaseUrl = documentBaseUrl.substring(0, documentBaseUrl.indexOf("/api"));
-                        }
-                        if (!documentBaseUrl.contains("/clinic")) {
-                            documentBaseUrl = documentBaseUrl + "/clinic";
-                        }
+                        logger.warn("Variable de sistema 'clinic.base.url' no configurada, usando fallback: {}", 
+                            documentBaseUrl);
+                    }
+                    // Asegurar que no termine con /
+                    if (documentBaseUrl.endsWith("/")) {
+                        documentBaseUrl = documentBaseUrl.substring(0, documentBaseUrl.length() - 1);
                     }
                     
                     hcenJmsService.sendDocumentRegistration(document, clinic, patient, documentBaseUrl);

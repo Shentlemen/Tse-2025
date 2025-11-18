@@ -365,12 +365,6 @@
                                     <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                                 </button>
                             </div>
-                            
-                            <div class="d-grid">
-                                <a href="<c:url value='/auth/logout'/>" class="btn btn-outline-secondary btn-sm">
-                                    <i class="fas fa-refresh me-2"></i>Limpiar Sesión
-                                </a>
-                            </div>
                         </form>
                         
                     </div>
