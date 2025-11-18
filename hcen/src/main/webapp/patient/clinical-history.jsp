@@ -77,7 +77,7 @@
             text-decoration: underline;
         }
 
-        .back-btn {
+        .back-btn, .logout-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
@@ -766,6 +766,7 @@
                 </div>
             </div>
             <button class="back-btn" onclick="goBack()">← Volver al Panel</button>
+            <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
         </div>
 
         <!-- Alerts -->
@@ -1632,6 +1633,28 @@
          */
         function goBack() {
             window.location.href = '/hcen/patient/dashboard.jsp';
+        }
+
+        /**
+         * Logout user
+         */
+        async function logout() {
+            try {
+                const token = getToken();
+                if (token) {
+                    await fetch(API_BASE + '/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            } finally {
+                sessionStorage.removeItem('accessToken');
+                window.location.href = '/hcen/login-patient.jsp';
+            }
         }
 
         /**

@@ -867,6 +867,13 @@
                 return;
             }
 
+            // Check for filter parameter in URL
+            const params = new URLSearchParams(window.location.search);
+            const filter = params.get('filter');
+            if (filter === 'pending') {
+                document.getElementById('filterStatus').value = 'PENDING_ONBOARDING';
+            }
+
             // Load data
             loadClinics(0);
             loadStatistics();

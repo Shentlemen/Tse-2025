@@ -323,18 +323,18 @@
                 <div class="stat-label">Documentos en RNDC</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🔒</div>
-                <div class="stat-value" id="totalPolicies">
-                    <span class="loading"></span>
-                </div>
-                <div class="stat-label">Políticas Activas</div>
-            </div>
-            <div class="stat-card">
                 <div class="stat-icon">🏥</div>
                 <div class="stat-value" id="totalClinics">
                     <span class="loading"></span>
                 </div>
                 <div class="stat-label">Clínicas Registradas</div>
+            </div>
+            <div class="stat-card" onclick="navigateToPendingClinics()" style="cursor: pointer;">
+                <div class="stat-icon">🏥</div>
+                <div class="stat-value" id="pendingClinics">
+                    <span class="loading"></span>
+                </div>
+                <div class="stat-label">Clínicas Pendientes</div>
             </div>
         </div>
 
@@ -351,25 +351,10 @@
                 <div class="menu-title">Usuarios INUS</div>
                 <div class="menu-description">Gestionar usuarios del sistema nacional</div>
             </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/admin/reports')">
-                <span class="menu-icon">📊</span>
-                <div class="menu-title">Reportes</div>
-                <div class="menu-description">Estadísticas y análisis del sistema</div>
-            </div>
             <div class="menu-card" onclick="navigateTo('/hcen/admin/audit')">
                 <span class="menu-icon">🔍</span>
                 <div class="menu-title">Auditoría</div>
                 <div class="menu-description">Registro de accesos y actividades</div>
-            </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/admin/policies')">
-                <span class="menu-icon">🔒</span>
-                <div class="menu-title">Políticas Globales</div>
-                <div class="menu-description">Configurar políticas de acceso</div>
-            </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/admin/settings')">
-                <span class="menu-icon">⚙️</span>
-                <div class="menu-title">Configuración</div>
-                <div class="menu-description">Ajustes del sistema HCEN</div>
             </div>
         </div>
     </div>
@@ -530,16 +515,16 @@
                     // Update statistics display
                     document.getElementById('totalUsers').textContent = formatNumber(stats.totalUsers || 0);
                     document.getElementById('totalDocuments').textContent = formatNumber(stats.totalDocuments || 0);
-                    document.getElementById('totalPolicies').textContent = formatNumber(stats.totalPolicies || 0);
                     document.getElementById('totalClinics').textContent = formatNumber(stats.totalClinics || 0);
+                    document.getElementById('pendingClinics').textContent = formatNumber(stats.pendingClinics || 0);
 
                     console.log('Statistics loaded successfully:', stats);
                 } else {
                     // Fallback to zeros if no data returned
                     document.getElementById('totalUsers').textContent = '0';
                     document.getElementById('totalDocuments').textContent = '0';
-                    document.getElementById('totalPolicies').textContent = '0';
                     document.getElementById('totalClinics').textContent = '0';
+                    document.getElementById('pendingClinics').textContent = '0';
                 }
             } catch (error) {
                 console.error('Error loading statistics:', error);
@@ -547,8 +532,8 @@
                 // Show error state
                 document.getElementById('totalUsers').textContent = '—';
                 document.getElementById('totalDocuments').textContent = '—';
-                document.getElementById('totalPolicies').textContent = '—';
                 document.getElementById('totalClinics').textContent = '—';
+                document.getElementById('pendingClinics').textContent = '—';
             }
         }
 
@@ -597,6 +582,13 @@
             } else {
                 alert('Esta función estará disponible próximamente.\n\nURL: ' + url);
             }
+        }
+
+        /**
+         * Navigate to pending clinics page
+         */
+        function navigateToPendingClinics() {
+            window.location.href = '/hcen/admin/clinics.jsp?filter=pending';
         }
 
         /**
