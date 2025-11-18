@@ -1,6 +1,7 @@
 package uy.gub.clinic.service;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -12,6 +13,7 @@ import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.entity.Patient;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.entity.Specialty;
+import uy.gub.clinic.integration.HcenJmsService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +29,9 @@ public class ClinicalDocumentService {
     
     @PersistenceContext(unitName = "clinicPU")
     private EntityManager entityManager;
+    
+    @Inject
+    private HcenJmsService hcenJmsService;
     
     /**
      * Obtener todos los documentos
@@ -266,6 +271,36 @@ public class ClinicalDocumentService {
             
             logger.info("Documento clínico creado exitosamente: ID={}, Título={}", 
                 document.getId(), document.getTitle());
+            
+            // Enviar registro al HCEN (RNDC) vía JMS
+            // Solo si el paciente tiene número de documento (CI)
+            if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().trim().isEmpty()) {
+                try {
+                    // Construir URL base para documentLocator
+                    // En producción esto debería venir de configuración
+                    String documentBaseUrl = clinic.getHcenEndpoint();
+                    if (documentBaseUrl == null || documentBaseUrl.isEmpty()) {
+                        // Fallback a URL por defecto
+                        documentBaseUrl = "http://localhost:8080/clinic";
+                    } else {
+                        // Extraer URL base si es endpoint completo
+                        if (documentBaseUrl.contains("/api")) {
+                            documentBaseUrl = documentBaseUrl.substring(0, documentBaseUrl.indexOf("/api"));
+                        }
+                        if (!documentBaseUrl.contains("/clinic")) {
+                            documentBaseUrl = documentBaseUrl + "/clinic";
+                        }
+                    }
+                    
+                    hcenJmsService.sendDocumentRegistration(document, clinic, patient, documentBaseUrl);
+                    logger.info("Document registration sent to HCEN - Document ID: {}, Patient CI: {}", 
+                        document.getId(), patient.getDocumentNumber());
+                } catch (Exception e) {
+                    // No fallar la creación del documento si falla el envío al HCEN
+                    logger.error("Failed to send document registration to HCEN - Document ID: {}", 
+                        document.getId(), e);
+                }
+            }
             
             return document;
             

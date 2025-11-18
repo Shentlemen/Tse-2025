@@ -302,6 +302,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 </c:if>
+                
+                <!-- Mensaje de Éxito -->
+                <c:if test="${not empty success}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>${success}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </c:if>
 
                 <!-- Lista de Documentos -->
                 <div class="card">
@@ -980,6 +988,99 @@
         </div>
     </div>
 
+    <!-- Modal Solicitar Acceso HCEN -->
+    <div class="modal fade" id="requestAccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exchange-alt me-2"></i>Solicitar Acceso a Documentos HCEN
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="requestAccessForm" method="POST" action="<c:url value='/professional/patient-documents'/>">
+                    <input type="hidden" name="action" value="requestAccess">
+                    <input type="hidden" name="patientId" value="${patient.id}">
+                    <input type="hidden" name="patientCI" value="${patient.documentNumber}">
+                    
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Solicita acceso a documentos del paciente <strong>${patient.fullName}</strong> (CI: ${patient.documentNumber}) 
+                            en otras clínicas a través del HCEN.
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Especialidades Solicitadas *</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="specialtyOption" id="allSpecialties" value="ALL" checked onchange="toggleSpecialtySelection()">
+                                <label class="form-check-label" for="allSpecialties">
+                                    Todas las especialidades
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="specialtyOption" id="specificSpecialties" value="SPECIFIC" onchange="toggleSpecialtySelection()">
+                                <label class="form-check-label" for="specificSpecialties">
+                                    Especialidades específicas
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="specialtySelection" style="display: none;">
+                            <label class="form-label">Seleccionar Especialidades <span class="text-danger" id="specialtyRequired" style="display: none;">*</span></label>
+                            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 10px;">
+                                <c:forEach var="specialty" items="${specialties}">
+                                    <div class="form-check">
+                                        <input class="form-check-input specialty-checkbox" type="checkbox" name="selectedSpecialties" 
+                                               value="${specialty.id}" id="specialty_${specialty.id}" onchange="validateSpecialtySelection()">
+                                        <label class="form-check-label" for="specialty_${specialty.id}">
+                                            ${specialty.name} ${not empty specialty.code ? '(' += specialty.code += ')' : ''}
+                                        </label>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                            <small class="text-muted">Selecciona una o más especialidades para las que deseas acceso a documentos.</small>
+                            <div class="text-danger" id="specialtyError" style="display: none; margin-top: 5px;">
+                                <small><i class="fas fa-exclamation-circle me-1"></i>Debe seleccionar al menos una especialidad.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Motivo de la Solicitud *</label>
+                            <textarea class="form-control" name="requestReason" rows="4" 
+                                      placeholder="Describa el motivo por el cual necesita acceso a estos documentos (ej: continuidad de tratamiento, referencia, emergencia, etc.)" 
+                                      required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Urgencia *</label>
+                            <select class="form-select" name="urgency" required>
+                                <option value="ROUTINE" selected>Rutina</option>
+                                <option value="URGENT">Urgente</option>
+                                <option value="EMERGENCY">Emergencia</option>
+                            </select>
+                            <small class="text-muted">Seleccione el nivel de urgencia de la solicitud.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Documento Específico (Opcional)</label>
+                            <input type="number" class="form-control" name="documentId" 
+                                   placeholder="ID del documento específico (dejar vacío para solicitar todos)">
+                            <small class="text-muted">Si conoce el ID de un documento específico, puede ingresarlo aquí. De lo contrario, deje vacío para solicitar todos los documentos disponibles.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <%-- Generar variables JavaScript para controlar la apertura de modales --%>
@@ -1050,9 +1151,76 @@
         }
 
         function requestAccessToOtherClinics() {
-            // TODO: Implementar funcionalidad para solicitar acceso a documentos en otras clínicas a través de HCEN
-            alert('Funcionalidad de solicitud de acceso a documentos en otras clínicas (HCEN) pendiente de implementar. Paciente ID: ${patient.id}');
+            // Limpiar el formulario
+            const form = document.getElementById('requestAccessForm');
+            if (form) {
+                form.reset();
+                // Restablecer valores por defecto
+                document.getElementById('allSpecialties').checked = true;
+                document.getElementById('specificSpecialties').checked = false;
+                document.getElementById('specialtySelection').style.display = 'none';
+                // Limpiar checkboxes de especialidades
+                document.querySelectorAll('.specialty-checkbox').forEach(cb => cb.checked = false);
+            }
+            
+            // Abrir modal
+            const modal = new bootstrap.Modal(document.getElementById('requestAccessModal'));
+            modal.show();
         }
+        
+        function toggleSpecialtySelection() {
+            const allSpecialtiesRadio = document.getElementById('allSpecialties');
+            const specificSpecialtiesRadio = document.getElementById('specificSpecialties');
+            const specialtySelection = document.getElementById('specialtySelection');
+            const specialtyRequired = document.getElementById('specialtyRequired');
+            const specialtyError = document.getElementById('specialtyError');
+            
+            if (specificSpecialtiesRadio.checked) {
+                specialtySelection.style.display = 'block';
+                if (specialtyRequired) specialtyRequired.style.display = 'inline';
+                validateSpecialtySelection();
+            } else {
+                specialtySelection.style.display = 'none';
+                if (specialtyRequired) specialtyRequired.style.display = 'none';
+                if (specialtyError) specialtyError.style.display = 'none';
+                // Limpiar checkboxes cuando se selecciona "Todas"
+                document.querySelectorAll('.specialty-checkbox').forEach(cb => cb.checked = false);
+            }
+        }
+        
+        function validateSpecialtySelection() {
+            const specialtyOption = document.querySelector('input[name="specialtyOption"]:checked');
+            const specialtySelection = document.getElementById('specialtySelection');
+            const specialtyError = document.getElementById('specialtyError');
+            
+            if (specialtyOption && specialtyOption.value === 'SPECIFIC' && specialtySelection && specialtySelection.style.display !== 'none') {
+                const checkedSpecialties = document.querySelectorAll('.specialty-checkbox:checked');
+                if (checkedSpecialties.length === 0) {
+                    if (specialtyError) specialtyError.style.display = 'block';
+                    return false;
+                } else {
+                    if (specialtyError) specialtyError.style.display = 'none';
+                    return true;
+                }
+            }
+            return true;
+        }
+        
+        // Validar formulario antes de enviar
+        document.addEventListener('DOMContentLoaded', function() {
+            const requestAccessForm = document.getElementById('requestAccessForm');
+            if (requestAccessForm) {
+                requestAccessForm.addEventListener('submit', function(e) {
+                    if (!validateSpecialtySelection()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        alert('Por favor seleccione al menos una especialidad.');
+                        return false;
+                    }
+                    return true;
+                });
+            }
+        });
 
         function openNewDocumentModal() {
             // Limpiar el formulario antes de abrir

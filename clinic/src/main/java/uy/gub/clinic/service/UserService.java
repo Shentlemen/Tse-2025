@@ -170,6 +170,11 @@ public class UserService {
             existingUser.setLastName(user.getLastName());
             existingUser.setActive(user.getActive());
             
+            // Actualizar contraseña si se proporcionó (y no está vacía)
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                existingUser.setPassword(user.getPassword());
+            }
+            
             // Actualizar clínica si es necesario
             if (user.getClinic() != null && user.getClinic().getId() != null) {
                 Optional<Clinic> clinic = clinicService.getClinicById(user.getClinic().getId());

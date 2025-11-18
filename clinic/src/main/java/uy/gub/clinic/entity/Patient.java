@@ -84,8 +84,9 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ClinicalDocument> documents = new ArrayList<>();
     
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AccessRequest> accessRequests = new ArrayList<>();
+    // Nota: AccessRequest no tiene relación bidireccional con Patient
+    // Solo almacena patientCI como String, no hay @ManyToOne en AccessRequest
+    // Por lo tanto, no podemos usar @OneToMany aquí
     
     // Constructores
     public Patient() {
@@ -240,14 +241,6 @@ public class Patient {
     
     public void setDocuments(List<ClinicalDocument> documents) {
         this.documents = documents;
-    }
-    
-    public List<AccessRequest> getAccessRequests() {
-        return accessRequests;
-    }
-    
-    public void setAccessRequests(List<AccessRequest> accessRequests) {
-        this.accessRequests = accessRequests;
     }
     
     @Override

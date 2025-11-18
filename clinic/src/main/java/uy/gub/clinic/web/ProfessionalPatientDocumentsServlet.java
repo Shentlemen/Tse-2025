@@ -15,10 +15,13 @@ import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.entity.Patient;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.entity.Specialty;
+import uy.gub.clinic.entity.AccessRequest;
 import uy.gub.clinic.service.ClinicalDocumentService;
 import uy.gub.clinic.service.PatientService;
 import uy.gub.clinic.service.ProfessionalService;
 import uy.gub.clinic.service.SpecialtyService;
+import uy.gub.clinic.service.AccessRequestService;
+import uy.gub.clinic.service.ClinicService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -63,6 +66,12 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
     
     @Inject
     private SpecialtyService specialtyService;
+    
+    @Inject
+    private AccessRequestService accessRequestService;
+    
+    @Inject
+    private ClinicService clinicService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -211,6 +220,9 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                     break;
                 case "update":
                     updateDocument(request, response, clinicId, professionalId);
+                    break;
+                case "requestAccess":
+                    requestAccessToHCEN(request, response, clinicId, professionalId);
                     break;
                 default:
                     request.setAttribute("error", "Acción no válida: " + action);
@@ -630,6 +642,96 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             logger.warn("Error al construir JSON de prescripciones", e);
             return "[]";
         }
+    }
+    
+    private void requestAccessToHCEN(HttpServletRequest request, HttpServletResponse response, Long clinicId, Long professionalId)
+            throws ServletException, IOException {
+        
+        try {
+            // Obtener datos del formulario
+            String patientCI = request.getParameter("patientCI");
+            String specialtyOption = request.getParameter("specialtyOption");
+            String[] selectedSpecialties = request.getParameterValues("selectedSpecialties");
+            String requestReason = request.getParameter("requestReason");
+            String urgency = request.getParameter("urgency");
+            String documentIdStr = request.getParameter("documentId");
+            
+            // Validar datos básicos
+            if (patientCI == null || patientCI.trim().isEmpty()) {
+                request.setAttribute("error", "La cédula del paciente es requerida");
+                doGet(request, response);
+                return;
+            }
+            
+            if (requestReason == null || requestReason.trim().isEmpty()) {
+                request.setAttribute("error", "La razón de la solicitud es requerida");
+                doGet(request, response);
+                return;
+            }
+            
+            // Cargar profesional y clínica
+            Professional professional = professionalService.getProfessionalById(professionalId)
+                .orElseThrow(() -> new ServletException("Profesional no encontrado"));
+            
+            Clinic clinic = clinicService.getClinicById(clinicId)
+                .orElseThrow(() -> new ServletException("Clínica no encontrada"));
+            
+            // Construir string de especialidades
+            String specialtiesStr = null;
+            if ("SPECIFIC".equals(specialtyOption) && selectedSpecialties != null && selectedSpecialties.length > 0) {
+                // Obtener nombres de especialidades
+                List<String> specialtyNames = new ArrayList<>();
+                for (String specialtyIdStr : selectedSpecialties) {
+                    try {
+                        Long specialtyId = Long.parseLong(specialtyIdStr);
+                        Optional<Specialty> specialtyOpt = specialtyService.getSpecialtyById(specialtyId);
+                        if (specialtyOpt.isPresent()) {
+                            specialtyNames.add(specialtyOpt.get().getName());
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warn("Invalid specialty ID: {}", specialtyIdStr);
+                    }
+                }
+                if (!specialtyNames.isEmpty()) {
+                    specialtiesStr = String.join(",", specialtyNames);
+                }
+            }
+            // Si es "ALL", specialtiesStr queda como null (solicitar todas las especialidades)
+            
+            // Parsear documentId si existe
+            Long documentId = null;
+            if (documentIdStr != null && !documentIdStr.trim().isEmpty()) {
+                try {
+                    documentId = Long.parseLong(documentIdStr.trim());
+                } catch (NumberFormatException e) {
+                    logger.warn("Invalid documentId format: {}", documentIdStr);
+                }
+            }
+            
+            // Crear solicitud de acceso
+            AccessRequest accessRequest = accessRequestService.createAccessRequest(
+                professional,
+                clinic,
+                patientCI.trim(),
+                documentId,
+                specialtiesStr,
+                requestReason.trim(),
+                urgency != null ? urgency : "ROUTINE"
+            );
+            
+            logger.info("Access request created from patient-documents page - ID: {}, Professional: {}, Patient CI: {}", 
+                accessRequest.getId(), professionalId, patientCI);
+            
+            request.setAttribute("success", "Solicitud de acceso creada exitosamente. Será procesada por HCEN.");
+            
+        } catch (Exception e) {
+            logger.error("Error al crear solicitud de acceso HCEN", e);
+            request.setAttribute("error", "Error al crear solicitud de acceso: " + e.getMessage());
+        }
+        
+        // Redirigir de vuelta a la página de documentos del paciente
+        String patientIdStr = request.getParameter("patientId");
+        response.sendRedirect(request.getContextPath() + "/professional/patient-documents?patientId=" + patientIdStr);
     }
 }
 

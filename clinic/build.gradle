@@ -21,6 +21,9 @@ dependencies {
 
     // JAX-RS (REST API)
     providedCompile 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
+    // JAX-RS Client implementation (necesario para HcenRestClient)
+    implementation 'org.jboss.resteasy:resteasy-client:6.2.7.Final'
+    implementation 'org.jboss.resteasy:resteasy-jackson2-provider:6.2.7.Final'
 
     // CDI (Dependency Injection)
     providedCompile 'jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1'
@@ -48,6 +51,9 @@ dependencies {
 
     // EJB
     providedCompile 'jakarta.ejb:jakarta.ejb-api:4.0.1'
+
+    // JMS (Jakarta Messaging)
+    providedCompile 'jakarta.jms:jakarta.jms-api:3.1.0'
 
     // Transaction
     providedCompile 'jakarta.transaction:jakarta.transaction-api:2.0.1'

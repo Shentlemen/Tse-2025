@@ -77,6 +77,20 @@ public class ClinicalDocument {
     @Column(name = "rndc_id")
     private String rndcId; // ID en el Registro Nacional de Documentos Clínicos
     
+    @Column(name = "is_external", nullable = false)
+    private Boolean isExternal = false; // Indica si es un documento descargado de otra clínica
+    
+    @Size(max = 100)
+    @Column(name = "source_clinic_id")
+    private String sourceClinicId; // ID de la clínica origen (si es documento externo)
+    
+    @Size(max = 255)
+    @Column(name = "external_clinic_name")
+    private String externalClinicName; // Nombre de la clínica origen (si es documento externo)
+    
+    @Column(name = "external_document_locator", columnDefinition = "TEXT")
+    private String externalDocumentLocator; // URL original del documento externo
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -161,6 +175,38 @@ public class ClinicalDocument {
     
     public void setRndcId(String rndcId) {
         this.rndcId = rndcId;
+    }
+    
+    public Boolean getIsExternal() {
+        return isExternal != null ? isExternal : false;
+    }
+    
+    public void setIsExternal(Boolean isExternal) {
+        this.isExternal = isExternal != null ? isExternal : false;
+    }
+    
+    public String getSourceClinicId() {
+        return sourceClinicId;
+    }
+    
+    public void setSourceClinicId(String sourceClinicId) {
+        this.sourceClinicId = sourceClinicId;
+    }
+    
+    public String getExternalClinicName() {
+        return externalClinicName;
+    }
+    
+    public void setExternalClinicName(String externalClinicName) {
+        this.externalClinicName = externalClinicName;
+    }
+    
+    public String getExternalDocumentLocator() {
+        return externalDocumentLocator;
+    }
+    
+    public void setExternalDocumentLocator(String externalDocumentLocator) {
+        this.externalDocumentLocator = externalDocumentLocator;
     }
     
     public LocalDateTime getCreatedAt() {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.3">
+    <deployment>
+        <dependencies>
+            <!-- JMS Module - Jakarta Messaging API -->
+            <module name="jakarta.jms.api" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
+
