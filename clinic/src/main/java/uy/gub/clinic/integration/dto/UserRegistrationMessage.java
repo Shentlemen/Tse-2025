@@ -21,7 +21,7 @@ public class UserRegistrationMessage {
     
     public UserRegistrationMessage() {
         this.sourceSystem = "clinic";
-        this.eventType = "USER_CREATED";
+        this.eventType = "patient-create";
         this.timestamp = LocalDateTime.now();
     }
     

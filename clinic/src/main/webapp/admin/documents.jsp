@@ -333,10 +333,10 @@
                                     <label class="form-label">Tipo</label>
                                     <select class="form-select" name="documentType">
                                         <option value="">Todos</option>
-                                        <option value="CONSULTA" ${param.documentType == 'CONSULTA' ? 'selected' : ''}>Consulta</option>
-                                        <option value="DIAGNOSTICO" ${param.documentType == 'DIAGNOSTICO' ? 'selected' : ''}>Diagnóstico</option>
-                                        <option value="TRATAMIENTO" ${param.documentType == 'TRATAMIENTO' ? 'selected' : ''}>Tratamiento</option>
-                                        <option value="EVOLUCION" ${param.documentType == 'EVOLUCION' ? 'selected' : ''}>Evolución</option>
+                                        <option value="CONSULTATION" ${param.documentType == 'CONSULTATION' ? 'selected' : ''}>Consulta</option>
+                                        <option value="DIAGNOSTIC_REPORT" ${param.documentType == 'DIAGNOSTIC_REPORT' ? 'selected' : ''}>Diagnóstico</option>
+                                        <option value="TREATMENT_PLAN" ${param.documentType == 'TREATMENT_PLAN' ? 'selected' : ''}>Tratamiento</option>
+                                        <option value="PROGRESS_NOTE" ${param.documentType == 'PROGRESS_NOTE' ? 'selected' : ''}>Evolución</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -486,10 +486,10 @@
                                     <label class="form-label">Tipo de Documento *</label>
                                     <select class="form-select" name="documentType" id="documentTypeSelect" required>
                                         <option value="">Seleccionar...</option>
-                                        <option value="CONSULTA" ${not empty selectedDocument and selectedDocument.documentType == 'CONSULTA' ? 'selected' : ''}>Consulta</option>
-                                        <option value="DIAGNOSTICO" ${not empty selectedDocument and selectedDocument.documentType == 'DIAGNOSTICO' ? 'selected' : ''}>Diagnóstico</option>
-                                        <option value="TRATAMIENTO" ${not empty selectedDocument and selectedDocument.documentType == 'TRATAMIENTO' ? 'selected' : ''}>Tratamiento</option>
-                                        <option value="EVOLUCION" ${not empty selectedDocument and selectedDocument.documentType == 'EVOLUCION' ? 'selected' : ''}>Evolución</option>
+                                        <option value="CONSULTATION" ${not empty selectedDocument and selectedDocument.documentType == 'CONSULTATION' ? 'selected' : ''}>Consulta</option>
+                                        <option value="DIAGNOSTIC_REPORT" ${not empty selectedDocument and selectedDocument.documentType == 'DIAGNOSTIC_REPORT' ? 'selected' : ''}>Diagnóstico</option>
+                                        <option value="TREATMENT_PLAN" ${not empty selectedDocument and selectedDocument.documentType == 'TREATMENT_PLAN' ? 'selected' : ''}>Tratamiento</option>
+                                        <option value="PROGRESS_NOTE" ${not empty selectedDocument and selectedDocument.documentType == 'PROGRESS_NOTE' ? 'selected' : ''}>Evolución</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">

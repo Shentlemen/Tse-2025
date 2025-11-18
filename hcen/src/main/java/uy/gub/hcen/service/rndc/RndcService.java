@@ -785,11 +785,11 @@ public class RndcService {
             throw new DocumentRegistrationException("Invalid document locator URL format: " + documentLocator);
         }
 
-        if (documentHash == null || documentHash.trim().isEmpty()) {
-            throw new DocumentRegistrationException("Document hash cannot be null or empty");
-        }
+//        if (documentHash == null || documentHash.trim().isEmpty()) {
+//            throw new DocumentRegistrationException("Document hash cannot be null or empty");
+//        }
 
-        if (!isValidDocumentHash(documentHash)) {
+        if (documentHash!= null && !isValidDocumentHash(documentHash)) {
             throw new DocumentRegistrationException(
                     "Invalid document hash format: " + documentHash +
                             ". Expected format: sha256:[64 hex characters]");

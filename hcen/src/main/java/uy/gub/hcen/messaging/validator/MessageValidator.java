@@ -312,16 +312,16 @@ public class MessageValidator {
             );
         }
 
-        // Validate document hash
-        if (payload.getDocumentHash() == null || payload.getDocumentHash().trim().isEmpty()) {
-            throw new InvalidMessageException(
-                    "Document hash is required",
-                    messageId,
-                    "payload.documentHash"
-            );
-        }
+//        // Validate document hash
+//        if (payload.getDocumentHash() == null || payload.getDocumentHash().trim().isEmpty()) {
+//            throw new InvalidMessageException(
+//                    "Document hash is required",
+//                    messageId,
+//                    "payload.documentHash"
+//            );
+//        }
 
-        if (!isValidDocumentHash(payload.getDocumentHash())) {
+        if (payload.getDocumentHash() != null && !isValidDocumentHash(payload.getDocumentHash())) {
             throw new InvalidMessageException(
                     "Invalid document hash format: " + payload.getDocumentHash() +
                             ". Expected format: sha256:[64 hex characters]",

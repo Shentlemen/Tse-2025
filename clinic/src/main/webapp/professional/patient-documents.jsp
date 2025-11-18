@@ -824,10 +824,10 @@
                                     <label class="form-label">Tipo de Documento *</label>
                                     <select class="form-select" name="documentType" id="documentTypeSelect" required>
                                         <option value="">Seleccionar...</option>
-                                        <option value="CONSULTA">Consulta</option>
-                                        <option value="DIAGNOSTICO">Diagnóstico</option>
-                                        <option value="TRATAMIENTO">Tratamiento</option>
-                                        <option value="EVOLUCION">Evolución</option>
+                                        <option value="CONSULTATION">Consulta</option>
+                                        <option value="DIAGNOSTIC_REPORT">Diagnóstico</option>
+                                        <option value="TREATMENT_PLAN">Tratamiento</option>
+                                        <option value="PROGRESS_NOTE">Evolución</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">

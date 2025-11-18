@@ -89,7 +89,6 @@ public class RndcDocument {
      * SHA-256 hash of the document for integrity verification
      * Format: sha256:hexadecimal_hash
      */
-    @NotBlank(message = "Document hash is required")
     @Size(max = 64, message = "Document hash must not exceed 64 characters")
     @Column(name = "document_hash", nullable = false, length = 64)
     private String documentHash;

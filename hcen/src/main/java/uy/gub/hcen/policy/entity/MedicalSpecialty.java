@@ -14,104 +14,115 @@ package uy.gub.hcen.policy.entity;
  */
 public enum MedicalSpecialty {
 
-    /**
-     * Cardiology - Heart and cardiovascular system
-     */
-    CARDIOLOGIA("Cardiologia"),
+    MG(1, "MG", "Medicina General", "Atención médica general y preventiva"),
+    CAR(2, "CAR", "Cardiología", "Especialidad en enfermedades del corazón"),
+    DER(3, "DER", "Dermatología", "Especialidad en enfermedades de la piel"),
+    GIN(4, "GIN", "Ginecología", "Especialidad en salud femenina"),
+    PED(5, "PED", "Pediatría", "Especialidad en medicina infantil"),
+    OFT(6, "OFT", "Oftalmología", "Especialidad en salud ocular"),
+    ORL(7, "ORL", "Otorrinolaringología", "Especialidad en oído, nariz y garganta"),
+    PSI(8, "PSI", "Psicología", "Especialidad en salud mental"),
+    TRAUMATOLOGIA(9, "TRA", "Traumatología", "Especialidad en sistema musculoesquelético"),
+    URO(10, "URO", "Urología", "Especialidad en sistema urinario y genital masculino"),
+    NEURO(16, "NEURO", "Neurología", "Especialidad médica del sistema nervioso"),
+    ELECTRO(30, "ELECTRO", "Electrofisiología", "Estudios eléctricos del corazón"),
+    NEURO_CIR(31, "NEURO_CIR", "Neurocirugía", "Cirugía del sistema nervioso"),
+    NEURO_PSI(32, "NEURO_PSI", "Neuropsicología", "Evaluación neuropsicológica"),
+    EPILEP(33, "EPILEP", "Epileptología", "Especialidad en epilepsia"),
+    ESP_PRU(34, "EspPru", "Especialidad de prueba", "Especialidad test"),
+    ESP_PRU_2(35, "EspPru2", "Especialidad de prueba 2", "Descripcion de especialidad 2"),
+    CAR_INTO(29, "CAR_INTO", "Cardiología Intervencionista", "Procedimientos invasivos del corazón"),
+    MF(37, "MF", "Medicina Familiar", "Atención integral a la familia"),
+    PSQ(40, "PSQ", "Psiquiatría", "Especialidad en salud mental y trastornos psiquiátricos"),
+    PSIC(41, "PSIC", "Psicología Clínica", "Especialidad en salud mental y terapia psicológica"),
+    GYN(43, "GYN", "Ginecología y Obstetricia", "Especialidad en salud femenina y embarazo"),
+    GER(45, "GER", "Geriatría", "Especialidad en salud del adulto mayor"),
+    CG(46, "CG", "Cirugía General", "Cirugía de enfermedades generales"),
+    CP(47, "CP", "Cirugía Plástica", "Cirugía reconstructiva y estética"),
+    CCV(49, "CCV", "Cirugía Cardiovascular", "Cirugía del corazón y vasos sanguíneos"),
+    RAD(53, "RAD", "Radiología", "Diagnóstico por imágenes"),
+    AP(54, "AP", "Anatomía Patológica", "Diagnóstico mediante estudio de tejidos"),
+    MN(55, "MN", "Medicina Nuclear", "Diagnóstico y tratamiento con isótopos radioactivos"),
+    LAB(56, "LAB", "Laboratorio Clínico", "Análisis clínicos y diagnósticos"),
+    GAST(57, "GAST", "Gastroenterología", "Especialidad en sistema digestivo"),
+    NEUM(58, "NEUM", "Neumología", "Especialidad en enfermedades respiratorias"),
+    NEF(59, "NEF", "Nefrología", "Especialidad en riñones y enfermedades renales"),
+    END(60, "END", "Endocrinología", "Especialidad en glándulas y hormonas"),
+    REU(61, "REU", "Reumatología", "Especialidad en enfermedades reumáticas"),
+    HEM(62, "HEM", "Hematología", "Especialidad en sangre y órganos hematopoyéticos"),
+    ONC(63, "ONC", "Oncología", "Especialidad en tratamiento del cáncer"),
+    TRAUMATOLOGIA_Y_ORTOPEDIA(64, "TRA", "Traumatología y Ortopedia", "Especialidad en sistema musculoesquelético"),
+    CPED(65, "CPED", "Cirugía Pediátrica", "Cirugía en pacientes pediátricos"),
+    CT(66, "CT", "Cirugía de Tórax", "Cirugía del tórax y pulmones"),
+    EMER(67, "EMER", "Medicina de Emergencias", "Atención médica de urgencias"),
+    MI(68, "MI", "Medicina Intensiva", "Cuidado crítico y terapia intensiva"),
+    MT(69, "MT", "Medicina del Trabajo", "Salud ocupacional y medicina laboral"),
+    MD(70, "MD", "Medicina Deportiva", "Medicina del deporte y actividad física"),
+    ALER(71, "ALER", "Alergología", "Especialidad en alergias e inmunología"),
+    INF(72, "INF", "Infectología", "Especialidad en enfermedades infecciosas"),
+    FIS(73, "FIS", "Medicina Física y Rehabilitación", "Rehabilitación y fisiatría"),
+    ANE(74, "ANE", "Anestesiología", "Anestesia y cuidados perioperatorios");
 
-    /**
-     * General Medicine - Primary care and general health
-     */
-    MEDICINA_GENERAL("Medicina General"),
-
-    /**
-     * Oncology - Cancer treatment and research
-     */
-    ONCOLOGIA("Oncologia"),
-
-    /**
-     * Pediatrics - Child and adolescent medicine
-     */
-    PEDIATRIA("Pediatria"),
-
-    /**
-     * Neurology - Nervous system disorders
-     */
-    NEUROLOGIA("Neurologia"),
-
-    /**
-     * Surgery - Surgical procedures
-     */
-    CIRUGIA("Cirugia"),
-
-    /**
-     * Gynecology - Women's reproductive health
-     */
-    GINECOLOGIA("Ginecologia"),
-
-    /**
-     * Dermatology - Skin conditions
-     */
-    DERMATOLOGIA("Dermatologia"),
-
-    /**
-     * Psychiatry - Mental health
-     */
-    PSIQUIATRIA("Psiquiatria"),
-
-    /**
-     * Traumatology - Musculoskeletal injuries
-     */
-    TRAUMATOLOGIA("Traumatologia");
-
+    private final Integer id;
+    private final String code;
     private final String displayName;
+    private final String description;
 
-    /**
-     * Constructor with display name.
-     *
-     * @param displayName Human-readable name in Spanish
-     */
-    MedicalSpecialty(String displayName) {
+    MedicalSpecialty(Integer id, String code, String displayName, String description) {
+        this.id = id;
+        this.code = code;
         this.displayName = displayName;
+        this.description = description;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     /**
-     * Gets the human-readable display name in Spanish.
-     *
-     * @return Display name
+     * Human-readable name (spanish)
      */
     public String getDisplayName() {
         return displayName;
     }
 
-    /**
-     * Returns the display name as the string representation.
-     *
-     * @return Display name
-     */
+    public String getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return displayName;
     }
 
     /**
-     * Finds a MedicalSpecialty by its name (case-insensitive).
-     *
-     * @param name Specialty name
-     * @return MedicalSpecialty or null if not found
+     * Find by code (exact match, case-insensitive).
      */
-    public static MedicalSpecialty fromName(String name) {
-        if (name == null) {
-            return null;
-        }
-
-        for (MedicalSpecialty specialty : values()) {
-            if (specialty.name().equalsIgnoreCase(name) ||
-                specialty.displayName.equalsIgnoreCase(name)) {
-                return specialty;
+    public static MedicalSpecialty fromCode(String code) {
+        if (code == null) return null;
+        for (MedicalSpecialty s : values()) {
+            if (s.code.equalsIgnoreCase(code)) {
+                return s;
             }
         }
+        return null;
+    }
 
+    /**
+     * Find by display name or enum name (case-insensitive).
+     */
+    public static MedicalSpecialty fromName(String name) {
+        if (name == null) return null;
+        for (MedicalSpecialty s : values()) {
+            if (s.displayName.equalsIgnoreCase(name) || s.name().equalsIgnoreCase(name)) {
+                return s;
+            }
+        }
         return null;
     }
 }
+
