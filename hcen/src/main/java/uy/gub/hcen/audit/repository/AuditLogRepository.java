@@ -127,6 +127,17 @@ public interface AuditLogRepository {
     long countByEventType(EventType eventType);
 
     /**
+     * Counts recent access events to a patient's documents by healthcare professionals
+     * This counts ACCESS events where the resource is a DOCUMENT belonging to the patient,
+     * and the actor is NOT the patient themselves (i.e., access by professionals).
+     *
+     * @param patientCi Patient's CI
+     * @param since Only count events after this timestamp
+     * @return Count of recent access events by professionals
+     */
+    long countRecentAccessByPatient(String patientCi, LocalDateTime since);
+
+    /**
      * Counts audit logs by outcome (for statistics)
      *
      * @param actionOutcome Action outcome

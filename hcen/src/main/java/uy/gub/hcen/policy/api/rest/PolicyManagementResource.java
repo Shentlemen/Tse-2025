@@ -1,6 +1,9 @@
 package uy.gub.hcen.policy.api.rest;
 
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -9,12 +12,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import uy.gub.hcen.api.dto.ErrorResponse;
 import uy.gub.hcen.policy.dto.*;
+import uy.gub.hcen.policy.entity.MedicalSpecialty;
+import uy.gub.hcen.policy.entity.PolicyStatus;
 import uy.gub.hcen.policy.service.PolicyManagementService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,28 +24,15 @@ import java.util.logging.Logger;
  * Policy Management REST Resource
  *
  * JAX-RS resource providing REST API endpoints for patient access policy management.
- * Enables patients to create, view, update, and delete their access control policies.
+ * Updated for the simplified clinic+specialty policy model.
  *
  * Base Path: /api/policies
  *
- * Endpoints:
- * - GET /api/policies - Get patient policies (with optional includeExpired flag)
- * - GET /api/policies/{policyId} - Get specific policy by ID
- * - GET /api/policies/count - Count active policies
- * - GET /api/policies/templates - Get policy templates for UI
- * - POST /api/policies - Create new policy
- * - PUT /api/policies/{policyId} - Update existing policy
- * - DELETE /api/policies/{policyId} - Delete specific policy
- *
- * Security:
- * - JWT authentication required (via SecurityContext)
- * - Patients can only manage their own policies
- *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-11-04
+ * @version 2.0
+ * @since 2025-11-18
  */
-@Path("/api/policies")
+@Path("/policies")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class PolicyManagementResource {
@@ -53,35 +42,30 @@ public class PolicyManagementResource {
     @Inject
     private PolicyManagementService policyManagementService;
 
+    @PersistenceContext(unitName = "hcen-pu")
+    private EntityManager entityManager;
+
     // ================================================================
     // GET /api/policies - Get Patient Policies
     // ================================================================
 
-    /**
-     * Retrieves access policies for the authenticated patient.
-     *
-     * Query Parameters:
-     * - includeExpired (optional): Include expired policies (default: false)
-     *
-     * @param includeExpired Whether to include expired policies
-     * @param securityContext Security context with authenticated user
-     * @return 200 OK with list of PolicyResponse
-     *         401 Unauthorized if not authenticated
-     *         500 Internal Server Error if operation fails
-     */
     @GET
     public Response getPolicies(
             @QueryParam("includeExpired") @DefaultValue("false") boolean includeExpired,
+            @QueryParam("patientCi") String patientCiParam,
             @Context SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "GET policies (includeExpired: {0})", includeExpired);
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from query param first (for development), then from SecurityContext
+            String patientCi = patientCiParam;
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(ErrorResponse.unauthorized("Authentication required"))
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.unauthorized("Patient Ci is required."))
                         .build();
             }
 
@@ -92,10 +76,14 @@ public class PolicyManagementResource {
                 policies = policyManagementService.getPatientPolicies(patientCi);
             }
 
+            Map<String, Object> response = new HashMap<>();
+            response.put("policies", policies);
+            response.put("count", policies.size());
+
             LOGGER.log(Level.INFO, "Retrieved {0} policies for patient: {1}",
                     new Object[]{policies.size(), patientCi});
 
-            return Response.ok(policies).build();
+            return Response.ok(response).build();
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error retrieving policies", e);
@@ -109,20 +97,6 @@ public class PolicyManagementResource {
     // GET /api/policies/{policyId} - Get Specific Policy
     // ================================================================
 
-    /**
-     * Retrieves a specific policy by ID with ownership verification.
-     *
-     * Path Parameters:
-     * - policyId: Policy ID
-     *
-     * @param policyId Policy ID
-     * @param securityContext Security context with authenticated user
-     * @return 200 OK with PolicyResponse
-     *         401 Unauthorized if not authenticated
-     *         403 Forbidden if policy doesn't belong to patient
-     *         404 Not Found if policy doesn't exist
-     *         500 Internal Server Error if operation fails
-     */
     @GET
     @Path("/{policyId}")
     public Response getPolicy(
@@ -132,7 +106,6 @@ public class PolicyManagementResource {
         LOGGER.log(Level.INFO, "GET policy: {0}", policyId);
 
         try {
-            // Extract patient CI from SecurityContext
             String patientCi = extractPatientCi(securityContext);
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
@@ -147,9 +120,6 @@ public class PolicyManagementResource {
                         .entity(ErrorResponse.notFound("Policy", policyId.toString()))
                         .build();
             }
-
-            LOGGER.log(Level.INFO, "Retrieved policy: {0} for patient: {1}",
-                    new Object[]{policyId, patientCi});
 
             return Response.ok(policyOpt.get()).build();
 
@@ -170,14 +140,6 @@ public class PolicyManagementResource {
     // GET /api/policies/count - Count Active Policies
     // ================================================================
 
-    /**
-     * Counts active policies for the authenticated patient.
-     *
-     * @param securityContext Security context with authenticated user
-     * @return 200 OK with count
-     *         401 Unauthorized if not authenticated
-     *         500 Internal Server Error if operation fails
-     */
     @GET
     @Path("/count")
     public Response countPolicies(@Context SecurityContext securityContext) {
@@ -185,7 +147,6 @@ public class PolicyManagementResource {
         LOGGER.log(Level.INFO, "GET policy count");
 
         try {
-            // Extract patient CI from SecurityContext
             String patientCi = extractPatientCi(securityContext);
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
@@ -199,9 +160,6 @@ public class PolicyManagementResource {
             response.put("count", count);
             response.put("patientCi", patientCi);
 
-            LOGGER.log(Level.INFO, "Patient {0} has {1} active policies",
-                    new Object[]{patientCi, count});
-
             return Response.ok(response).build();
 
         } catch (Exception e) {
@@ -213,36 +171,73 @@ public class PolicyManagementResource {
     }
 
     // ================================================================
-    // GET /api/policies/templates - Get Policy Templates
+    // GET /api/policies/specialties - Get All Medical Specialties
     // ================================================================
 
-    /**
-     * Retrieves policy templates for UI configuration.
-     *
-     * Returns metadata for all available policy types including:
-     * - Policy type information
-     * - JSON schema for configuration
-     * - Example configurations
-     *
-     * @return 200 OK with list of PolicyTemplateDTO
-     */
     @GET
-    @Path("/templates")
-    public Response getPolicyTemplates() {
+    @Path("/specialties")
+    public Response getSpecialties() {
 
-        LOGGER.log(Level.INFO, "GET policy templates");
+        LOGGER.log(Level.INFO, "GET specialties");
 
         try {
-            List<PolicyTemplateDTO> templates = PolicyTemplateDTO.getAllTemplates();
+            List<Map<String, String>> specialties = new ArrayList<>();
 
-            LOGGER.log(Level.INFO, "Retrieved {0} policy templates", templates.size());
+            for (MedicalSpecialty specialty : MedicalSpecialty.values()) {
+                Map<String, String> item = new HashMap<>();
+                item.put("value", specialty.name());
+                item.put("label", specialty.getDisplayName());
+                specialties.add(item);
+            }
 
-            return Response.ok(templates).build();
+            LOGGER.log(Level.INFO, "Retrieved {0} specialties", specialties.size());
+
+            return Response.ok(specialties).build();
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving policy templates", e);
+            LOGGER.log(Level.SEVERE, "Error retrieving specialties", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(ErrorResponse.internalServerError("Failed to retrieve templates: " + e.getMessage()))
+                    .entity(ErrorResponse.internalServerError("Failed to retrieve specialties: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    // ================================================================
+    // GET /api/policies/clinics - Get Active Clinics
+    // ================================================================
+
+    @GET
+    @Path("/clinics")
+    public Response getActiveClinics() {
+
+        LOGGER.log(Level.INFO, "GET active clinics");
+
+        try {
+            // Query active clinics from database
+            TypedQuery<Object[]> query = entityManager.createQuery(
+//                    "SELECT c.clinicId, c.clinicName FROM Clinic c WHERE c.status = 'ACTIVE' ORDER BY c.clinicName",
+                    "SELECT c.clinicId, c.clinicName FROM Clinic c  ORDER BY c.clinicName",
+                    Object[].class
+            );
+
+            List<Object[]> results = query.getResultList();
+            List<Map<String, String>> clinics = new ArrayList<>();
+
+            for (Object[] row : results) {
+                Map<String, String> clinic = new HashMap<>();
+                clinic.put("value", (String) row[0]);
+                clinic.put("label", (String) row[1]);
+                clinics.add(clinic);
+            }
+
+            LOGGER.log(Level.INFO, "Retrieved {0} active clinics", clinics.size());
+
+            return Response.ok(clinics).build();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving clinics", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(ErrorResponse.internalServerError("Failed to retrieve clinics: " + e.getMessage()))
                     .build();
         }
     }
@@ -251,19 +246,6 @@ public class PolicyManagementResource {
     // POST /api/policies - Create Policy
     // ================================================================
 
-    /**
-     * Creates a new access policy for the authenticated patient.
-     *
-     * Request Body:
-     * - PolicyCreateRequest with policy configuration
-     *
-     * @param request Policy creation request
-     * @param securityContext Security context with authenticated user
-     * @return 201 Created with PolicyResponse
-     *         400 Bad Request if validation fails
-     *         401 Unauthorized if not authenticated
-     *         500 Internal Server Error if operation fails
-     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -274,15 +256,18 @@ public class PolicyManagementResource {
         LOGGER.log(Level.INFO, "POST create policy");
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from request body first (for development), then from SecurityContext
+            String patientCi = request.getPatientCi();
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))
                         .build();
             }
 
-            // Ensure request has patient CI (override if present to prevent tampering)
+            // Ensure request has patient CI
             request.setPatientCi(patientCi);
 
             PolicyResponse createdPolicy = policyManagementService.createPolicy(request);
@@ -308,80 +293,60 @@ public class PolicyManagementResource {
     }
 
     // ================================================================
-    // PUT /api/policies/{policyId} - Update Policy
+    // PUT /api/policies/{policyId}/revoke - Revoke Policy
     // ================================================================
 
-    /**
-     * Updates an existing policy with ownership verification.
-     *
-     * Path Parameters:
-     * - policyId: Policy ID
-     *
-     * Request Body:
-     * - PolicyUpdateRequest with fields to update
-     *
-     * @param policyId Policy ID
-     * @param request Update request
-     * @param securityContext Security context with authenticated user
-     * @return 200 OK with updated PolicyResponse
-     *         400 Bad Request if validation fails
-     *         401 Unauthorized if not authenticated
-     *         403 Forbidden if policy doesn't belong to patient
-     *         404 Not Found if policy doesn't exist
-     *         500 Internal Server Error if operation fails
-     */
     @PUT
-    @Path("/{policyId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{policyId}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updatePolicy(
+    public Response revokePolicy(
             @PathParam("policyId") Long policyId,
-            @Valid PolicyUpdateRequest request,
+            @QueryParam("patientCi") String patientCiParam,
             @Context SecurityContext securityContext) {
 
-        LOGGER.log(Level.INFO, "PUT update policy: {0}", policyId);
+        LOGGER.log(Level.INFO, "PUT revoke policy: {0}", policyId);
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from query param first (for development), then from SecurityContext
+            String patientCi = patientCiParam;
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))
                         .build();
             }
 
-            PolicyResponse updatedPolicy = policyManagementService.updatePolicy(policyId, request, patientCi);
+            PolicyResponse revokedPolicy = policyManagementService.revokePolicy(policyId, patientCi);
 
-            LOGGER.log(Level.INFO, "Policy updated successfully: {0} for patient: {1}",
+            LOGGER.log(Level.INFO, "Policy revoked successfully: {0} for patient: {1}",
                     new Object[]{policyId, patientCi});
 
-            return Response.ok(updatedPolicy).build();
+            return Response.ok(revokedPolicy).build();
 
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.WARNING, "Invalid policy update request: " + policyId, e);
+            LOGGER.log(Level.WARNING, "Invalid policy revoke request: " + policyId, e);
 
-            // Check if it's an authorization error
             if (e.getMessage().contains("does not belong to")) {
                 return Response.status(Response.Status.FORBIDDEN)
                         .entity(ErrorResponse.forbidden(e.getMessage()))
                         .build();
             }
 
-            // Check if it's a not found error
             if (e.getMessage().contains("not found")) {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity(ErrorResponse.notFound("Policy", policyId.toString()))
                         .build();
             }
 
-            // Other validation errors
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(ErrorResponse.validationError(e.getMessage()))
                     .build();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating policy: " + policyId, e);
+            LOGGER.log(Level.SEVERE, "Error revoking policy: " + policyId, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(ErrorResponse.internalServerError("Failed to update policy: " + e.getMessage()))
+                    .entity(ErrorResponse.internalServerError("Failed to revoke policy: " + e.getMessage()))
                     .build();
         }
     }
@@ -390,32 +355,22 @@ public class PolicyManagementResource {
     // DELETE /api/policies/{policyId} - Delete Policy
     // ================================================================
 
-    /**
-     * Deletes a policy with ownership verification.
-     *
-     * Path Parameters:
-     * - policyId: Policy ID
-     *
-     * @param policyId Policy ID
-     * @param securityContext Security context with authenticated user
-     * @return 200 OK with success message
-     *         401 Unauthorized if not authenticated
-     *         403 Forbidden if policy doesn't belong to patient
-     *         404 Not Found if policy doesn't exist
-     *         500 Internal Server Error if operation fails
-     */
     @DELETE
     @Path("/{policyId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deletePolicy(
             @PathParam("policyId") Long policyId,
+            @QueryParam("patientCi") String patientCiParam,
             @Context SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "DELETE policy: {0}", policyId);
 
         try {
-            // Extract patient CI from SecurityContext
-            String patientCi = extractPatientCi(securityContext);
+            // Try to get from query param first (for development), then from SecurityContext
+            String patientCi = patientCiParam;
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                patientCi = extractPatientCi(securityContext);
+            }
             if (patientCi == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))
@@ -437,14 +392,12 @@ public class PolicyManagementResource {
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Invalid policy deletion request: " + policyId, e);
 
-            // Check if it's an authorization error
             if (e.getMessage().contains("does not belong to")) {
                 return Response.status(Response.Status.FORBIDDEN)
                         .entity(ErrorResponse.forbidden(e.getMessage()))
                         .build();
             }
 
-            // Check if it's a not found error
             if (e.getMessage().contains("not found")) {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity(ErrorResponse.notFound("Policy", policyId.toString()))
@@ -471,12 +424,6 @@ public class PolicyManagementResource {
     // Helper Methods
     // ================================================================
 
-    /**
-     * Extracts patient CI from SecurityContext.
-     *
-     * @param securityContext Security context
-     * @return Patient CI or null if not authenticated
-     */
     private String extractPatientCi(SecurityContext securityContext) {
         if (securityContext == null || securityContext.getUserPrincipal() == null) {
             return null;

@@ -6,11 +6,11 @@ import jakarta.transaction.Transactional;
 import uy.gub.hcen.service.audit.AuditService;
 import uy.gub.hcen.policy.dto.PolicyCreateRequest;
 import uy.gub.hcen.policy.dto.PolicyResponse;
-import uy.gub.hcen.policy.dto.PolicyUpdateRequest;
 import uy.gub.hcen.policy.entity.AccessPolicy;
+import uy.gub.hcen.policy.entity.MedicalSpecialty;
+import uy.gub.hcen.policy.entity.PolicyStatus;
 import uy.gub.hcen.policy.repository.AccessPolicyRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -19,27 +19,13 @@ import java.util.stream.Collectors;
 
 /**
  * Policy Management Service
- * <p>
+ *
  * Business logic service for managing patient access control policies.
- * Provides high-level operations for policy creation, update, deletion,
- * and validation with integrated auditing and cache management.
- * <p>
- * Service Responsibilities:
- * <ul>
- *   <li>Policy CRUD operations with business logic validation</li>
- *   <li>Policy ownership verification (patients can only manage their own policies)</li>
- *   <li>Automatic audit logging for all policy changes</li>
- *   <li>Cache invalidation on policy modifications</li>
- *   <li>Policy conflict detection and validation</li>
- * </ul>
- * <p>
- * Transaction Management:
- * All mutating operations (create, update, delete) are @Transactional
- * to ensure atomicity with audit log creation.
+ * Simplified for the clinic+specialty permission model.
  *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-11-04
+ * @version 2.0
+ * @since 2025-11-18
  */
 @ApplicationScoped
 public class PolicyManagementService {
@@ -60,10 +46,7 @@ public class PolicyManagementService {
     // ================================================================
 
     /**
-     * Retrieves all policies for a specific patient.
-     * <p>
-     * Returns only currently valid policies (within validity period).
-     * Policies are ordered by priority (descending) and creation date (descending).
+     * Retrieves all active policies for a specific patient.
      *
      * @param patientCi Patient's CI
      * @return List of PolicyResponse DTOs
@@ -74,9 +57,7 @@ public class PolicyManagementService {
         List<AccessPolicy> policies = accessPolicyRepository.findByPatientCi(patientCi);
 
         return policies.stream()
-                .filter(AccessPolicy::isValid)
                 .sorted((p1, p2) -> {
-                    // Sort by priority (descending), then by creation date (descending)
                     int priorityComparison = Integer.compare(p2.getPriority(), p1.getPriority());
                     if (priorityComparison != 0) {
                         return priorityComparison;
@@ -88,15 +69,13 @@ public class PolicyManagementService {
     }
 
     /**
-     * Retrieves all policies for a patient, including expired ones.
-     * <p>
-     * Useful for audit trail and policy history.
+     * Retrieves all policies for a patient, including revoked and expired ones.
      *
      * @param patientCi Patient's CI
      * @return List of all PolicyResponse DTOs
      */
     public List<PolicyResponse> getAllPatientPolicies(String patientCi) {
-        LOGGER.log(Level.INFO, "Retrieving all policies (including expired) for patient: {0}", patientCi);
+        LOGGER.log(Level.INFO, "Retrieving all policies (including revoked) for patient: {0}", patientCi);
 
         List<AccessPolicy> policies = accessPolicyRepository.findAllByPatientCi(patientCi);
 
@@ -124,7 +103,6 @@ public class PolicyManagementService {
 
         AccessPolicy policy = policyOpt.get();
 
-        // Verify ownership
         if (!policy.getPatientCi().equals(patientCi)) {
             throw new IllegalArgumentException("Policy " + policyId + " does not belong to patient " + patientCi);
         }
@@ -139,7 +117,7 @@ public class PolicyManagementService {
      * @return Count of active policies
      */
     public long countActivePolicies(String patientCi) {
-        return accessPolicyRepository.countByPatientCi(patientCi);
+        return accessPolicyRepository.countActiveByPatientCi(patientCi);
     }
 
     // ================================================================
@@ -148,8 +126,6 @@ public class PolicyManagementService {
 
     /**
      * Creates a new access policy for a patient.
-     * <p>
-     * Validates policy configuration, creates audit log, and invalidates cache.
      *
      * @param request Policy creation request
      * @return Created PolicyResponse
@@ -157,21 +133,34 @@ public class PolicyManagementService {
      */
     @Transactional
     public PolicyResponse createPolicy(PolicyCreateRequest request) {
-        LOGGER.log(Level.INFO, "Creating policy for patient: {0}, type: {1}",
-                new Object[]{request.getPatientCi(), request.getPolicyType()});
+        LOGGER.log(Level.INFO, "Creating policy for patient: {0}, clinic: {1}, specialty: {2}",
+                new Object[]{request.getPatientCi(), request.getClinicId(), request.getSpecialty()});
 
-        // Validate policy configuration
-        validatePolicyConfiguration(request.getPolicyConfig(), request.getPolicyType());
+        // Validate request
+        validatePolicyRequest(request);
+
+        // Check if policy already exists
+        boolean exists = accessPolicyRepository.existsActivePolicy(
+                request.getPatientCi(),
+                request.getClinicId(),
+                request.getSpecialty()
+        );
+
+        if (exists && request.getDocumentId() == null) {
+            throw new IllegalArgumentException(
+                    "A policy already exists for this clinic and specialty. Delete it first or specify a document ID.");
+        }
 
         // Create entity from request
         AccessPolicy policy = new AccessPolicy();
         policy.setPatientCi(request.getPatientCi());
-        policy.setPolicyType(request.getPolicyType());
-        policy.setPolicyConfig(request.getPolicyConfig());
-        policy.setPolicyEffect(request.getPolicyEffect());
+        policy.setClinicId(request.getClinicId());
+        policy.setSpecialty(request.getSpecialty());
+        policy.setDocumentId(request.getDocumentId());
+        policy.setStatus(PolicyStatus.GRANTED);
         policy.setValidFrom(request.getValidFrom());
         policy.setValidUntil(request.getValidUntil());
-        policy.setPriority(request.getPriority() != null ? request.getPriority() : 0);
+        policy.setPriority(0); // Default priority
 
         // Save policy
         AccessPolicy savedPolicy = accessPolicyRepository.save(policy);
@@ -190,21 +179,19 @@ public class PolicyManagementService {
     }
 
     /**
-     * Updates an existing policy with ownership verification.
-     * <p>
-     * Only non-null fields in the request are updated.
+     * Updates an existing policy status (revoke/grant).
      *
      * @param policyId Policy ID
-     * @param request Update request
+     * @param status New status
      * @param patientCi Patient CI (for ownership verification)
      * @return Updated PolicyResponse
      * @throws IllegalArgumentException if policy not found or doesn't belong to patient
      */
     @Transactional
-    public PolicyResponse updatePolicy(Long policyId, PolicyUpdateRequest request, String patientCi) {
-        LOGGER.log(Level.INFO, "Updating policy: {0} for patient: {1}", new Object[]{policyId, patientCi});
+    public PolicyResponse updatePolicyStatus(Long policyId, PolicyStatus status, String patientCi) {
+        LOGGER.log(Level.INFO, "Updating policy status: {0} to {1} for patient: {2}",
+                new Object[]{policyId, status, patientCi});
 
-        // Load existing policy
         Optional<AccessPolicy> policyOpt = accessPolicyRepository.findById(policyId);
 
         if (policyOpt.isEmpty()) {
@@ -213,58 +200,36 @@ public class PolicyManagementService {
 
         AccessPolicy policy = policyOpt.get();
 
-        // Verify ownership
         if (!policy.getPatientCi().equals(patientCi)) {
             throw new IllegalArgumentException("Policy " + policyId + " does not belong to patient " + patientCi);
         }
 
-        // Track if any changes were made
-        boolean hasChanges = false;
+        policy.setStatus(status);
 
-        // Update non-null fields
-        if (request.getPolicyConfig() != null) {
-            validatePolicyConfiguration(request.getPolicyConfig(), policy.getPolicyType());
-            policy.setPolicyConfig(request.getPolicyConfig());
-            hasChanges = true;
-        }
-
-        if (request.getPolicyEffect() != null) {
-            policy.setPolicyEffect(request.getPolicyEffect());
-            hasChanges = true;
-        }
-
-        if (request.getValidFrom() != null) {
-            policy.setValidFrom(request.getValidFrom());
-            hasChanges = true;
-        }
-
-        if (request.getValidUntil() != null) {
-            policy.setValidUntil(request.getValidUntil());
-            hasChanges = true;
-        }
-
-        if (request.getPriority() != null) {
-            policy.setPriority(request.getPriority());
-            hasChanges = true;
-        }
-
-        if (!hasChanges) {
-            throw new IllegalArgumentException("At least one field must be provided for update");
-        }
-
-        // Save updated policy
         AccessPolicy updatedPolicy = accessPolicyRepository.update(policy);
 
         // Create audit log
-        auditService.logPolicyChange(patientCi, policyId, "UPDATE", null, null);
+        auditService.logPolicyChange(patientCi, policyId, "UPDATE_STATUS_" + status, null, null);
 
         // Invalidate cache
         policyCacheService.invalidatePolicyCache(patientCi);
 
-        LOGGER.log(Level.INFO, "Policy updated successfully: {0} for patient: {1}",
-                new Object[]{policyId, patientCi});
+        LOGGER.log(Level.INFO, "Policy status updated: {0} to {1}",
+                new Object[]{policyId, status});
 
         return PolicyResponse.fromEntity(updatedPolicy);
+    }
+
+    /**
+     * Revokes a policy.
+     *
+     * @param policyId Policy ID
+     * @param patientCi Patient CI (for ownership verification)
+     * @return Updated PolicyResponse
+     */
+    @Transactional
+    public PolicyResponse revokePolicy(Long policyId, String patientCi) {
+        return updatePolicyStatus(policyId, PolicyStatus.REVOKED, patientCi);
     }
 
     /**
@@ -278,7 +243,6 @@ public class PolicyManagementService {
     public void deletePolicy(Long policyId, String patientCi) {
         LOGGER.log(Level.INFO, "Deleting policy: {0} for patient: {1}", new Object[]{policyId, patientCi});
 
-        // Verify ownership before deletion
         Optional<AccessPolicy> policyOpt = accessPolicyRepository.findById(policyId);
 
         if (policyOpt.isEmpty()) {
@@ -291,7 +255,6 @@ public class PolicyManagementService {
             throw new IllegalArgumentException("Policy " + policyId + " does not belong to patient " + patientCi);
         }
 
-        // Delete policy
         boolean deleted = accessPolicyRepository.delete(policyId);
 
         if (!deleted) {
@@ -320,12 +283,10 @@ public class PolicyManagementService {
 
         int deletedCount = accessPolicyRepository.deleteByPatientCi(patientCi);
 
-        // Create audit log for bulk deletion (using generic event logging)
         if (deletedCount > 0) {
             auditService.logPolicyChange(patientCi, 0L, "BULK_DELETE_" + deletedCount, null, null);
         }
 
-        // Invalidate cache
         policyCacheService.invalidatePolicyCache(patientCi);
 
         LOGGER.log(Level.INFO, "Deleted {0} policies for patient: {1}",
@@ -339,65 +300,29 @@ public class PolicyManagementService {
     // ================================================================
 
     /**
-     * Validates policy configuration JSON format and structure.
-     * <p>
-     * Basic validation: ensures JSON is valid and contains expected fields
-     * for the policy type. More specific validation is done by PolicyEvaluators.
+     * Validates policy creation request.
      *
-     * @param policyConfig Policy configuration JSON
-     * @param policyType Policy type
+     * @param request Policy creation request
      * @throws IllegalArgumentException if validation fails
      */
-    private void validatePolicyConfiguration(String policyConfig, AccessPolicy.PolicyType policyType) {
-        if (policyConfig == null || policyConfig.trim().isEmpty()) {
-            throw new IllegalArgumentException("Policy configuration cannot be empty");
+    private void validatePolicyRequest(PolicyCreateRequest request) {
+        if (request.getPatientCi() == null || request.getPatientCi().trim().isEmpty()) {
+            throw new IllegalArgumentException("Patient CI is required");
         }
 
-        // Basic JSON validation (format check)
-        if (!policyConfig.trim().startsWith("{") || !policyConfig.trim().endsWith("}")) {
-            throw new IllegalArgumentException("Policy configuration must be a valid JSON object");
+        if (request.getClinicId() == null || request.getClinicId().trim().isEmpty()) {
+            throw new IllegalArgumentException("Clinic ID is required");
         }
 
-        // Type-specific validation (basic checks)
-        switch (policyType) {
-            case DOCUMENT_TYPE:
-                if (!policyConfig.contains("allowedTypes") && !policyConfig.contains("deniedTypes")) {
-                    throw new IllegalArgumentException("DOCUMENT_TYPE policy must specify allowedTypes or deniedTypes");
-                }
-                break;
+        if (request.getSpecialty() == null) {
+            throw new IllegalArgumentException("Specialty is required");
+        }
 
-            case SPECIALTY:
-                if (!policyConfig.contains("allowedSpecialties") && !policyConfig.contains("deniedSpecialties")) {
-                    throw new IllegalArgumentException("SPECIALTY policy must specify allowedSpecialties or deniedSpecialties");
-                }
-                break;
-
-            case CLINIC:
-                if (!policyConfig.contains("allowedClinics") && !policyConfig.contains("deniedClinics")) {
-                    throw new IllegalArgumentException("CLINIC policy must specify allowedClinics or deniedClinics");
-                }
-                break;
-
-            case PROFESSIONAL:
-                if (!policyConfig.contains("allowedProfessionals") && !policyConfig.contains("deniedProfessionals")) {
-                    throw new IllegalArgumentException("PROFESSIONAL policy must specify allowedProfessionals or deniedProfessionals");
-                }
-                break;
-
-            case TIME_BASED:
-                if (!policyConfig.contains("allowedDays") && !policyConfig.contains("allowedHours")) {
-                    throw new IllegalArgumentException("TIME_BASED policy must specify allowedDays or allowedHours");
-                }
-                break;
-
-            case EMERGENCY_OVERRIDE:
-                if (!policyConfig.contains("enabled")) {
-                    throw new IllegalArgumentException("EMERGENCY_OVERRIDE policy must specify enabled flag");
-                }
-                break;
-
-            default:
-                LOGGER.log(Level.WARNING, "Unknown policy type: {0}. Skipping specific validation.", policyType);
+        // Validate validity dates
+        if (request.getValidFrom() != null && request.getValidUntil() != null) {
+            if (request.getValidFrom().isAfter(request.getValidUntil())) {
+                throw new IllegalArgumentException("Valid from date must be before valid until date");
+            }
         }
     }
 }

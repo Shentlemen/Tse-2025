@@ -4,32 +4,36 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: document processing working from health provider">
-      <change afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/mapping/ClinicalDocumentToFhirMapper.java" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: fhir document pulled from health providers">
+      <change afterPath="$PROJECT_DIR$/ACCESS_POLICY_REFACTORING_PLAN.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/repository/AuditLogRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/repository/AuditLogRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/repository/AuditLogRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/audit/repository/AuditLogRepositoryImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/config/RestApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyManagementResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyManagementResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyResource.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyCreateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyTemplateDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyUpdateRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/AccessPolicy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/AccessPolicy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/PolicyManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/PolicyManagementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/ClinicPolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/DocumentTypePolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/EmergencyOverridePolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/PolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/ProfessionalPolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/SpecialtyPolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/evaluator/TimeBasedPolicyEvaluator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/patient/access-policies.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/patient/access-policies.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/webapp/patient/clinical-history.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/patient/clinical-history.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/servlet/ClinicalDocumentServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/ClinicalDocumentServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/servlet/ClinicalDocumentServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/ClinicalDocumentServlet.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/servlet/ClinicalDocumentServlet.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/error_prone_annotations-2.18.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/guava-32.1.1-jre.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/hapi-fhir-base-6.10.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/hapi-fhir-caching-api-6.10.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/hapi-fhir-structures-r4-6.10.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/j2objc-annotations-2.8.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/jackson-annotations-2.15.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/jackson-core-2.15.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/jackson-databind-2.15.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/jackson-datatype-jsr310-2.15.3.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/org.hl7.fhir.r4-6.1.2.2.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/lib/org.hl7.fhir.utilities-6.1.2.2.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/patient/dashboard.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/patient/dashboard.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,6 +137,7 @@
   "keyToString": {
     "Attach to process.localhost:8787.executor": "ProcessAttachDebug",
     "Attach to process.pid 49164.executor": "ProcessAttachDebug",
+    "Attach to process.pid 58816.executor": "ProcessAttachDebug",
     "Batch.migrate.executor": "Run",
     "Batch.run-migrations.executor": "Run",
     "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
@@ -141,7 +146,9 @@
     "Gradle.hcen [buildDependents].executor": "Run",
     "Gradle.hcen [build].executor": "Run",
     "Gradle.hcen [clean].executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
+    "Gradle.hcen [flywayMigrate].executor": "Run",
+    "HTTP Request.generated-requests | #1.executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -174,6 +181,13 @@
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>
+        <entry key="HttpClient.HttpRequestRunConfigurationType">
+          <value>
+            <map>
+              <entry key="generated-requests | #1" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
         <entry key="JBossConfiguration">
           <value>
             <map>
@@ -186,28 +200,6 @@
     </option>
   </component>
   <component name="RunManager" selected="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final">
-    <configuration name="migrate" type="BatchConfigurationType" factoryName="Batch" temporary="true">
-      <module name="hcen" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SCRIPT_NAME" value="migrate.bat" />
-      <option name="PARAMETERS" value="" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="run-migrations" type="BatchConfigurationType" factoryName="Batch" temporary="true">
-      <module name="hcen" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SCRIPT_NAME" value="run-migrations.bat" />
-      <option name="PARAMETERS" value="" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="hcen [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -272,6 +264,31 @@
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
       <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="hcen [flywayMigrate]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="flywayMigrate" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#1" runType="Run single request">
       <method v="2" />
     </configuration>
     <configuration name="JBoss/WildFly 37.0.0.Final LOCAL" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false">
@@ -395,21 +412,21 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Batch.migrate" />
-      <item itemvalue="Batch.run-migrations" />
+      <item itemvalue="Gradle.hcen [flywayMigrate]" />
       <item itemvalue="Gradle.hcen [buildDependents]" />
       <item itemvalue="Gradle.hcen [clean]" />
       <item itemvalue="Gradle.hcen [build]" />
+      <item itemvalue="HTTP Request.generated-requests | #1" />
       <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final LOCAL" />
       <item itemvalue="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.hcen [flywayMigrate]" />
+        <item itemvalue="HTTP Request.generated-requests | #1" />
         <item itemvalue="Gradle.hcen [build]" />
         <item itemvalue="Gradle.hcen [clean]" />
         <item itemvalue="Gradle.hcen [buildDependents]" />
-        <item itemvalue="Batch.run-migrations" />
-        <item itemvalue="Batch.migrate" />
       </list>
     </recent_temporary>
   </component>
@@ -436,7 +453,7 @@
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
       <workItem from="1763003396511" duration="33974000" />
-      <workItem from="1763416028699" duration="28827000" />
+      <workItem from="1763416028699" duration="42703000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -726,7 +743,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763444454350</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="feat: fhir document pulled from health providers">
+      <option name="closed" value="true" />
+      <created>1763476022803</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1763476022803</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -770,7 +795,8 @@
     <MESSAGE value="fix: service broker connection" />
     <MESSAGE value="fix: service broker connection and create user flow" />
     <MESSAGE value="feat: document processing working from health provider" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: document processing working from health provider" />
+    <MESSAGE value="feat: fhir document pulled from health providers" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: fhir document pulled from health providers" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -837,18 +863,23 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>305</line>
+          <line>367</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>279</line>
+          <line>341</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
-          <line>423</line>
-          <option name="timeStamp" value="50" />
+          <line>303</line>
+          <option name="timeStamp" value="52" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyManagementResource.java</url>
+          <line>255</line>
+          <option name="timeStamp" value="53" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

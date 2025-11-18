@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Políticas de Acceso - HCEN</title>
+    <title>Politicas de Acceso - HCEN</title>
     <style>
         * {
             margin: 0;
@@ -55,7 +55,6 @@
 
         .logo-icon {
             font-size: 32px;
-            filter: none;
             -webkit-text-fill-color: initial;
         }
 
@@ -220,6 +219,8 @@
         }
 
         .empty-state {
+            display: flex;
+            justify-content: center;
             text-align: center;
             padding: 60px 30px;
         }
@@ -244,6 +245,7 @@
 
         .policies-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
 
@@ -267,14 +269,23 @@
             margin-bottom: 15px;
         }
 
-        .policy-type {
+        .policy-info {
+            flex: 1;
+        }
+
+        .policy-title {
             font-size: 18px;
             font-weight: 600;
             color: #2c3e50;
             margin-bottom: 5px;
         }
 
-        .policy-effect {
+        .policy-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .policy-status {
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 12px;
@@ -282,12 +293,17 @@
             text-transform: uppercase;
         }
 
-        .policy-effect.permit {
+        .policy-status.granted {
             background: rgba(46, 213, 115, 0.2);
             color: #27ae60;
         }
 
-        .policy-effect.deny {
+        .policy-status.pending {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
+        }
+
+        .policy-status.revoked {
             background: rgba(231, 76, 60, 0.2);
             color: #e74c3c;
         }
@@ -304,7 +320,7 @@
             gap: 10px;
         }
 
-        .btn-edit, .btn-delete {
+        .btn-revoke, .btn-delete {
             padding: 8px 16px;
             border: none;
             border-radius: 6px;
@@ -314,13 +330,13 @@
             transition: all 0.3s ease;
         }
 
-        .btn-edit {
-            background: rgba(52, 152, 219, 0.2);
-            color: #3498db;
+        .btn-revoke {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
         }
 
-        .btn-edit:hover {
-            background: #3498db;
+        .btn-revoke:hover {
+            background: #f39c12;
             color: white;
         }
 
@@ -356,7 +372,7 @@
             background: white;
             border-radius: 16px;
             padding: 32px;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -404,8 +420,7 @@
         }
 
         .form-group select,
-        .form-group input,
-        .form-group textarea {
+        .form-group input {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e1e8ed;
@@ -416,15 +431,9 @@
         }
 
         .form-group select:focus,
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
         }
 
         .form-hint {
@@ -456,31 +465,6 @@
             background: #e1e8ed;
         }
 
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .checkbox-item:hover {
-            background: #e9ecef;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: auto;
-        }
-
         .info-box {
             background: rgba(52, 152, 219, 0.1);
             border-left: 4px solid #3498db;
@@ -495,6 +479,50 @@
             font-size: 14px;
             line-height: 1.6;
         }
+
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            transition: border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .policy-clinic {
+            font-size: 16px;
+            font-weight: 500;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -503,17 +531,14 @@
         <div class="header">
             <div class="header-left">
                 <div class="logo">
-                    <span class="logo-icon">🔒</span>
+                    <span class="logo-icon">🔐</span>
                     <span>Políticas de Acceso</span>
                 </div>
                 <div class="breadcrumb">
                     <a href="/hcen/patient/dashboard.jsp">Inicio</a> &gt; Políticas de Acceso
                 </div>
             </div>
-            <div>
-                <button class="back-btn" onclick="goBack()">← Volver</button>
-                <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
-            </div>
+            <button class="back-btn" onclick="goBack()">← Volver al Panel</button>
         </div>
 
         <!-- Alerts -->
@@ -523,16 +548,16 @@
 
         <!-- Page Title -->
         <div class="section">
-            <h1 class="page-title">Mis Políticas de Acceso</h1>
+            <h1 class="page-title">Mis Politicas de Acceso</h1>
             <p class="page-description">
-                Configure quién puede acceder a su información clínica. Las políticas le permiten
-                controlar el acceso a sus documentos por tipo, especialidad médica, centro de salud, o profesional específico.
+                Configure quien puede acceder a su informacion clinica. Las politicas le permiten
+                otorgar acceso a profesionales de salud segun su especialidad y centro de salud.
             </p>
             <div class="info-box">
                 <p>
-                    <strong>Información:</strong> Las políticas se evalúan en orden de prioridad. Una política con
-                    prioridad más alta prevalece sobre una con prioridad más baja. Si no hay políticas definidas,
-                    los profesionales deberán solicitar autorización para acceder a sus documentos.
+                    <strong>Informacion:</strong> Cuando crea una politica, otorga acceso a todos los profesionales
+                    con la especialidad indicada del centro de salud seleccionado. Si no hay politicas definidas,
+                    los profesionales deberan solicitar autorizacion para acceder a sus documentos.
                 </p>
             </div>
         </div>
@@ -540,22 +565,46 @@
         <!-- Active Policies Section -->
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">📋 Políticas Activas</h2>
-                <button class="btn-primary" onclick="openCreateModal()">+ Nueva Política</button>
+                <h2 class="section-title">Politicas Activas</h2>
+                <button class="btn-primary" onclick="openCreateModal()">+ Nueva Politica</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-container" id="filtersContainer" style="display: none;">
+                <div class="filter-group">
+                    <label for="filterClinic">Centro de Salud</label>
+                    <select id="filterClinic" onchange="applyFilters()">
+                        <option value="">Todos los centros</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterSpecialty">Especialidad</label>
+                    <select id="filterSpecialty" onchange="applyFilters()">
+                        <option value="">Todas las especialidades</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterStatus">Estado</label>
+                    <select id="filterStatus" onchange="applyFilters()">
+                        <option value="">Todos los estados</option>
+                        <option value="GRANTED">Otorgado</option>
+                        <option value="PENDING">Pendiente</option>
+                        <option value="REVOKED">Revocado</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Loading State -->
             <div id="loadingPolicies" class="loading">
                 <div class="spinner"></div>
-                <p style="margin-top: 20px; color: #7f8c8d;">Cargando políticas...</p>
+                <p style="margin-top: 20px; color: #7f8c8d;">Cargando politicas...</p>
             </div>
 
             <!-- Empty State -->
             <div id="emptyPolicies" class="empty-state" style="display: none;">
-                <div class="empty-state-icon">📝</div>
-                <h3 class="empty-state-title">No hay políticas configuradas</h3>
+                <h3 class="empty-state-title">No hay politicas configuradas</h3>
                 <p class="empty-state-description">
-                    Cree su primera política para comenzar a controlar el acceso a su información clínica.
+                    Cree su primera politica para comenzar a controlar el acceso a su informacion clinica.
                 </p>
             </div>
 
@@ -564,49 +613,33 @@
         </div>
     </div>
 
-    <!-- Create/Edit Policy Modal -->
+    <!-- Create Policy Modal -->
     <div id="policyModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Nueva Política</h2>
+                <h2>Nueva Politica</h2>
                 <button class="btn-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="policyForm">
-                <input type="hidden" id="policyId">
-
                 <div class="form-group">
-                    <label for="policyType">Tipo de Política *</label>
-                    <select id="policyType" required onchange="onPolicyTypeChange()">
-                        <option value="">Seleccione un tipo...</option>
+                    <label for="clinicId">Centro de Salud *</label>
+                    <select id="clinicId" required>
+                        <option value="">Seleccione un centro...</option>
                     </select>
-                    <div class="form-hint" id="policyTypeHint"></div>
+                    <div class="form-hint">Seleccione el centro de salud cuyos profesionales podran acceder a sus documentos</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="policyEffect">Efecto *</label>
-                    <select id="policyEffect" required>
-                        <option value="PERMIT">Permitir</option>
-                        <option value="DENY">Denegar</option>
+                    <label for="specialty">Especialidad Medica *</label>
+                    <select id="specialty" required>
+                        <option value="">Seleccione una especialidad...</option>
                     </select>
-                    <div class="form-hint">Permitir autoriza el acceso, Denegar lo bloquea</div>
-                </div>
-
-                <div class="form-group" id="policyConfigGroup">
-                    <label for="policyConfig">Configuración *</label>
-                    <div id="configEditor"></div>
-                    <textarea id="policyConfig" required style="display: none;"></textarea>
-                    <div class="form-hint">Configuración en formato JSON</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="policyPriority">Prioridad</label>
-                    <input type="number" id="policyPriority" min="0" max="100" value="10">
-                    <div class="form-hint">Mayor número = mayor prioridad (0-100)</div>
+                    <div class="form-hint">Solo los profesionales con esta especialidad tendran acceso</div>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn-primary" id="saveBtn">Guardar Política</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">Crear Politica</button>
                 </div>
             </form>
         </div>
@@ -616,13 +649,13 @@
     <div id="deleteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Confirmar Eliminación</h2>
+                <h2>Confirmar Eliminacion</h2>
                 <button class="btn-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <p style="margin-bottom: 20px; color: #7f8c8d;">
-                ¿Está seguro que desea eliminar esta política? Esta acción no se puede deshacer.
+                Esta seguro que desea eliminar esta politica? Esta accion no se puede deshacer.
             </p>
-            <input type="hidden" id="deleteP olicyId">
+            <input type="hidden" id="deletePolicyId">
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
                 <button type="button" class="btn-delete" onclick="confirmDelete()">Eliminar</button>
@@ -632,8 +665,9 @@
 
     <script>
         const API_BASE = '/hcen/api';
-        let policyTemplates = [];
-        let currentPolicy = null;
+        let clinics = [];
+        let specialties = [];
+        let allPolicies = [];
 
         // ================================================================
         // Authentication & Utilities
@@ -667,7 +701,7 @@
             const token = sessionStorage.getItem('accessToken');
 
             if (!token) {
-                showError('Sesión expirada. Por favor, inicie sesión nuevamente.');
+                showError('Sesion expirada. Por favor, inicie sesion nuevamente.');
                 setTimeout(() => {
                     window.location.href = '/hcen/login-patient.jsp';
                 }, 2000);
@@ -686,7 +720,7 @@
 
                 if (response.status === 401) {
                     sessionStorage.removeItem('accessToken');
-                    showError('Sesión expirada. Redirigiendo...');
+                    showError('Sesion expirada. Redirigiendo...');
                     setTimeout(() => {
                         window.location.href = '/hcen/login-patient.jsp';
                     }, 2000);
@@ -725,31 +759,57 @@
         // Load Data
         // ================================================================
 
-        async function loadPolicyTemplates() {
+        async function loadClinics() {
             try {
-                const response = await apiCall('/policies/templates');
+                const response = await apiCall('/policies/clinics');
 
                 if (!response || !response.ok) {
-                    throw new Error('Failed to load templates');
+                    throw new Error('Failed to load clinics');
                 }
 
-                policyTemplates = await response.json();
-                console.log('Loaded policy templates:', policyTemplates);
+                clinics = await response.json();
+                console.log('Loaded clinics:', clinics);
 
-                // Populate policy type dropdown
-                const select = document.getElementById('policyType');
-                select.innerHTML = '<option value="">Seleccione un tipo...</option>';
+                const select = document.getElementById('clinicId');
+                select.innerHTML = '<option value="">Seleccione un centro...</option>';
 
-                policyTemplates.forEach(template => {
+                clinics.forEach(clinic => {
                     const option = document.createElement('option');
-                    option.value = template.policyType;
-                    option.textContent = template.displayName;
+                    option.value = clinic.value;
+                    option.textContent = clinic.label;
                     select.appendChild(option);
                 });
 
             } catch (error) {
-                console.error('Error loading templates:', error);
-                showError('Error al cargar las plantillas de políticas');
+                console.error('Error loading clinics:', error);
+                showError('Error al cargar los centros de salud');
+            }
+        }
+
+        async function loadSpecialties() {
+            try {
+                const response = await apiCall('/policies/specialties');
+
+                if (!response || !response.ok) {
+                    throw new Error('Failed to load specialties');
+                }
+
+                specialties = await response.json();
+                console.log('Loaded specialties:', specialties);
+
+                const select = document.getElementById('specialty');
+                select.innerHTML = '<option value="">Seleccione una especialidad...</option>';
+
+                specialties.forEach(specialty => {
+                    const option = document.createElement('option');
+                    option.value = specialty.value;
+                    option.textContent = specialty.label;
+                    select.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Error loading specialties:', error);
+                showError('Error al cargar las especialidades');
             }
         }
 
@@ -758,43 +818,111 @@
 
             if (!patientCi) {
                 showError('No se pudo identificar al paciente');
+                document.getElementById('loadingPolicies').style.display = 'none';
                 return;
             }
 
             try {
-                const response = await apiCall('/policies');
+                const response = await apiCall('/policies?patientCi=' + patientCi);
 
-                if (!response || !response.ok) {
-                    throw new Error('Failed to load policies');
+                if (!response) {
+                    throw new Error('Failed to load policies - no response');
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API error:', response.status, errorText);
+                    throw new Error('Failed to load policies: ' + response.status);
                 }
 
                 const data = await response.json();
+                console.log('Policies response:', data);
 
                 document.getElementById('loadingPolicies').style.display = 'none';
 
-                if (!data.policies || data.policies.length === 0) {
+                // Handle both array and object with policies property
+                allPolicies = Array.isArray(data) ? data : (data.policies || []);
+
+                if (allPolicies.length === 0) {
                     document.getElementById('emptyPolicies').style.display = 'block';
                     document.getElementById('policiesGrid').style.display = 'none';
+                    document.getElementById('filtersContainer').style.display = 'none';
                 } else {
                     document.getElementById('emptyPolicies').style.display = 'none';
-                    displayPolicies(data.policies);
+                    populateFilterDropdowns();
+                    displayPolicies(allPolicies);
                 }
 
             } catch (error) {
                 console.error('Error loading policies:', error);
                 document.getElementById('loadingPolicies').style.display = 'none';
-                showError('Error al cargar las políticas');
+                showError('Error al cargar las politicas: ' + error.message);
             }
+        }
+
+        function populateFilterDropdowns() {
+            // Show filters
+            document.getElementById('filtersContainer').style.display = 'flex';
+
+            // Populate clinic filter
+            const clinicFilter = document.getElementById('filterClinic');
+            clinicFilter.innerHTML = '<option value="">Todos los centros</option>';
+            const uniqueClinicIds = [...new Set(allPolicies.map(p => p.clinicId))];
+            uniqueClinicIds.forEach(clinicId => {
+                const clinic = clinics.find(c => c.value === clinicId);
+                if (clinic) {
+                    const option = document.createElement('option');
+                    option.value = clinicId;
+                    option.textContent = clinic.label;
+                    clinicFilter.appendChild(option);
+                }
+            });
+
+            // Populate specialty filter
+            const specialtyFilter = document.getElementById('filterSpecialty');
+            specialtyFilter.innerHTML = '<option value="">Todas las especialidades</option>';
+            const uniqueSpecialties = [...new Set(allPolicies.map(p => p.specialty))];
+            uniqueSpecialties.forEach(specialty => {
+                const spec = specialties.find(s => s.value === specialty);
+                if (spec) {
+                    const option = document.createElement('option');
+                    option.value = specialty;
+                    option.textContent = spec.label;
+                    specialtyFilter.appendChild(option);
+                }
+            });
+        }
+
+        function applyFilters() {
+            const clinicFilter = document.getElementById('filterClinic').value;
+            const specialtyFilter = document.getElementById('filterSpecialty').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const filtered = allPolicies.filter(policy => {
+                const matchesClinic = !clinicFilter || policy.clinicId === clinicFilter;
+                const matchesSpecialty = !specialtyFilter || policy.specialty === specialtyFilter;
+                const matchesStatus = !statusFilter || policy.status === statusFilter;
+                return matchesClinic && matchesSpecialty && matchesStatus;
+            });
+
+            displayPolicies(filtered);
         }
 
         function displayPolicies(policies) {
             const grid = document.getElementById('policiesGrid');
+            const emptyGrid = document.getElementById('emptyPolicies');
             grid.innerHTML = '';
 
-            policies.forEach(policy => {
-                const card = createPolicyCard(policy);
-                grid.appendChild(card);
-            });
+            if (policies.length === 0) {
+                emptyGrid.style.display = 'block';
+                emptyGrid.innerHTML = '<div class="empty-state"><p class="empty-state-description">No se encontraron politicas con los filtros seleccionados.</p></div>';
+            } else {
+                emptyGrid.style.display = 'none';
+                policies.forEach(policy => {
+                    const card = createPolicyCard(policy);
+                    grid.appendChild(card);
+                });
+            }
 
             grid.style.display = 'grid';
         }
@@ -803,36 +931,44 @@
             const card = document.createElement('div');
             card.className = 'policy-card';
 
-            const template = policyTemplates.find(t => t.policyType === policy.policyType);
-            const displayName = template ? template.displayName : policy.policyType;
+            // Get specialty name from specialties array
+            const specialtyObj = specialties.find(s => s.value === policy.specialty);
+            const specialtyName = specialtyObj ? specialtyObj.label : policy.specialty;
 
-            const effectClass = policy.policyEffect === 'PERMIT' ? 'permit' : 'deny';
-            const effectText = policy.policyEffect === 'PERMIT' ? 'Permitir' : 'Denegar';
+            // Get clinic name from clinics array
+            const clinicObj = clinics.find(c => c.value === policy.clinicId);
+            const clinicName = clinicObj ? clinicObj.label : policy.clinicId;
 
-            let configSummary = '';
-            try {
-                const config = JSON.parse(policy.policyConfig);
-                configSummary = JSON.stringify(config, null, 2).substring(0, 200);
-                if (configSummary.length === 200) configSummary += '...';
-            } catch (e) {
-                configSummary = policy.policyConfig.substring(0, 200);
-            }
+            const statusClass = policy.status.toLowerCase();
+
+            // Map status to Spanish
+            const statusMap = {
+                'GRANTED': 'Otorgado',
+                'PENDING': 'Pendiente',
+                'REVOKED': 'Revocado'
+            };
+            const statusName = statusMap[policy.status] || policy.status;
+
+            const scopeText = policy.documentId
+                ? 'Documento especifico: ' + policy.documentId
+                : 'Todos los documentos';
 
             card.innerHTML = `
                 <div class="policy-header">
-                    <div>
-                        <div class="policy-type">${'$'}{escapeHtml(displayName)}</div>
-                        <div style="font-size: 13px; color: #95a5a6;">Prioridad: ${'$'}{policy.priority}</div>
+                    <div class="policy-info">
+                        <div class="policy-clinic">\${escapeHtml(clinicName)}</div>
+                        <div class="policy-title">\${escapeHtml(specialtyName)}</div>
                     </div>
-                    <span class="policy-effect ${'$'}{effectClass}">${'$'}{effectText}</span>
+                    <span class="policy-status \${statusClass}">\${escapeHtml(statusName)}</span>
                 </div>
                 <div class="policy-details">
-                    <strong>Configuración:</strong><br>
-                    <pre style="margin: 5px 0 0 0; font-size: 12px; color: #555;">${'$'}{escapeHtml(configSummary)}</pre>
+                    <strong>Alcance:</strong> \${escapeHtml(scopeText)}<br>
+                    <strong>Creado:</strong> \${formatDate(policy.createdAt)}
                 </div>
                 <div class="policy-actions">
-                    <button class="btn-edit" onclick="editPolicy(${'$'}{policy.id})">✏️ Editar</button>
-                    <button class="btn-delete" onclick="openDeleteModal(${'$'}{policy.id})">🗑️ Eliminar</button>
+                    \${policy.status === 'GRANTED' ?
+                        '<button class="btn-revoke" onclick="revokePolicy(' + policy.id + ')">Revocar</button>' : ''}
+                    <button class="btn-delete" onclick="openDeleteModal(' + policy.id + ')">Eliminar</button>
                 </div>
             `;
 
@@ -846,57 +982,56 @@
             return div.innerHTML;
         }
 
+        function formatDate(dateValue) {
+            if (!dateValue) return 'N/A';
+
+            try {
+                let date;
+
+                // Check if it's an array (LocalDateTime from backend: [year, month, day, hour, minute, second, nanosecond])
+                if (Array.isArray(dateValue) && dateValue.length >= 3) {
+                    // Create date from array: [year, month (1-based), day, hour, minute, second]
+                    const [year, month, day, hour = 0, minute = 0, second = 0] = dateValue;
+                    date = new Date(year, month - 1, day, hour, minute, second);
+                } else if (typeof dateValue === 'string') {
+                    // Handle ISO string format
+                    date = new Date(dateValue);
+                } else if (typeof dateValue === 'number') {
+                    // Handle timestamp
+                    date = new Date(dateValue);
+                } else {
+                    return 'N/A';
+                }
+
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    return 'N/A';
+                }
+
+                return date.toLocaleDateString('es-UY', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('Error formatting date:', error, dateValue);
+                return 'N/A';
+            }
+        }
+
         // ================================================================
         // Modal Management
         // ================================================================
 
         function openCreateModal() {
-            currentPolicy = null;
-            document.getElementById('modalTitle').textContent = 'Nueva Política';
             document.getElementById('policyForm').reset();
-            document.getElementById('policyId').value = '';
-            document.getElementById('policyConfig').value = '';
-            document.getElementById('configEditor').innerHTML = '';
-            document.getElementById('policyPriority').value = '10';
             document.getElementById('policyModal').classList.add('show');
-        }
-
-        async function editPolicy(policyId) {
-            const patientCi = getPatientCi();
-
-            try {
-                const response = await apiCall('/policies/' + policyId);
-
-                if (!response || !response.ok) {
-                    throw new Error('Failed to load policy');
-                }
-
-                currentPolicy = await response.json();
-
-                document.getElementById('modalTitle').textContent = 'Editar Política';
-                document.getElementById('policyId').value = currentPolicy.id;
-                document.getElementById('policyType').value = currentPolicy.policyType;
-                document.getElementById('policyEffect').value = currentPolicy.policyEffect;
-                document.getElementById('policyConfig').value = currentPolicy.policyConfig;
-                document.getElementById('policyPriority').value = currentPolicy.priority || 10;
-
-                // Disable policy type change when editing
-                document.getElementById('policyType').disabled = true;
-
-                onPolicyTypeChange();
-
-                document.getElementById('policyModal').classList.add('show');
-
-            } catch (error) {
-                console.error('Error loading policy:', error);
-                showError('Error al cargar la política');
-            }
         }
 
         function closeModal() {
             document.getElementById('policyModal').classList.remove('show');
-            document.getElementById('policyType').disabled = false;
-            currentPolicy = null;
         }
 
         function openDeleteModal(policyId) {
@@ -909,47 +1044,6 @@
         }
 
         // ================================================================
-        // Policy Configuration Editor
-        // ================================================================
-
-        function onPolicyTypeChange() {
-            const policyType = document.getElementById('policyType').value;
-            const template = policyTemplates.find(t => t.policyType === policyType);
-
-            if (!template) {
-                document.getElementById('policyTypeHint').textContent = '';
-                document.getElementById('configEditor').innerHTML = '';
-                return;
-            }
-
-            document.getElementById('policyTypeHint').textContent = template.description;
-
-            // Create simplified config editor based on template
-            const configEditor = document.getElementById('configEditor');
-            configEditor.innerHTML = '';
-
-            // For now, show example and let user edit JSON directly
-            const exampleDiv = document.createElement('div');
-            exampleDiv.style.background = '#f8f9fa';
-            exampleDiv.style.padding = '10px';
-            exampleDiv.style.borderRadius = '6px';
-            exampleDiv.style.marginBottom = '10px';
-            exampleDiv.innerHTML = `
-                <strong>Ejemplo:</strong><br>
-                <pre style="margin: 5px 0 0 0; font-size: 12px;">${'$'}{template.exampleConfiguration}</pre>
-            `;
-            configEditor.appendChild(exampleDiv);
-
-            // Show textarea for JSON editing
-            const textarea = document.getElementById('policyConfig');
-            textarea.style.display = 'block';
-
-            if (!currentPolicy) {
-                textarea.value = template.exampleConfiguration;
-            }
-        }
-
-        // ================================================================
         // Form Submission
         // ================================================================
 
@@ -957,85 +1051,96 @@
             e.preventDefault();
 
             const patientCi = getPatientCi();
-            const policyId = document.getElementById('policyId').value;
-            const isEdit = !!policyId;
+            if (!patientCi) {
+                showError('No se pudo identificar al paciente');
+                return;
+            }
 
             const payload = {
                 patientCi: patientCi,
-                policyType: document.getElementById('policyType').value,
-                policyEffect: document.getElementById('policyEffect').value,
-                policyConfig: document.getElementById('policyConfig').value,
-                priority: parseInt(document.getElementById('policyPriority').value)
+                clinicId: document.getElementById('clinicId').value,
+                specialty: document.getElementById('specialty').value
             };
 
-            // Validate JSON
-            try {
-                JSON.parse(payload.policyConfig);
-            } catch (e) {
-                showError('La configuración debe ser un JSON válido');
+            if (!payload.clinicId || !payload.specialty) {
+                showError('Por favor complete todos los campos');
                 return;
             }
 
             const btn = document.getElementById('saveBtn');
             btn.disabled = true;
-            btn.textContent = 'Guardando...';
+            btn.textContent = 'Creando...';
 
             try {
-                let response;
-
-                if (isEdit) {
-                    // Update existing policy
-                    response = await apiCall('/policies/' + policyId, {
-                        method: 'PUT',
-                        body: JSON.stringify({
-                            policyConfig: payload.policyConfig,
-                            policyEffect: payload.policyEffect,
-                            priority: payload.priority
-                        })
-                    });
-                } else {
-                    // Create new policy
-                    response = await apiCall('/policies', {
-                        method: 'POST',
-                        body: JSON.stringify(payload)
-                    });
-                }
+                const response = await apiCall('/policies', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
 
                 if (response && response.ok) {
                     closeModal();
-                    showSuccess(isEdit ? 'Política actualizada correctamente' : 'Política creada correctamente');
+                    showSuccess('Politica creada correctamente');
                     setTimeout(() => loadPolicies(), 1000);
                 } else {
                     const error = await response.json();
-                    showError(error.message || 'Error al guardar la política');
+                    showError(error.message || 'Error al crear la politica');
                 }
             } catch (error) {
-                console.error('Error saving policy:', error);
-                showError('Error al guardar la política');
+                console.error('Error creating policy:', error);
+                showError('Error al crear la politica');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Guardar Política';
+                btn.textContent = 'Crear Politica';
             }
         });
 
-        async function confirmDelete() {
-            const policyId = document.getElementById('deletePolicyId').value;
+        async function revokePolicy(policyId) {
+            const patientCi = getPatientCi();
+            if (!patientCi) {
+                showError('No se pudo identificar al paciente');
+                return;
+            }
 
             try {
-                const response = await apiCall('/policies/' + policyId, {
+                const response = await apiCall('/policies/' + policyId + '/revoke?patientCi=' + patientCi, {
+                    method: 'PUT'
+                });
+
+                if (response && response.ok) {
+                    showSuccess('Politica revocada correctamente');
+                    setTimeout(() => loadPolicies(), 1000);
+                } else {
+                    showError('Error al revocar la politica');
+                }
+            } catch (error) {
+                console.error('Error revoking policy:', error);
+                showError('Error al revocar la politica');
+            }
+        }
+
+        async function confirmDelete() {
+            const policyId = document.getElementById('deletePolicyId').value;
+            const patientCi = getPatientCi();
+            if (!patientCi) {
+                showError('No se pudo identificar al paciente');
+                return;
+            }
+
+            try {
+                const response = await apiCall('/policies/' + policyId + '?patientCi=' + patientCi, {
                     method: 'DELETE'
                 });
 
                 if (response && response.ok) {
                     closeDeleteModal();
-                    showSuccess('Política eliminada correctamente');
+                    showSuccess('Politica eliminada correctamente');
                     setTimeout(() => loadPolicies(), 1000);
                 } else {
-                    showError('Error al eliminar la política');
+                    showError('Error al eliminar la politica');
                 }
             } catch (error) {
                 console.error('Error deleting policy:', error);
-                showError('Error al eliminar la política');
+                showError('Error al eliminar la politica');
             }
         }
 
@@ -1058,7 +1163,10 @@
 
         window.addEventListener('DOMContentLoaded', async function() {
             console.log('Loading access policies page...');
-            await loadPolicyTemplates();
+            await Promise.all([
+                loadClinics(),
+                loadSpecialties()
+            ]);
             await loadPolicies();
         });
     </script>

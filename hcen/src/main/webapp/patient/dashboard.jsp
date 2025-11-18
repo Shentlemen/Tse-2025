@@ -365,16 +365,16 @@
                 <div class="menu-title">Aprobaciones</div>
                 <div class="menu-description">Autorizar solicitudes de acceso</div>
             </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/notifications')">
-                <span class="menu-icon">🔔</span>
-                <div class="menu-title">Notificaciones</div>
-                <div class="menu-description">Ver alertas y mensajes del sistema</div>
-            </div>
-            <div class="menu-card" onclick="navigateTo('/hcen/patient/profile')">
-                <span class="menu-icon">👤</span>
-                <div class="menu-title">Mi Perfil</div>
-                <div class="menu-description">Actualizar información personal</div>
-            </div>
+<%--            <div class="menu-card" onclick="navigateTo('/hcen/patient/notifications')">--%>
+<%--                <span class="menu-icon">🔔</span>--%>
+<%--                <div class="menu-title">Notificaciones</div>--%>
+<%--                <div class="menu-description">Ver alertas y mensajes del sistema</div>--%>
+<%--            </div>--%>
+<%--            <div class="menu-card" onclick="navigateTo('/hcen/patient/profile')">--%>
+<%--                <span class="menu-icon">👤</span>--%>
+<%--                <div class="menu-title">Mi Perfil</div>--%>
+<%--                <div class="menu-description">Actualizar información personal</div>--%>
+<%--            </div>--%>
         </div>
     </div>
 
@@ -533,23 +533,18 @@
                 // Simulate loading delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // Display mock data
-                document.getElementById('myDocuments').textContent = '0';
-                document.getElementById('myPolicies').textContent = '0';
-                document.getElementById('recentAccesses').textContent = '0';
-                document.getElementById('pendingApprovals').textContent = '0';
 
-                // When actual endpoints are ready:
-                /*
+
+
                 const patientCi = parseJwt(sessionStorage.getItem('accessToken')).sub;
-                const stats = await apiCall(`/patients/${patientCi}/statistics`);
+                const stats = await apiCall(`/patients/` + patientCi + `/statistics`);
                 if (stats) {
-                    document.getElementById('myDocuments').textContent = stats.documentCount || '0';
+                    document.getElementById('myDocuments').textContent = stats.totalDocuments || '0';
                     document.getElementById('myPolicies').textContent = stats.policyCount || '0';
                     document.getElementById('recentAccesses').textContent = stats.recentAccessCount || '0';
                     document.getElementById('pendingApprovals').textContent = stats.pendingApprovalCount || '0';
                 }
-                */
+
             } catch (error) {
                 console.error('Error loading statistics:', error);
                 document.getElementById('myDocuments').textContent = 'Error';

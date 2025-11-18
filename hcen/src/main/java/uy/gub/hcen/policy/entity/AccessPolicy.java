@@ -9,90 +9,30 @@ import java.util.Objects;
  * Access Policy Entity
  *
  * Represents a patient-defined access control policy for clinical documents in the HCEN system.
- * Policies enable patients to define granular access control rules based on various attributes
- * such as document type, professional specialty, clinic, time constraints, or specific professionals.
+ * Policies grant access to healthcare professionals with a specific specialty from a specific clinic.
  *
- * Policy Evaluation:
- * - Multiple policies can exist for a single patient
- * - Policies are evaluated by the PolicyEngine during document access requests
- * - Conflict resolution is based on priority (higher priority wins)
- * - Policy effect can be PERMIT (allow access) or DENY (block access)
- *
- * Policy Types:
- * - DOCUMENT_TYPE: Allow/deny by document type (e.g., only lab results)
- * - SPECIALTY: Allow/deny by professional specialty (e.g., only cardiologists)
- * - TIME_BASED: Allow/deny by time/day (e.g., business hours only)
- * - CLINIC: Allow/deny by clinic (e.g., only my primary care clinic)
- * - PROFESSIONAL: Allow/deny specific professionals (whitelist/blacklist)
- * - EMERGENCY_OVERRIDE: Emergency access (requires heavy audit logging)
+ * Simplified Policy Model:
+ * - Patient grants access to professionals with a specific specialty from a specific clinic
+ * - Policies are created with GRANTED status by default
+ * - Document scope: null = ALL documents, specific documentId = only that document
  *
  * Database Schema: policies.access_policies
  *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-10-17
+ * @version 2.0
+ * @since 2025-11-18
  */
 @Entity
 @Table(name = "access_policies", schema = "policies", indexes = {
     @Index(name = "idx_access_policies_patient_ci", columnList = "patient_ci"),
-    @Index(name = "idx_access_policies_policy_type", columnList = "policy_type"),
-    @Index(name = "idx_access_policies_policy_effect", columnList = "policy_effect"),
-    @Index(name = "idx_access_policies_priority", columnList = "priority"),
-    @Index(name = "idx_access_policies_patient_type_effect", columnList = "patient_ci, policy_type, policy_effect")
+    @Index(name = "idx_access_policies_clinic_id", columnList = "clinic_id"),
+    @Index(name = "idx_access_policies_specialty", columnList = "specialty"),
+    @Index(name = "idx_access_policies_status", columnList = "status"),
+    @Index(name = "idx_access_policies_patient_clinic_specialty", columnList = "patient_ci, clinic_id, specialty")
 })
 public class AccessPolicy implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * Policy Type Enumeration
-     */
-    public enum PolicyType {
-        /**
-         * Policy based on document type (e.g., LAB_RESULT, IMAGING, CLINICAL_NOTE)
-         */
-        DOCUMENT_TYPE,
-
-        /**
-         * Policy based on professional specialty (e.g., CARDIOLOGY, PEDIATRICS)
-         */
-        SPECIALTY,
-
-        /**
-         * Policy based on time constraints (e.g., business hours, specific days)
-         */
-        TIME_BASED,
-
-        /**
-         * Policy based on clinic (e.g., allow only specific clinics)
-         */
-        CLINIC,
-
-        /**
-         * Policy for specific professionals (whitelist or blacklist)
-         */
-        PROFESSIONAL,
-
-        /**
-         * Emergency override policy (bypass other restrictions, requires audit)
-         */
-        EMERGENCY_OVERRIDE
-    }
-
-    /**
-     * Policy Effect Enumeration
-     */
-    public enum PolicyEffect {
-        /**
-         * Allow access (whitelist)
-         */
-        PERMIT,
-
-        /**
-         * Deny access (blacklist)
-         */
-        DENY
-    }
+    private static final long serialVersionUID = 2L;
 
     /**
      * Unique policy identifier
@@ -102,39 +42,40 @@ public class AccessPolicy implements Serializable {
     private Long id;
 
     /**
-     * Patient CI (Cédula de Identidad)
+     * Patient CI (Cedula de Identidad)
      * References: inus.inus_users.ci
      */
     @Column(name = "patient_ci", nullable = false, length = 20)
     private String patientCi;
 
     /**
-     * Policy type
+     * Clinic identifier
+     * References: clinics.clinics.clinic_id
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "policy_type", nullable = false, length = 50)
-    private PolicyType policyType;
+    @Column(name = "clinic_id", nullable = false, length = 50)
+    private String clinicId;
 
     /**
-     * Policy configuration (stored as JSONB)
-     * Structure varies by policy type
-     *
-     * Examples:
-     * - DOCUMENT_TYPE: {"allowedTypes": ["LAB_RESULT", "IMAGING"]}
-     * - SPECIALTY: {"allowedSpecialties": ["CARDIOLOGY", "GENERAL_MEDICINE"]}
-     * - TIME_BASED: {"allowedDays": ["MONDAY", "FRIDAY"], "allowedHours": "09:00-17:00"}
-     * - CLINIC: {"allowedClinics": ["clinic-001", "clinic-002"]}
-     * - PROFESSIONAL: {"allowedProfessionals": ["prof-123", "prof-456"]}
-     */
-    @Column(name = "policy_config", nullable = false, columnDefinition = "jsonb")
-    private String policyConfig;
-
-    /**
-     * Policy effect (PERMIT or DENY)
+     * Medical specialty
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "policy_effect", nullable = false, length = 10)
-    private PolicyEffect policyEffect;
+    @Column(name = "specialty", nullable = false, length = 50)
+    private MedicalSpecialty specialty;
+
+    /**
+     * Specific document ID (optional)
+     * If null, policy applies to ALL documents
+     * If set, policy applies only to that specific document
+     */
+    @Column(name = "document_id")
+    private Long documentId;
+
+    /**
+     * Policy status
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private PolicyStatus status = PolicyStatus.GRANTED;
 
     /**
      * Policy validity start date (optional)
@@ -177,30 +118,51 @@ public class AccessPolicy implements Serializable {
     public AccessPolicy() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.status = PolicyStatus.GRANTED;
+        this.priority = 0;
     }
 
     /**
      * Constructor with required fields
      *
      * @param patientCi Patient CI
-     * @param policyType Policy type
-     * @param policyConfig Policy configuration (JSON)
-     * @param policyEffect Policy effect
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
      */
-    public AccessPolicy(String patientCi, PolicyType policyType, String policyConfig, PolicyEffect policyEffect) {
+    public AccessPolicy(String patientCi, String clinicId, MedicalSpecialty specialty) {
         this();
         this.patientCi = patientCi;
-        this.policyType = policyType;
-        this.policyConfig = policyConfig;
-        this.policyEffect = policyEffect;
+        this.clinicId = clinicId;
+        this.specialty = specialty;
     }
 
     /**
-     * Checks if this policy is currently valid based on validity dates
+     * Full constructor
      *
-     * @return true if policy is valid, false otherwise
+     * @param patientCi Patient CI
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     * @param documentId Document ID (null for all documents)
+     * @param status Policy status
+     */
+    public AccessPolicy(String patientCi, String clinicId, MedicalSpecialty specialty,
+                        Long documentId, PolicyStatus status) {
+        this(patientCi, clinicId, specialty);
+        this.documentId = documentId;
+        this.status = status;
+    }
+
+    /**
+     * Checks if this policy is currently valid based on validity dates and status
+     *
+     * @return true if policy is valid and active, false otherwise
      */
     public boolean isValid() {
+        // Check status
+        if (status != PolicyStatus.GRANTED) {
+            return false;
+        }
+
         LocalDateTime now = LocalDateTime.now();
 
         if (validFrom != null && now.isBefore(validFrom)) {
@@ -215,6 +177,25 @@ public class AccessPolicy implements Serializable {
     }
 
     /**
+     * Checks if this policy applies to all documents
+     *
+     * @return true if documentId is null (applies to all documents)
+     */
+    public boolean appliesToAllDocuments() {
+        return documentId == null;
+    }
+
+    /**
+     * Checks if this policy applies to a specific document
+     *
+     * @param docId Document ID to check
+     * @return true if policy applies to all documents or to the specific document
+     */
+    public boolean appliesToDocument(Long docId) {
+        return documentId == null || documentId.equals(docId);
+    }
+
+    /**
      * Pre-persist callback
      */
     @PrePersist
@@ -224,6 +205,12 @@ public class AccessPolicy implements Serializable {
         }
         if (updatedAt == null) {
             updatedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = PolicyStatus.GRANTED;
+        }
+        if (priority == null) {
+            priority = 0;
         }
     }
 
@@ -253,28 +240,36 @@ public class AccessPolicy implements Serializable {
         this.patientCi = patientCi;
     }
 
-    public PolicyType getPolicyType() {
-        return policyType;
+    public String getClinicId() {
+        return clinicId;
     }
 
-    public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    public void setClinicId(String clinicId) {
+        this.clinicId = clinicId;
     }
 
-    public String getPolicyConfig() {
-        return policyConfig;
+    public MedicalSpecialty getSpecialty() {
+        return specialty;
     }
 
-    public void setPolicyConfig(String policyConfig) {
-        this.policyConfig = policyConfig;
+    public void setSpecialty(MedicalSpecialty specialty) {
+        this.specialty = specialty;
     }
 
-    public PolicyEffect getPolicyEffect() {
-        return policyEffect;
+    public Long getDocumentId() {
+        return documentId;
     }
 
-    public void setPolicyEffect(PolicyEffect policyEffect) {
-        this.policyEffect = policyEffect;
+    public void setDocumentId(Long documentId) {
+        this.documentId = documentId;
+    }
+
+    public PolicyStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PolicyStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getValidFrom() {
@@ -326,12 +321,13 @@ public class AccessPolicy implements Serializable {
         AccessPolicy that = (AccessPolicy) o;
         return Objects.equals(id, that.id) &&
                Objects.equals(patientCi, that.patientCi) &&
-               policyType == that.policyType;
+               Objects.equals(clinicId, that.clinicId) &&
+               specialty == that.specialty;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, patientCi, policyType);
+        return Objects.hash(id, patientCi, clinicId, specialty);
     }
 
     @Override
@@ -339,8 +335,10 @@ public class AccessPolicy implements Serializable {
         return "AccessPolicy{" +
                "id=" + id +
                ", patientCi='" + patientCi + '\'' +
-               ", policyType=" + policyType +
-               ", policyEffect=" + policyEffect +
+               ", clinicId='" + clinicId + '\'' +
+               ", specialty=" + specialty +
+               ", documentId=" + documentId +
+               ", status=" + status +
                ", priority=" + priority +
                ", validFrom=" + validFrom +
                ", validUntil=" + validUntil +

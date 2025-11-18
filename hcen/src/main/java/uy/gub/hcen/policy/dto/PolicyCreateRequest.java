@@ -1,8 +1,7 @@
 package uy.gub.hcen.policy.dto;
 
 import jakarta.validation.constraints.*;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyType;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyEffect;
+import uy.gub.hcen.policy.entity.MedicalSpecialty;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -10,69 +9,59 @@ import java.util.Objects;
 
 /**
  * Policy Create Request DTO
- * <p>
+ *
  * Data Transfer Object for creating new patient access control policies.
- * Includes comprehensive validation annotations to ensure data integrity.
- * <p>
+ * Simplified model: grants access to professionals with a specific specialty from a specific clinic.
+ *
  * Request Example:
  * <pre>
  * {
- *   "patientCi": "12345678",
- *   "policyType": "DOCUMENT_TYPE",
- *   "policyConfig": "{\"allowedTypes\": [\"LAB_RESULT\", \"IMAGING\"]}",
- *   "policyEffect": "PERMIT",
+ *   "patientCi": "uy-ci-12345678",
+ *   "clinicId": "clinic-001",
+ *   "specialty": "CARDIOLOGIA",
+ *   "documentId": null,
  *   "validFrom": "2025-10-21T00:00:00",
- *   "validUntil": "2026-10-21T00:00:00",
- *   "priority": 10
+ *   "validUntil": "2026-10-21T00:00:00"
  * }
  * </pre>
- * <p>
- * Policy Configuration JSON Format Examples:
- * <ul>
- *   <li>DOCUMENT_TYPE: {"allowedTypes": ["LAB_RESULT", "IMAGING"]}</li>
- *   <li>SPECIALTY: {"allowedSpecialties": ["CARDIOLOGY", "GENERAL_MEDICINE"]}</li>
- *   <li>TIME_BASED: {"allowedDays": ["MONDAY", "FRIDAY"], "allowedHours": "09:00-17:00"}</li>
- *   <li>CLINIC: {"allowedClinics": ["clinic-001", "clinic-002"]}</li>
- *   <li>PROFESSIONAL: {"allowedProfessionals": ["prof-123", "prof-456"]}</li>
- *   <li>EMERGENCY_OVERRIDE: {"enabled": true, "requiresAudit": true}</li>
- * </ul>
  *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-10-22
+ * @version 2.0
+ * @since 2025-11-18
  */
 public class PolicyCreateRequest implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
-     * Patient CI (Cédula de Identidad) - owner of the policy
+     * Patient CI (Cedula de Identidad) - owner of the policy
      * Must be between 7-9 digits (Uruguay CI format)
      */
     @NotBlank(message = "Patient CI is required")
-    @Pattern(regexp = "^uy-ci-\\d{7,9}$", message = "Patient CI must be 7-9 digits")
+    @Pattern(regexp = "^uy-ci-\\d{7,9}$", message = "Patient CI must be in format uy-ci-XXXXXXXX")
     private String patientCi;
 
     /**
-     * Policy type - determines how the policy is evaluated
+     * Clinic identifier
+     * Must reference an existing clinic in the system
      */
-    @NotNull(message = "Policy type is required")
-    private PolicyType policyType;
+    @NotBlank(message = "Clinic ID is required")
+    @Size(max = 50, message = "Clinic ID must not exceed 50 characters")
+    private String clinicId;
 
     /**
-     * Policy configuration as JSON
-     * Structure varies by policy type
-     * Must be valid JSON and not exceed 5000 characters
+     * Medical specialty
+     * Determines which professionals can access the documents
      */
-    @NotBlank(message = "Policy configuration is required")
-    @Size(max = 5000, message = "Policy configuration must not exceed 5000 characters")
-    private String policyConfig;
+    @NotNull(message = "Specialty is required")
+    private MedicalSpecialty specialty;
 
     /**
-     * Policy effect - PERMIT (allow) or DENY (block)
+     * Optional: Specific document ID
+     * If null, policy applies to ALL documents
+     * If set, policy applies only to that specific document
      */
-    @NotNull(message = "Policy effect is required")
-    private PolicyEffect policyEffect;
+    private Long documentId;
 
     /**
      * Optional: Start date for policy validity
@@ -86,15 +75,6 @@ public class PolicyCreateRequest implements Serializable {
      */
     private LocalDateTime validUntil;
 
-    /**
-     * Priority for conflict resolution
-     * Higher priority wins when policies conflict
-     * Default: 0
-     */
-    @Min(value = 0, message = "Priority must be non-negative")
-    @Max(value = 100, message = "Priority must not exceed 100")
-    private Integer priority = 0;
-
     // ================================================================
     // Constructors
     // ================================================================
@@ -103,30 +83,39 @@ public class PolicyCreateRequest implements Serializable {
      * Default constructor
      */
     public PolicyCreateRequest() {
-        this.priority = 0;
+    }
+
+    /**
+     * Constructor with required fields
+     *
+     * @param patientCi Patient CI
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     */
+    public PolicyCreateRequest(String patientCi, String clinicId, MedicalSpecialty specialty) {
+        this.patientCi = patientCi;
+        this.clinicId = clinicId;
+        this.specialty = specialty;
     }
 
     /**
      * Full constructor
      *
      * @param patientCi Patient CI
-     * @param policyType Policy type
-     * @param policyConfig Policy configuration JSON
-     * @param policyEffect Policy effect
-     * @param validFrom Start date
-     * @param validUntil End date
-     * @param priority Priority level
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     * @param documentId Document ID (optional)
+     * @param validFrom Start date (optional)
+     * @param validUntil End date (optional)
      */
-    public PolicyCreateRequest(String patientCi, PolicyType policyType, String policyConfig,
-                               PolicyEffect policyEffect, LocalDateTime validFrom,
-                               LocalDateTime validUntil, Integer priority) {
+    public PolicyCreateRequest(String patientCi, String clinicId, MedicalSpecialty specialty,
+                               Long documentId, LocalDateTime validFrom, LocalDateTime validUntil) {
         this.patientCi = patientCi;
-        this.policyType = policyType;
-        this.policyConfig = policyConfig;
-        this.policyEffect = policyEffect;
+        this.clinicId = clinicId;
+        this.specialty = specialty;
+        this.documentId = documentId;
         this.validFrom = validFrom;
         this.validUntil = validUntil;
-        this.priority = priority != null ? priority : 0;
     }
 
     // ================================================================
@@ -141,28 +130,28 @@ public class PolicyCreateRequest implements Serializable {
         this.patientCi = patientCi;
     }
 
-    public PolicyType getPolicyType() {
-        return policyType;
+    public String getClinicId() {
+        return clinicId;
     }
 
-    public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    public void setClinicId(String clinicId) {
+        this.clinicId = clinicId;
     }
 
-    public String getPolicyConfig() {
-        return policyConfig;
+    public MedicalSpecialty getSpecialty() {
+        return specialty;
     }
 
-    public void setPolicyConfig(String policyConfig) {
-        this.policyConfig = policyConfig;
+    public void setSpecialty(MedicalSpecialty specialty) {
+        this.specialty = specialty;
     }
 
-    public PolicyEffect getPolicyEffect() {
-        return policyEffect;
+    public Long getDocumentId() {
+        return documentId;
     }
 
-    public void setPolicyEffect(PolicyEffect policyEffect) {
-        this.policyEffect = policyEffect;
+    public void setDocumentId(Long documentId) {
+        this.documentId = documentId;
     }
 
     public LocalDateTime getValidFrom() {
@@ -181,14 +170,6 @@ public class PolicyCreateRequest implements Serializable {
         this.validUntil = validUntil;
     }
 
-    public Integer getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Integer priority) {
-        this.priority = priority;
-    }
-
     // ================================================================
     // Object Methods
     // ================================================================
@@ -199,23 +180,23 @@ public class PolicyCreateRequest implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         PolicyCreateRequest that = (PolicyCreateRequest) o;
         return Objects.equals(patientCi, that.patientCi) &&
-                policyType == that.policyType &&
-                Objects.equals(policyConfig, that.policyConfig) &&
-                policyEffect == that.policyEffect;
+                Objects.equals(clinicId, that.clinicId) &&
+                specialty == that.specialty &&
+                Objects.equals(documentId, that.documentId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(patientCi, policyType, policyConfig, policyEffect);
+        return Objects.hash(patientCi, clinicId, specialty, documentId);
     }
 
     @Override
     public String toString() {
         return "PolicyCreateRequest{" +
                 "patientCi='" + patientCi + '\'' +
-                ", policyType=" + policyType +
-                ", policyEffect=" + policyEffect +
-                ", priority=" + priority +
+                ", clinicId='" + clinicId + '\'' +
+                ", specialty=" + specialty +
+                ", documentId=" + documentId +
                 ", validFrom=" + validFrom +
                 ", validUntil=" + validUntil +
                 '}';

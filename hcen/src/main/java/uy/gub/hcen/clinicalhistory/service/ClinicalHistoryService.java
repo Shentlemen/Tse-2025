@@ -3,7 +3,11 @@ package uy.gub.hcen.clinicalhistory.service;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import uy.gub.hcen.audit.entity.AuditLog;
+import uy.gub.hcen.audit.repository.AuditLogRepository;
 import uy.gub.hcen.clinicalhistory.dto.*;
+import uy.gub.hcen.patient.dto.PatientDashboardStatsDTO;
+import uy.gub.hcen.policy.repository.AccessPolicyRepository;
+import uy.gub.hcen.policy.repository.AccessRequestRepository;
 import uy.gub.hcen.rndc.entity.DocumentStatus;
 import uy.gub.hcen.rndc.entity.DocumentType;
 import uy.gub.hcen.rndc.entity.RndcDocument;
@@ -62,6 +66,15 @@ public class ClinicalHistoryService {
 
     @Inject
     private uy.gub.hcen.service.policy.PolicyEngine policyEngine;
+
+    @Inject
+    private AccessPolicyRepository accessPolicyRepository;
+
+    @Inject
+    private AccessRequestRepository accessRequestRepository;
+
+    @Inject
+    private AuditLogRepository auditLogRepository;
 
     /**
      * Gets paginated clinical history for a patient with optional filters
@@ -248,6 +261,55 @@ public class ClinicalHistoryService {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error calculating statistics for patient: " + patientCi, e);
             return new DocumentStatsDTO(0); // Return empty stats on error
+        }
+    }
+
+    /**
+     * Gets patient dashboard statistics for the patient portal
+     *
+     * <p>Returns aggregated counts for:
+     * <ul>
+     *   <li>Total documents in RNDC</li>
+     *   <li>Active access policies</li>
+     *   <li>Recent access by professionals (last 30 days)</li>
+     *   <li>Pending access request approvals</li>
+     * </ul>
+     *
+     * @param patientCi Patient's CI
+     * @return PatientDashboardStatsDTO with aggregated counts
+     */
+    public PatientDashboardStatsDTO getPatientDashboardStats(String patientCi) {
+        LOGGER.log(Level.INFO, "Calculating dashboard statistics for patient: {0}", patientCi);
+
+        try {
+            PatientDashboardStatsDTO stats = new PatientDashboardStatsDTO();
+
+            // 1. Total documents from RNDC (ACTIVE documents only)
+            long totalDocs = rndcRepository.countByPatientCiAndStatus(patientCi, DocumentStatus.ACTIVE);
+            stats.setTotalDocuments(totalDocs);
+
+            // 2. Active policies (within validity period)
+            long activePolicies = accessPolicyRepository.countActiveByPatientCi(patientCi);
+            stats.setActivePolicies(activePolicies);
+
+            // 3. Recent access by professionals (last 30 days)
+            LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+            long recentAccess = auditLogRepository.countRecentAccessByPatient(patientCi, thirtyDaysAgo);
+            stats.setRecentAccess(recentAccess);
+
+            // 4. Pending access request approvals
+            long pendingApprovals = accessRequestRepository.countPendingByPatientCi(patientCi);
+            stats.setPendingApprovals(pendingApprovals);
+
+            LOGGER.log(Level.INFO, "Dashboard statistics for patient {0}: {1}",
+                    new Object[]{patientCi, stats});
+
+            return stats;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error calculating dashboard statistics for patient: " + patientCi, e);
+            // Return empty stats on error
+            return new PatientDashboardStatsDTO(0, 0, 0, 0);
         }
     }
 

@@ -1,8 +1,8 @@
 package uy.gub.hcen.policy.dto;
 
 import uy.gub.hcen.policy.entity.AccessPolicy;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyType;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyEffect;
+import uy.gub.hcen.policy.entity.MedicalSpecialty;
+import uy.gub.hcen.policy.entity.PolicyStatus;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -10,18 +10,22 @@ import java.util.Objects;
 
 /**
  * Policy Response DTO
- * <p>
+ *
  * Immutable Data Transfer Object representing an access control policy in API responses.
  * Provides a clean, safe view of policy data without exposing entity internals.
- * <p>
+ *
  * Response Example:
  * <pre>
  * {
  *   "id": 123,
- *   "patientCi": "12345678",
- *   "policyType": "DOCUMENT_TYPE",
- *   "policyConfig": "{\"allowedTypes\": [\"LAB_RESULT\", \"IMAGING\"]}",
- *   "policyEffect": "PERMIT",
+ *   "patientCi": "uy-ci-12345678",
+ *   "clinicId": "clinic-001",
+ *   "clinicName": "Hospital de Clinicas",
+ *   "specialty": "CARDIOLOGIA",
+ *   "specialtyName": "Cardiologia",
+ *   "documentId": null,
+ *   "status": "GRANTED",
+ *   "statusName": "Otorgado",
  *   "validFrom": "2025-10-21T00:00:00",
  *   "validUntil": "2026-10-21T00:00:00",
  *   "priority": 10,
@@ -29,28 +33,24 @@ import java.util.Objects;
  *   "updatedAt": "2025-10-21T14:30:00"
  * }
  * </pre>
- * <p>
- * Design Principles:
- * <ul>
- *   <li>Immutable - all fields are final (getters only)</li>
- *   <li>Safe - no internal entity references exposed</li>
- *   <li>Complete - includes all policy information for client consumption</li>
- *   <li>Timestamped - includes creation and update timestamps for audit</li>
- * </ul>
  *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-10-22
+ * @version 2.0
+ * @since 2025-11-18
  */
 public class PolicyResponse implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final Long id;
     private final String patientCi;
-    private final PolicyType policyType;
-    private final String policyConfig;
-    private final PolicyEffect policyEffect;
+    private final String clinicId;
+    private final String clinicName;
+    private final MedicalSpecialty specialty;
+    private final String specialtyName;
+    private final Long documentId;
+    private final PolicyStatus status;
+    private final String statusName;
     private final LocalDateTime validFrom;
     private final LocalDateTime validUntil;
     private final Integer priority;
@@ -66,23 +66,30 @@ public class PolicyResponse implements Serializable {
      *
      * @param id Policy ID
      * @param patientCi Patient CI
-     * @param policyType Policy type
-     * @param policyConfig Policy configuration JSON
-     * @param policyEffect Policy effect
+     * @param clinicId Clinic ID
+     * @param clinicName Clinic name
+     * @param specialty Medical specialty
+     * @param documentId Document ID (null for all documents)
+     * @param status Policy status
      * @param validFrom Start date
      * @param validUntil End date
      * @param priority Priority level
      * @param createdAt Creation timestamp
      * @param updatedAt Update timestamp
      */
-    public PolicyResponse(Long id, String patientCi, PolicyType policyType, String policyConfig,
-                         PolicyEffect policyEffect, LocalDateTime validFrom, LocalDateTime validUntil,
+    public PolicyResponse(Long id, String patientCi, String clinicId, String clinicName,
+                         MedicalSpecialty specialty, Long documentId, PolicyStatus status,
+                         LocalDateTime validFrom, LocalDateTime validUntil,
                          Integer priority, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.patientCi = patientCi;
-        this.policyType = policyType;
-        this.policyConfig = policyConfig;
-        this.policyEffect = policyEffect;
+        this.clinicId = clinicId;
+        this.clinicName = clinicName;
+        this.specialty = specialty;
+        this.specialtyName = specialty != null ? specialty.getDisplayName() : null;
+        this.documentId = documentId;
+        this.status = status;
+        this.statusName = status != null ? status.getDisplayName() : null;
         this.validFrom = validFrom;
         this.validUntil = validUntil;
         this.priority = priority;
@@ -96,7 +103,7 @@ public class PolicyResponse implements Serializable {
 
     /**
      * Creates a PolicyResponse from an AccessPolicy entity
-     * <p>
+     *
      * This is the primary factory method for converting entities to DTOs.
      * Ensures safe conversion without exposing internal entity state.
      *
@@ -112,9 +119,40 @@ public class PolicyResponse implements Serializable {
         return new PolicyResponse(
                 policy.getId(),
                 policy.getPatientCi(),
-                policy.getPolicyType(),
-                policy.getPolicyConfig(),
-                policy.getPolicyEffect(),
+                policy.getClinicId(),
+                null, // Clinic name will be populated by service layer if needed
+                policy.getSpecialty(),
+                policy.getDocumentId(),
+                policy.getStatus(),
+                policy.getValidFrom(),
+                policy.getValidUntil(),
+                policy.getPriority(),
+                policy.getCreatedAt(),
+                policy.getUpdatedAt()
+        );
+    }
+
+    /**
+     * Creates a PolicyResponse from an AccessPolicy entity with clinic name
+     *
+     * @param policy AccessPolicy entity
+     * @param clinicName Clinic display name
+     * @return PolicyResponse DTO
+     * @throws IllegalArgumentException if policy is null
+     */
+    public static PolicyResponse fromEntity(AccessPolicy policy, String clinicName) {
+        if (policy == null) {
+            throw new IllegalArgumentException("Policy cannot be null");
+        }
+
+        return new PolicyResponse(
+                policy.getId(),
+                policy.getPatientCi(),
+                policy.getClinicId(),
+                clinicName,
+                policy.getSpecialty(),
+                policy.getDocumentId(),
+                policy.getStatus(),
                 policy.getValidFrom(),
                 policy.getValidUntil(),
                 policy.getPriority(),
@@ -135,16 +173,32 @@ public class PolicyResponse implements Serializable {
         return patientCi;
     }
 
-    public PolicyType getPolicyType() {
-        return policyType;
+    public String getClinicId() {
+        return clinicId;
     }
 
-    public String getPolicyConfig() {
-        return policyConfig;
+    public String getClinicName() {
+        return clinicName;
     }
 
-    public PolicyEffect getPolicyEffect() {
-        return policyEffect;
+    public MedicalSpecialty getSpecialty() {
+        return specialty;
+    }
+
+    public String getSpecialtyName() {
+        return specialtyName;
+    }
+
+    public Long getDocumentId() {
+        return documentId;
+    }
+
+    public PolicyStatus getStatus() {
+        return status;
+    }
+
+    public String getStatusName() {
+        return statusName;
     }
 
     public LocalDateTime getValidFrom() {
@@ -172,11 +226,15 @@ public class PolicyResponse implements Serializable {
     // ================================================================
 
     /**
-     * Checks if this policy is currently valid based on validity dates
+     * Checks if this policy is currently valid based on validity dates and status
      *
-     * @return true if policy is within validity period
+     * @return true if policy is within validity period and status is GRANTED
      */
     public boolean isCurrentlyValid() {
+        if (status != PolicyStatus.GRANTED) {
+            return false;
+        }
+
         LocalDateTime now = LocalDateTime.now();
 
         if (validFrom != null && now.isBefore(validFrom)) {
@@ -191,21 +249,34 @@ public class PolicyResponse implements Serializable {
     }
 
     /**
-     * Checks if this is a PERMIT policy
+     * Checks if this policy applies to all documents
      *
-     * @return true if policy effect is PERMIT
+     * @return true if documentId is null
      */
-    public boolean isPermitPolicy() {
-        return policyEffect == PolicyEffect.PERMIT;
+    public boolean appliesToAllDocuments() {
+        return documentId == null;
     }
 
     /**
-     * Checks if this is a DENY policy
+     * Checks if this is an active (GRANTED) policy
      *
-     * @return true if policy effect is DENY
+     * @return true if status is GRANTED
      */
-    public boolean isDenyPolicy() {
-        return policyEffect == PolicyEffect.DENY;
+    public boolean isActive() {
+        return status == PolicyStatus.GRANTED;
+    }
+
+    /**
+     * Gets a formatted description of the policy for display
+     *
+     * @return Human-readable policy description
+     */
+    public String getDescription() {
+        String clinicPart = clinicName != null ? clinicName : clinicId;
+        String specialtyPart = specialtyName != null ? specialtyName : (specialty != null ? specialty.name() : "");
+        String statusPart = statusName != null ? statusName : (status != null ? status.name() : "");
+
+        return specialtyPart + " de " + clinicPart + " - " + statusPart;
     }
 
     // ================================================================
@@ -219,12 +290,13 @@ public class PolicyResponse implements Serializable {
         PolicyResponse that = (PolicyResponse) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(patientCi, that.patientCi) &&
-                policyType == that.policyType;
+                Objects.equals(clinicId, that.clinicId) &&
+                specialty == that.specialty;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, patientCi, policyType);
+        return Objects.hash(id, patientCi, clinicId, specialty);
     }
 
     @Override
@@ -232,8 +304,11 @@ public class PolicyResponse implements Serializable {
         return "PolicyResponse{" +
                 "id=" + id +
                 ", patientCi='" + patientCi + '\'' +
-                ", policyType=" + policyType +
-                ", policyEffect=" + policyEffect +
+                ", clinicId='" + clinicId + '\'' +
+                ", clinicName='" + clinicName + '\'' +
+                ", specialty=" + specialty +
+                ", documentId=" + documentId +
+                ", status=" + status +
                 ", priority=" + priority +
                 ", validFrom=" + validFrom +
                 ", validUntil=" + validUntil +

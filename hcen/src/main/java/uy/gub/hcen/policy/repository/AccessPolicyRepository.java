@@ -1,8 +1,8 @@
 package uy.gub.hcen.policy.repository;
 
 import uy.gub.hcen.policy.entity.AccessPolicy;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyType;
-import uy.gub.hcen.policy.entity.AccessPolicy.PolicyEffect;
+import uy.gub.hcen.policy.entity.MedicalSpecialty;
+import uy.gub.hcen.policy.entity.PolicyStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,11 +11,11 @@ import java.util.Optional;
  * Access Policy Repository Interface
  *
  * Data access interface for managing patient-defined access control policies.
- * Provides methods for CRUD operations and policy queries.
+ * Provides methods for CRUD operations and policy queries based on clinic and specialty.
  *
  * @author TSE 2025 Group 9
- * @version 1.0
- * @since 2025-10-17
+ * @version 2.0
+ * @since 2025-11-18
  * @see AccessPolicy
  */
 public interface AccessPolicyRepository {
@@ -38,7 +38,7 @@ public interface AccessPolicyRepository {
 
     /**
      * Finds all policies for a specific patient
-     * Returns only currently valid policies (within validity period)
+     * Returns only currently valid policies (GRANTED status, within validity period)
      *
      * @param patientCi Patient's CI
      * @return List of active policies
@@ -46,7 +46,7 @@ public interface AccessPolicyRepository {
     List<AccessPolicy> findByPatientCi(String patientCi);
 
     /**
-     * Finds all policies for a patient, including expired ones
+     * Finds all policies for a patient, including revoked and expired ones
      *
      * @param patientCi Patient's CI
      * @return List of all policies
@@ -54,24 +54,66 @@ public interface AccessPolicyRepository {
     List<AccessPolicy> findAllByPatientCi(String patientCi);
 
     /**
-     * Finds policies by patient and type
+     * Finds policies by patient and clinic
      *
      * @param patientCi Patient's CI
-     * @param policyType Policy type
+     * @param clinicId Clinic ID
      * @return List of policies matching criteria
      */
-    List<AccessPolicy> findByPatientCiAndType(String patientCi, PolicyType policyType);
+    List<AccessPolicy> findByPatientCiAndClinicId(String patientCi, String clinicId);
 
     /**
-     * Finds policies by patient, type, and effect
+     * Finds policies by patient and specialty
      *
      * @param patientCi Patient's CI
-     * @param policyType Policy type
-     * @param policyEffect Policy effect
+     * @param specialty Medical specialty
      * @return List of policies matching criteria
      */
-    List<AccessPolicy> findByPatientCiAndTypeAndEffect(
-            String patientCi, PolicyType policyType, PolicyEffect policyEffect);
+    List<AccessPolicy> findByPatientCiAndSpecialty(String patientCi, MedicalSpecialty specialty);
+
+    /**
+     * Finds policies by patient, clinic, and specialty
+     * This is the primary query for policy evaluation
+     *
+     * @param patientCi Patient's CI
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     * @return List of policies matching criteria
+     */
+    List<AccessPolicy> findByPatientCiAndClinicIdAndSpecialty(
+            String patientCi, String clinicId, MedicalSpecialty specialty);
+
+    /**
+     * Finds policies by patient, clinic, specialty, and status
+     *
+     * @param patientCi Patient's CI
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     * @param status Policy status
+     * @return List of policies matching criteria
+     */
+    List<AccessPolicy> findByPatientCiAndClinicIdAndSpecialtyAndStatus(
+            String patientCi, String clinicId, MedicalSpecialty specialty, PolicyStatus status);
+
+    /**
+     * Finds policies by patient and document ID
+     * For finding policies specific to a document
+     *
+     * @param patientCi Patient's CI
+     * @param documentId Document ID
+     * @return List of policies for the specific document
+     */
+    List<AccessPolicy> findByPatientCiAndDocumentId(String patientCi, Long documentId);
+
+    /**
+     * Checks if a policy exists for the given patient, clinic, and specialty
+     *
+     * @param patientCi Patient's CI
+     * @param clinicId Clinic ID
+     * @param specialty Medical specialty
+     * @return true if a GRANTED policy exists
+     */
+    boolean existsActivePolicy(String patientCi, String clinicId, MedicalSpecialty specialty);
 
     /**
      * Updates an existing policy
@@ -106,10 +148,26 @@ public interface AccessPolicyRepository {
     long countByPatientCi(String patientCi);
 
     /**
-     * Counts policies by type for statistics
+     * Counts active (GRANTED) policies for a patient
      *
-     * @param policyType Policy type
-     * @return Count of policies of this type
+     * @param patientCi Patient's CI
+     * @return Count of active policies
      */
-    long countByType(PolicyType policyType);
+    long countActiveByPatientCi(String patientCi);
+
+    /**
+     * Counts policies by status
+     *
+     * @param status Policy status
+     * @return Count of policies with this status
+     */
+    long countByStatus(PolicyStatus status);
+
+    /**
+     * Counts policies by clinic
+     *
+     * @param clinicId Clinic ID
+     * @return Count of policies for this clinic
+     */
+    long countByClinicId(String clinicId);
 }

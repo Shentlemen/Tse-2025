@@ -249,4 +249,29 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
             return 0;
         }
     }
+
+    @Override
+    public long countRecentAccessByPatient(String patientCi, LocalDateTime since) {
+        try {
+            // Count ACCESS events for DOCUMENT resources belonging to this patient,
+            // where the actor is NOT the patient themselves (access by professionals)
+            TypedQuery<Long> query = entityManager.createQuery(
+                    "SELECT COUNT(a) FROM AuditLog a WHERE a.eventType = :eventType " +
+                    "AND a.resourceType = 'DOCUMENT' " +
+                    "AND a.details LIKE :patientCiPattern " +
+                    "AND a.actorId <> :patientCi " +
+                    "AND a.timestamp >= :since",
+                    Long.class
+            );
+            query.setParameter("eventType", EventType.ACCESS);
+            query.setParameter("patientCiPattern", "%\"patientCi\":\"" + patientCi + "\"%");
+            query.setParameter("patientCi", patientCi);
+            query.setParameter("since", since);
+
+            return query.getSingleResult();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error counting recent access by patient", e);
+            return 0;
+        }
+    }
 }
