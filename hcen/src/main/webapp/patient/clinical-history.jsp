@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -611,6 +611,95 @@
             background: #d5dbdb;
         }
 
+        /* FHIR Document Styles */
+        .fhir-document {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .fhir-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .fhir-header h4 {
+            margin-bottom: 10px;
+            color: #0056b3;
+        }
+
+        .fhir-section {
+            border-left: 3px solid #667eea;
+            padding-left: 15px;
+            margin-left: 10px;
+            margin-bottom: 20px;
+        }
+
+        .fhir-section h5 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .fhir-narrative {
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 3px;
+            line-height: 1.6;
+        }
+
+        .fhir-narrative p {
+            margin-bottom: 8px;
+        }
+
+        .fhir-attachments {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .fhir-attachments ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .fhir-attachments li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .fhir-attachments li:last-child {
+            border-bottom: none;
+        }
+
+        .fhir-modal-content {
+            max-width: 900px;
+        }
+
+        .btn-fhir {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-fhir:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-group-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         /* Alerts */
         .alert {
             padding: 16px 20px;
@@ -835,6 +924,22 @@
         </div>
     </div>
 
+    <!-- FHIR Document Modal -->
+    <div id="fhirDocumentModal" class="modal">
+        <div class="modal-content fhir-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 Documento Clínico FHIR</div>
+                <button class="modal-close" onclick="closeFhirModal()">×</button>
+            </div>
+            <div class="modal-body" id="fhir-modal-body">
+                <!-- FHIR content will be inserted here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-secondary" onclick="closeFhirModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // API Configuration
         const API_BASE = '/hcen/api';
@@ -1043,27 +1148,28 @@
                 card.innerHTML = `
                     <div class="doc-header">
                         <div class="doc-type">
-                            <span class="doc-type-icon">${'$'}{config.icon}</span>
-                            ${'$'}{doc.documentTypeDisplayName}
+                            <span class="doc-type-icon">\${config.icon}</span>
+                            \${doc.documentTypeDisplayName}
                         </div>
-                        <span class="doc-status ${'$'}{doc.status === 'ACTIVE' ? 'status-active' : 'status-unavailable'}">
-                            ${'$'}{doc.status === 'ACTIVE' ? 'Disponible' : 'No disponible'}
+                        <span class="doc-status \${doc.status === 'ACTIVE' ? 'status-active' : 'status-unavailable'}">
+                            \${doc.status === 'ACTIVE' ? 'Disponible' : 'No disponible'}
                         </span>
                     </div>
-                    <div class="doc-title">${'$'}{doc.title}</div>
-                    <div class="doc-info">🏥 ${'$'}{doc.clinicName}</div>
-                    <div class="doc-info">👨‍⚕️ ${'$'}{doc.professionalName}</div>
-                    <div class="doc-info">📅 ${'$'}{formatDate(doc.createdAt)}</div>
+                    <div class="doc-title">\${doc.title}</div>
+                    <div class="doc-info">🏥 \${doc.clinicName}</div>
+                    <div class="doc-info">👨‍⚕️ \${doc.professionalName}</div>
+                    <div class="doc-info">📅 \${formatDate(doc.createdAt)}</div>
                     <div class="doc-actions">
-                        <button class="btn-view" onclick="viewDocument(${'$'}{doc.id})">Ver Detalles</button>
-                        ${'$'}{doc.hasContent ? '<button class="btn-download" onclick="downloadDocumentById(' + doc.id + ')">📥 Descargar</button>' : ''}
+                        <button class="btn-fhir" onclick="viewFhirDocument(\${doc.id})">📋 Ver Documento</button>
+                        <button class="btn-view" onclick="viewDocument(\${doc.id})">Ver Detalles</button>
+                        \${doc.hasContent ? '<button class="btn-download" onclick="downloadDocumentById(' + doc.id + ')">📥</button>' : ''}
                     </div>
                 `;
                 grid.appendChild(card);
             });
 
             document.getElementById('documentsTitle').textContent =
-                `Mis Documentos Clínicos (${'$'}{filteredDocuments.length})`;
+                `Mis Documentos Clínicos (\${filteredDocuments.length})`;
         }
 
         /**
@@ -1143,6 +1249,269 @@
         }
 
         /**
+         * View FHIR document
+         */
+        async function viewFhirDocument(documentId) {
+            try {
+                showLoading();
+
+                const fhirDoc = await apiCall(
+                    `/clinical-history/documents/` + documentId + `/fhir?patientCi=` + patientCi,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/fhir+json'
+                        }
+                    }
+                );
+
+                hideLoading();
+
+                if (!fhirDoc) {
+                    showError('No se pudo cargar el documento FHIR.');
+                    return;
+                }
+
+                // Validate FHIR format
+                if (!fhirDoc.resourceType) {
+                    throw new Error('Formato FHIR inválido: falta resourceType');
+                }
+
+                displayFhirDocument(fhirDoc);
+
+            } catch (error) {
+                hideLoading();
+                console.error('Error fetching FHIR document:', error);
+                showError('Error al cargar el documento FHIR: ' + error.message);
+            }
+        }
+
+        /**
+         * Display FHIR document in modal
+         */
+        function displayFhirDocument(fhirDoc) {
+            let content = '';
+
+            if (fhirDoc.resourceType === 'Bundle' && fhirDoc.type === 'document') {
+                // Parse FHIR Bundle
+                const composition = fhirDoc.entry?.find(e =>
+                    e.resource && e.resource.resourceType === 'Composition'
+                )?.resource;
+
+                if (composition) {
+                    content = renderComposition(composition);
+                } else {
+                    content = '<p class="empty-text">No se pudo extraer el contenido del documento FHIR.</p>';
+                }
+
+            } else if (fhirDoc.resourceType === 'DocumentReference') {
+                // Parse DocumentReference
+                content = renderDocumentReference(fhirDoc);
+
+            } else {
+                content = '<p class="empty-text">Formato FHIR no reconocido.</p>';
+            }
+
+            // Display in modal
+            document.getElementById('fhir-modal-body').innerHTML = content;
+            document.getElementById('fhirDocumentModal').classList.add('show');
+        }
+
+        /**
+         * Render FHIR Composition
+         */
+        function renderComposition(composition) {
+            let html = `
+                <div class="fhir-document">
+                    <div class="fhir-header">
+                        <h4>\${composition.title || 'Documento Clínico'}</h4>
+                        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">
+                            📅 \${formatFhirDate(composition.date)}
+                        </p>
+            `;
+
+            if (composition.author && composition.author.length > 0) {
+                html += `
+                    <p style="font-size: 14px; margin-bottom: 5px;">
+                        <strong>Autor:</strong> \${composition.author.map(a => a.display || a.reference).join(', ')}
+                    </p>
+                `;
+            }
+
+            if (composition.subject) {
+                html += `
+                    <p style="font-size: 14px;">
+                        <strong>Paciente:</strong> \${composition.subject.display || composition.subject.reference}
+                    </p>
+                `;
+            }
+
+            html += `
+                    </div>
+                    <hr style="border: 1px solid #e0e6ed; margin: 20px 0;">
+            `;
+
+            // Render sections
+            if (composition.section && composition.section.length > 0) {
+                html += '<div class="fhir-sections">';
+                composition.section.forEach(section => {
+                    html += renderSection(section);
+                });
+                html += '</div>';
+            } else {
+                html += '<p class="empty-text">No se encontró contenido en las secciones del documento.</p>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Render FHIR section
+         */
+        function renderSection(section, level = 0) {
+            let html = `
+                <div class="fhir-section" style="margin-left: \${level * 10}px;">
+                    <h5>\${section.title || 'Sección'}</h5>
+            `;
+
+            if (section.text && section.text.div) {
+                // FHIR narrative (HTML content) - sanitize before display
+                const narrativeDiv = document.createElement('div');
+                narrativeDiv.innerHTML = section.text.div;
+                html += `<div class="fhir-narrative">\${narrativeDiv.innerHTML}</div>`;
+            } else if (section.code && section.code.text) {
+                html += `<p>\${escapeHtml(section.code.text)}</p>`;
+            } else {
+                html += '<p style="color: #7f8c8d; font-style: italic;">Sin contenido disponible</p>';
+            }
+
+            // Render nested sections
+            if (section.section && section.section.length > 0) {
+                section.section.forEach(subsection => {
+                    html += renderSection(subsection, level + 1);
+                });
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Render FHIR DocumentReference
+         */
+        function renderDocumentReference(docRef) {
+            let html = `
+                <div class="fhir-document">
+                    <div class="fhir-header">
+                        <h4>\${docRef.type?.coding?.[0]?.display || 'Documento Clínico'}</h4>
+                        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">
+                            📅 \${formatFhirDate(docRef.date)}
+                        </p>
+            `;
+
+            if (docRef.author && docRef.author.length > 0) {
+                html += `
+                    <p style="font-size: 14px; margin-bottom: 5px;">
+                        <strong>Autor:</strong> \${docRef.author.map(a => a.display || a.reference).join(', ')}
+                    </p>
+                `;
+            }
+
+            if (docRef.subject) {
+                html += `
+                    <p style="font-size: 14px; margin-bottom: 5px;">
+                        <strong>Paciente:</strong> \${docRef.subject.display || docRef.subject.reference}
+                    </p>
+                `;
+            }
+
+            if (docRef.custodian) {
+                html += `
+                    <p style="font-size: 14px;">
+                        <strong>Institución:</strong> \${docRef.custodian.display || docRef.custodian.reference}
+                    </p>
+                `;
+            }
+
+            html += `
+                    </div>
+                    <hr style="border: 1px solid #e0e6ed; margin: 20px 0;">
+            `;
+
+            if (docRef.description) {
+                html += `<p style="margin-bottom: 15px;"><strong>Descripción:</strong> \${escapeHtml(docRef.description)}</p>`;
+            }
+
+            if (docRef.status) {
+                html += `<p style="margin-bottom: 15px;"><strong>Estado:</strong> \${escapeHtml(docRef.status)}</p>`;
+            }
+
+            if (docRef.content && docRef.content.length > 0) {
+                html += '<div class="fhir-attachments"><h5>Archivos Adjuntos:</h5><ul>';
+                docRef.content.forEach(content => {
+                    const attachment = content.attachment;
+                    html += `
+                        <li style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>\${escapeHtml(attachment.title || 'Documento')}</span>
+                    `;
+                    if (attachment.url) {
+                        html += `
+                            <a href="\${escapeHtml(attachment.url)}" target="_blank" class="btn-view"
+                               style="padding: 6px 12px; font-size: 12px; text-decoration: none; display: inline-block;">
+                                🔗 Abrir
+                            </a>
+                        `;
+                    }
+                    html += '</li>';
+                });
+                html += '</ul></div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Format FHIR date for display
+         */
+        function formatFhirDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-UY', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        /**
+         * Escape HTML to prevent XSS
+         */
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        /**
+         * Close FHIR modal
+         */
+        function closeFhirModal() {
+            document.getElementById('fhirDocumentModal').classList.remove('show');
+        }
+
+        /**
          * Apply filters
          */
         function applyFilters() {
@@ -1217,7 +1586,7 @@
             }
 
             container.style.display = 'flex';
-            document.getElementById('pageInfo').textContent = `Página ${'$'}{currentPage + 1} de ${'$'}{totalPages}`;
+            document.getElementById('pageInfo').textContent = `Página \${currentPage + 1} de \${totalPages}`;
             document.getElementById('prevBtn').disabled = currentPage === 0;
             document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
         }
@@ -1277,6 +1646,13 @@
         document.getElementById('documentModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
+            }
+        });
+
+        // Close FHIR modal on outside click
+        document.getElementById('fhirDocumentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFhirModal();
             }
         });
     </script>

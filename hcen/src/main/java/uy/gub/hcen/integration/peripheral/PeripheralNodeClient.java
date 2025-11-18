@@ -425,9 +425,10 @@ public class PeripheralNodeClient {
             throw new PeripheralNodeException("Peripheral node URL cannot be null or empty");
         }
 
-        if (!url.startsWith("https://")) {
-            throw new PeripheralNodeException("Peripheral node URL must use HTTPS: " + url);
-        }
+        // TODO: Uncomment this when deploying the code to the cloud.
+//        if (!url.startsWith("https://")) {
+//            throw new PeripheralNodeException("Peripheral node URL must use HTTPS: " + url);
+//        }
     }
 
     /**

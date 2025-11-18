@@ -644,6 +644,166 @@ public class ClinicalHistoryResource {
     }
 
     // ================================================================
+    // GET /api/clinical-history/documents/{documentId}/fhir - Get FHIR Document
+    // ================================================================
+
+    /**
+     * Retrieves clinical document in FHIR format from peripheral node.
+     *
+     * <p>This endpoint returns the raw FHIR document as JSON without any transformation.
+     * The peripheral node is expected to return FHIR-compliant resources such as:
+     * <ul>
+     *   <li>Bundle (type: document) - Complete clinical document</li>
+     *   <li>DocumentReference - Reference to a document</li>
+     *   <li>DiagnosticReport - Diagnostic results (labs, imaging)</li>
+     *   <li>Observation - Individual observations (vital signs, allergies)</li>
+     * </ul>
+     *
+     * <p>Flow:
+     * <ol>
+     *   <li>Authenticates patient from SecurityContext (or query param in development)</li>
+     *   <li>Retrieves document metadata from RNDC (verifies patient authorization)</li>
+     *   <li>Calls peripheral node at documentLocator URL with Accept: application/fhir+json</li>
+     *   <li>Returns FHIR JSON directly to frontend (no transformation)</li>
+     *   <li>Logs access in audit system</li>
+     * </ol>
+     *
+     * <p>Example FHIR Response:
+     * <pre>
+     * {
+     *   "resourceType": "Bundle",
+     *   "type": "document",
+     *   "entry": [
+     *     {
+     *       "resource": {
+     *         "resourceType": "Composition",
+     *         "title": "Clinical Note",
+     *         "date": "2025-11-18T10:30:00Z",
+     *         "author": [{"reference": "Practitioner/123"}],
+     *         "section": [...]
+     *       }
+     *     }
+     *   ]
+     * }
+     * </pre>
+     *
+     * <p>Example:
+     * GET /api/clinical-history/documents/123/fhir?patientCi=12345678
+     *
+     * @param documentId Document ID from RNDC
+     * @param patientCi Patient's CI (for authorization, in development - use JWT in production)
+     * @param request HTTP servlet request (for IP address and user agent extraction)
+     * @return 200 OK with FHIR JSON document (Content-Type: application/fhir+json)
+     *         400 Bad Request if patientCi is missing
+     *         403 Forbidden if patient doesn't own the document
+     *         404 Not Found if document doesn't exist
+     *         502 Bad Gateway if peripheral node is unreachable
+     *         500 Internal Server Error for other failures
+     */
+    @GET
+    @Path("/documents/{documentId}/fhir")
+    @Produces({"application/fhir+json", MediaType.APPLICATION_JSON})
+    public Response getFhirDocument(
+            @PathParam("documentId") Long documentId,
+            @QueryParam("patientCi") String patientCi,
+            @Context HttpServletRequest request) {
+
+        LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/fhir - patientCi: {1}",
+                new Object[]{documentId, patientCi});
+
+        // Extract IP address and user agent for audit logging
+        String ipAddress = extractIpAddress(request);
+        String userAgent = extractUserAgent(request);
+
+        try {
+            // Validate patientCi
+            if (patientCi == null || patientCi.trim().isEmpty()) {
+                LOGGER.log(Level.WARNING, "Missing patientCi parameter");
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.validationError("Patient CI is required"))
+                        .build();
+            }
+
+            // TODO: Extract patientCi from JWT SecurityContext instead of query param
+            // For now, accept it as query param for development
+            // In production:
+            // @Context SecurityContext securityContext;
+            // String patientCi = securityContext.getUserPrincipal().getName();
+
+            // Call service to retrieve FHIR document
+            String fhirJson = clinicalHistoryService.getFhirDocument(documentId, patientCi);
+
+            LOGGER.log(Level.INFO, "Returning FHIR document: {0} ({1} characters)",
+                    new Object[]{documentId, fhirJson.length()});
+
+            // Return raw FHIR JSON with appropriate content type
+            return Response.ok(fhirJson)
+                    .header("Content-Type", "application/fhir+json; charset=utf-8")
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
+                    .build();
+
+        } catch (ClinicalHistoryService.DocumentRetrievalException e) {
+            LOGGER.log(Level.WARNING, "FHIR document retrieval failed: {0}", e.getMessage());
+
+            // Log failed access attempt
+            auditService.logAccessEvent(
+                    patientCi,
+                    "PATIENT",
+                    "DOCUMENT",
+                    documentId.toString(),
+                    AuditLog.ActionOutcome.FAILURE,
+                    ipAddress,
+                    userAgent,
+                    null
+            );
+
+            // Map business exceptions to appropriate HTTP status codes
+            if (e.getMessage().contains("no autorizado")) {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(ErrorResponse.forbidden("Access denied to document " + documentId))
+                        .build();
+            } else if (e.getMessage().contains("no encontrado")) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(ErrorResponse.notFound("Document", documentId.toString()))
+                        .build();
+            } else if (e.getMessage().contains("nodo periférico")) {
+                return Response.status(Response.Status.BAD_GATEWAY)
+                        .entity(ErrorResponse.internalServerError("Peripheral node unavailable: " + e.getMessage()))
+                        .build();
+            } else if (e.getMessage().contains("Formato de documento inválido")) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(ErrorResponse.internalServerError("Invalid document format: " + e.getMessage()))
+                        .build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(ErrorResponse.internalServerError("Document retrieval failed: " + e.getMessage()))
+                        .build();
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error retrieving FHIR document: " + documentId, e);
+
+            // Log failed access attempt
+            auditService.logAccessEvent(
+                    patientCi,
+                    "PATIENT",
+                    "DOCUMENT",
+                    documentId.toString(),
+                    AuditLog.ActionOutcome.FAILURE,
+                    ipAddress,
+                    userAgent,
+                    null
+            );
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(ErrorResponse.internalServerError("Unexpected error: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    // ================================================================
     // GET /api/clinical-history/stats - Get Document Statistics
     // ================================================================
 

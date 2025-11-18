@@ -2,6 +2,7 @@ package com.prestador.servlet;
 
 import com.prestador.entity.ClinicalDocument;
 import com.prestador.entity.Patient;
+import com.prestador.mapping.ClinicalDocumentToFhirMapper;
 import com.prestador.messaging.HcenMessageSender;
 import com.prestador.service.ClinicalDocumentService;
 import jakarta.ejb.EJB;
@@ -14,6 +15,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.File;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
@@ -41,6 +44,8 @@ public class ClinicalDocumentServlet extends HttpServlet {
 
     @EJB
     private HcenMessageSender messageSender;
+
+    private final ClinicalDocumentToFhirMapper fhirMapper = new ClinicalDocumentToFhirMapper();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -170,32 +175,40 @@ public class ClinicalDocumentServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("application/json");
+        // Set content type to FHIR JSON
+        response.setContentType("application/fhir+json");
         response.setCharacterEncoding("UTF-8");
 
         String pathInfo = request.getPathInfo();
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // List all documents
+                // List all documents - return FHIR Bundle collection
                 List<ClinicalDocument> documents = documentService.findAll();
 
+                // Create a FHIR Bundle to hold multiple documents
                 org.json.JSONArray jsonArray = new org.json.JSONArray();
                 for (ClinicalDocument document : documents) {
-                    jsonArray.put(documentToJson(document));
+                    // Load file attachment if available
+                    byte[] attachmentBytes = loadDocumentAttachment(document);
+                    String fhirJson = fhirMapper.clinicalDocumentToFhirBundleJson(document, attachmentBytes);
+                    jsonArray.put(new JSONObject(fhirJson));
                 }
 
                 response.getWriter().write(jsonArray.toString());
 
             } else {
-                // Get specific document
+                // Get specific document as FHIR Bundle
                 String idStr = pathInfo.substring(1);
                 Long id = Long.parseLong(idStr);
 
                 ClinicalDocument document = documentService.findById(id);
 
                 if (document != null) {
-                    response.getWriter().write(documentToJson(document).toString());
+                    // Load file attachment if available
+                    byte[] attachmentBytes = loadDocumentAttachment(document);
+                    String fhirJson = fhirMapper.clinicalDocumentToFhirBundleJson(document, attachmentBytes);
+                    response.getWriter().write(fhirJson);
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     JSONObject error = new JSONObject();
@@ -205,12 +218,35 @@ public class ClinicalDocumentServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving clinical document", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             JSONObject error = new JSONObject();
             error.put("error", "Failed to retrieve clinical document");
             error.put("message", e.getMessage());
             response.getWriter().write(error.toString());
         }
+    }
+
+    /**
+     * Load document attachment file as byte array if available
+     *
+     * @param document The clinical document
+     * @return byte array of attachment or null if not available
+     */
+    private byte[] loadDocumentAttachment(ClinicalDocument document) {
+        if (document.getFilePath() != null && !document.getFilePath().trim().isEmpty()) {
+            try {
+                File file = new File(document.getFilePath());
+                if (file.exists() && file.isFile()) {
+                    return Files.readAllBytes(file.toPath());
+                } else {
+                    LOGGER.log(Level.WARNING, "Document attachment file not found: {0}", document.getFilePath());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to load document attachment file: " + document.getFilePath(), e);
+            }
+        }
+        return null;
     }
 
     private JSONObject documentToJson(ClinicalDocument document) {
