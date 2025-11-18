@@ -1,5 +1,9 @@
 package uy.gub.hcen.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import uy.gub.hcen.messaging.deserializer.DocumentPayloadDeserializer;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -29,18 +33,31 @@ import java.util.Objects;
  * <p>
  * Important: This message contains METADATA only. The actual document content
  * remains in peripheral storage at the location specified by documentLocator.
+ * <p>
+ * FHIR Support:
+ * This message now supports both simple DocumentRegistrationPayload and FHIR DocumentReference
+ * payloads. The custom deserializer automatically detects the format and deserializes accordingly.
  *
  * @author TSE 2025 Group 9
- * @version 1.0
+ * @version 1.1
  * @since 2025-11-13
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DocumentRegistrationMessage extends BaseMessage {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * Document registration data payload.
+     * <p>
+     * Can be either:
+     * - Simple DocumentRegistrationPayload (legacy format)
+     * - FhirDocumentRegistrationPayload (FHIR DocumentReference format)
+     * <p>
+     * The custom deserializer (DocumentPayloadDeserializer) automatically detects
+     * the format by checking for "resourceType" field presence.
      */
+    @JsonDeserialize(using = DocumentPayloadDeserializer.class)
     private DocumentRegistrationPayload payload;
 
     /**

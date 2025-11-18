@@ -10,10 +10,10 @@ CREATE TABLE health_provider.clinical_documents (
     title VARCHAR(255) NOT NULL,
     description VARCHAR(1000),
     document_type VARCHAR(100) NOT NULL,
-    patient_id BIGINT NOT NULL,
-    clinic_id BIGINT NOT NULL,
-    professional_id BIGINT NOT NULL,
-    specialty_id BIGINT,
+    patient_id VARCHAR(100) NOT NULL,
+    clinic_id VARCHAR(100) NOT NULL,
+    professional_id VARCHAR(100) NOT NULL,
+    specialty_id VARCHAR(100),
     date_of_visit DATE NOT NULL,
 
     -- File information

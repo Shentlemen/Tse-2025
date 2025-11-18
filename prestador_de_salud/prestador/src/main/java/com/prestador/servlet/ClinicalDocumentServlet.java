@@ -65,12 +65,12 @@ public class ClinicalDocumentServlet extends HttpServlet {
             document.setTitle(json.getString("title"));
             document.setDescription(json.optString("description", null));
             document.setDocumentType(json.getString("documentType"));
-            document.setPatientId(json.getLong("patientId"));
-            document.setClinicId(json.getLong("clinicId"));
-            document.setProfessionalId(json.getLong("professionalId"));
+            document.setPatientId(json.getString("patientId"));
+            document.setClinicId(json.getString("clinicId"));
+            document.setProfessionalId(json.getString("professionalId"));
 
             if (json.has("specialtyId")) {
-                document.setSpecialtyId(json.getLong("specialtyId"));
+                document.setSpecialtyId(json.getString("specialtyId"));
             }
 
             document.setDateOfVisit(LocalDate.parse(json.getString("dateOfVisit")));
@@ -111,7 +111,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
             // Send document metadata to HCEN RNDC
             try {
                 // Get patient CI for HCEN registration
-                Patient patient = documentService.findPatientById(document.getPatientId());
+                Patient patient = documentService.findPatientByDocumentNumber(document.getPatientId());
 
                     if (patient != null && patient.getDocumentNumber() != null &&
                         !patient.getDocumentNumber().trim().isEmpty()) {

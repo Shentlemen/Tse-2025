@@ -1,5 +1,6 @@
 package uy.gub.hcen.inus.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import java.util.Objects;
         @Index(name = "idx_inus_users_created_at", columnList = "created_at")
     }
 )
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InusUser implements Serializable {
 
     private static final long serialVersionUID = 1L;

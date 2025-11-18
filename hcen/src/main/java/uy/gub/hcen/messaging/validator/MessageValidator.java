@@ -6,8 +6,10 @@ import uy.gub.hcen.messaging.exception.InvalidMessageException;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -470,7 +472,8 @@ public class MessageValidator {
         if (hash == null || hash.trim().isEmpty()) {
             return false;
         }
-        return HASH_PATTERN.matcher(hash.trim()).matches();
+
+        return HASH_PATTERN.matcher("sha256:" + hash).matches();
     }
 
     /**

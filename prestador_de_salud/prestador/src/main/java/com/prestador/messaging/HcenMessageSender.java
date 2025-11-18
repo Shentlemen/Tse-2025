@@ -375,8 +375,8 @@ public class HcenMessageSender {
             String documentDescription,
             String createdBy,
             LocalDateTime createdAt,
-            Long clinicId,
-            Long specialtyId,
+            String clinicId,
+            String specialtyId,
             String documentLocatorUrl) {
 
         String messageId = "msg-" + UUID.randomUUID().toString();
@@ -403,7 +403,7 @@ public class HcenMessageSender {
             // Wrap in message envelope
             String message = FhirMessageBuilder.wrapInMessageEnvelope(
                     fhirDocRef,
-                    "document-create",
+                    "DOCUMENT_CREATED",
                     PRESTADOR_SOURCE_SYSTEM
             );
 

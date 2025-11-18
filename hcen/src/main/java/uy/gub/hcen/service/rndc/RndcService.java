@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 /**
  * RNDC Service - National Clinical Document Registry Service
@@ -69,7 +70,7 @@ public class RndcService {
      * SHA-256 hash pattern for validation
      * Format: sha256:[64 lowercase hex characters]
      */
-    private static final String HASH_PATTERN = "^sha256:[a-f0-9]{64}$";
+    private static final Pattern HASH_PATTERN = Pattern.compile("^sha256:[a-f0-9]{64}$");
 
     @Inject
     private RndcRepository rndcRepository;
@@ -79,6 +80,28 @@ public class RndcService {
 
     // ================================================================
     // Document Registration (AC014)
+    // ================================================================
+
+    /**
+     * Convert byte array to lowercase hexadecimal string.
+     *
+     * @param bytes Byte array to convert
+     * @return Hexadecimal string (lowercase)
+     */
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    // ================================================================
+    // Document Search and Retrieval
     // ================================================================
 
     /**
@@ -119,6 +142,10 @@ public class RndcService {
                                          String createdBy, String clinicId,
                                          String documentTitle, String documentDescription)
             throws DocumentRegistrationException {
+
+        if(!patientCi.startsWith("uy-ci-")){
+            patientCi = "uy-ci-" + patientCi;
+        }
 
         // Input validation
         validateRegistrationInputs(patientCi, documentType, documentLocator, documentHash, createdBy, clinicId);
@@ -174,10 +201,6 @@ public class RndcService {
                     "System error during document registration for patient CI: " + patientCi, e);
         }
     }
-
-    // ================================================================
-    // Document Search and Retrieval
-    // ================================================================
 
     /**
      * Search documents across multiple criteria.
@@ -329,6 +352,10 @@ public class RndcService {
         }
     }
 
+    // ================================================================
+    // Document Status Management
+    // ================================================================
+
     /**
      * Get document by its locator URL.
      * <p>
@@ -349,10 +376,6 @@ public class RndcService {
             return Optional.empty();
         }
     }
-
-    // ================================================================
-    // Document Status Management
-    // ================================================================
 
     /**
      * Mark a document as INACTIVE.
@@ -460,6 +483,10 @@ public class RndcService {
         }
     }
 
+    // ================================================================
+    // Document Integrity Verification
+    // ================================================================
+
     /**
      * Reactivate an inactive document (set status to ACTIVE).
      * <p>
@@ -515,10 +542,6 @@ public class RndcService {
         }
     }
 
-    // ================================================================
-    // Document Integrity Verification
-    // ================================================================
-
     /**
      * Verify document hash for integrity checking.
      * <p>
@@ -563,6 +586,10 @@ public class RndcService {
         return validFormat;
     }
 
+    // ================================================================
+    // Statistics and Reporting
+    // ================================================================
+
     /**
      * Calculate SHA-256 hash of document content.
      * <p>
@@ -593,10 +620,6 @@ public class RndcService {
             throw new RuntimeException("SHA-256 algorithm not available", e);
         }
     }
-
-    // ================================================================
-    // Statistics and Reporting
-    // ================================================================
 
     /**
      * Count total documents for a patient.
@@ -678,6 +701,10 @@ public class RndcService {
         }
     }
 
+    // ================================================================
+    // Private Helper Methods
+    // ================================================================
+
     /**
      * Get document type distribution for a patient.
      * <p>
@@ -725,10 +752,6 @@ public class RndcService {
             return Map.of();
         }
     }
-
-    // ================================================================
-    // Private Helper Methods
-    // ================================================================
 
     /**
      * Validate document registration inputs.
@@ -812,7 +835,8 @@ public class RndcService {
         if (hash == null || hash.trim().isEmpty()) {
             return false;
         }
-        return hash.matches(HASH_PATTERN);
+
+        return HASH_PATTERN.matcher("sha256:"+hash).matches();
     }
 
     /**
@@ -842,23 +866,5 @@ public class RndcService {
             LOGGER.log(Level.WARNING, "Failed to validate patient in INUS - CI: " + patientCi, e);
             // Don't fail registration if INUS lookup fails
         }
-    }
-
-    /**
-     * Convert byte array to lowercase hexadecimal string.
-     *
-     * @param bytes Byte array to convert
-     * @return Hexadecimal string (lowercase)
-     */
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
     }
 }
