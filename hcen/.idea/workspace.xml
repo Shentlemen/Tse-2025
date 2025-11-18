@@ -8,13 +8,19 @@
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/DocumentRegistrationPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.MD" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.MD" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/dto/UserRegistrationPayload.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/FhirMessageBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/src/main/java/com/prestador/messaging/FhirMessageBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/FhirMessageBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/classes/com/prestador/messaging/FhirMessageBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/AccessRequestResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/AccessRequestResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/PolicyCreateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/AccessRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/AccessRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pdi-mock/hcen-pdi/src/main/java/fing/hcen/pdi/hcenpdi/repository/MockPersonRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../pdi-mock/hcen-pdi/src/main/java/fing/hcen/pdi/hcenpdi/repository/MockPersonRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/FhirMessageBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador/WEB-INF/classes/com/prestador/messaging/FhirMessageBuilder.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,45 +120,46 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Batch.migrate.executor&quot;: &quot;Run&quot;,
-    &quot;Batch.run-migrations.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose-postgres.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build hcen.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.hcen [buildDependents].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.hcen [build].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.hcen [clean].executor&quot;: &quot;Run&quot;,
-    &quot;JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/agust/fing/tse/tse-2025/hcen&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.26436782&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Attach to process.localhost:8787.executor": "ProcessAttachDebug",
+    "Batch.migrate.executor": "Run",
+    "Batch.run-migrations.executor": "Run",
+    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
+    "Gradle.Build hcen.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.hcen [buildDependents].executor": "Run",
+    "Gradle.hcen [build].executor": "Run",
+    "Gradle.hcen [clean].executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.26436782",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;,
-      &quot;mongo&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql",
+      "mongo"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;PostgreSQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "PostgreSQL"
     ]
   }
-}</component>
+}]]></component>
   <component name="RunDashboard">
     <option name="configurationStatuses">
       <map>
@@ -330,8 +337,9 @@
       </method>
     </configuration>
     <configuration name="JBoss/WildFly 37.0.0.Final" type="JBossConfiguration" factoryName="Remote" APPLICATION_SERVER_NAME="JBoss/WildFly 37.0.0.Final" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="PORT" value="8787" />
       <option name="LOCAL" value="false" />
-      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/hcen/" />
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8787/hcen/" />
       <option name="UPDATING_POLICY" value="hot-swap-classes" />
       <deployment>
         <artifact name="Gradle : fing.hcen : hcen-1.0-SNAPSHOT.war">
@@ -417,7 +425,8 @@
       <workItem from="1761865802436" duration="44000" />
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
-      <workItem from="1763003396511" duration="31417000" />
+      <workItem from="1763003396511" duration="33974000" />
+      <workItem from="1763416028699" duration="11643000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -694,7 +703,13 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="CUSTOM_BOOLEAN_PROPERTIES">
+                <map>
+                  <entry key="Show.Git.Branches" value="false" />
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -743,6 +758,36 @@
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/api/rest/ClinicResource.java</url>
           <line>155</line>
           <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/listener/UserRegistrationListener.java</url>
+          <line>199</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/processor/UserRegistrationProcessor.java</url>
+          <line>104</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java</url>
+          <line>118</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/pdi/PDIClient.java</url>
+          <line>226</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/pdi/PDIClient.java</url>
+          <line>223</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java</url>
+          <line>657</line>
+          <option name="timeStamp" value="37" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

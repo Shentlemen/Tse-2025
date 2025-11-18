@@ -76,6 +76,26 @@ public class AccessRequest implements Serializable {
     }
 
     /**
+     * Request Urgency Level Enumeration
+     */
+    public enum UrgencyLevel {
+        /**
+         * Routine access request (default)
+         */
+        ROUTINE,
+
+        /**
+         * Urgent access request (requires faster response)
+         */
+        URGENT,
+
+        /**
+         * Emergency access request (critical care scenario)
+         */
+        EMERGENCY
+    }
+
+    /**
      * Unique request identifier
      */
     @Id
@@ -87,6 +107,30 @@ public class AccessRequest implements Serializable {
      */
     @Column(name = "professional_id", nullable = false, length = 100)
     private String professionalId;
+
+    /**
+     * Professional full name (for patient display)
+     */
+    @Column(name = "professional_name", length = 200)
+    private String professionalName;
+
+    /**
+     * Professional specialty (e.g., CARDIOLOGY, PEDIATRICS)
+     */
+    @Column(name = "specialty", length = 100)
+    private String specialty;
+
+    /**
+     * Clinic/provider identifier that submitted the request
+     */
+    @Column(name = "clinic_id", length = 50)
+    private String clinicId;
+
+    /**
+     * Clinic name (for patient display)
+     */
+    @Column(name = "clinic_name", length = 200)
+    private String clinicName;
 
     /**
      * Patient CI (Cédula de Identidad)
@@ -104,11 +148,25 @@ public class AccessRequest implements Serializable {
     private Long documentId;
 
     /**
+     * Document type (for patient display, e.g., LAB_RESULT, CLINICAL_NOTE)
+     */
+    @Column(name = "document_type", length = 50)
+    private String documentType;
+
+    /**
      * Reason for access request (provided by professional)
      * This helps patient understand why access is needed
      */
     @Column(name = "request_reason", columnDefinition = "TEXT")
     private String requestReason;
+
+    /**
+     * Request urgency level
+     * Determines priority and notification strategy
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "urgency", length = 20)
+    private UrgencyLevel urgency = UrgencyLevel.ROUTINE;
 
     /**
      * Request status
@@ -178,6 +236,37 @@ public class AccessRequest implements Serializable {
     public AccessRequest(String professionalId, String patientCi, Long documentId, String requestReason) {
         this(professionalId, patientCi, requestReason);
         this.documentId = documentId;
+    }
+
+    /**
+     * Constructor with full professional and clinic context
+     *
+     * @param professionalId Professional ID
+     * @param professionalName Professional full name
+     * @param specialty Professional specialty
+     * @param clinicId Clinic identifier
+     * @param clinicName Clinic name
+     * @param patientCi Patient CI
+     * @param documentId Document ID (nullable)
+     * @param documentType Document type (nullable)
+     * @param requestReason Request reason
+     * @param urgency Request urgency level
+     */
+    public AccessRequest(String professionalId, String professionalName, String specialty,
+                         String clinicId, String clinicName, String patientCi,
+                         Long documentId, String documentType, String requestReason,
+                         UrgencyLevel urgency) {
+        this();
+        this.professionalId = professionalId;
+        this.professionalName = professionalName;
+        this.specialty = specialty;
+        this.clinicId = clinicId;
+        this.clinicName = clinicName;
+        this.patientCi = patientCi;
+        this.documentId = documentId;
+        this.documentType = documentType;
+        this.requestReason = requestReason;
+        this.urgency = urgency != null ? urgency : UrgencyLevel.ROUTINE;
     }
 
     /**
@@ -276,6 +365,38 @@ public class AccessRequest implements Serializable {
         this.professionalId = professionalId;
     }
 
+    public String getProfessionalName() {
+        return professionalName;
+    }
+
+    public void setProfessionalName(String professionalName) {
+        this.professionalName = professionalName;
+    }
+
+    public String getSpecialty() {
+        return specialty;
+    }
+
+    public void setSpecialty(String specialty) {
+        this.specialty = specialty;
+    }
+
+    public String getClinicId() {
+        return clinicId;
+    }
+
+    public void setClinicId(String clinicId) {
+        this.clinicId = clinicId;
+    }
+
+    public String getClinicName() {
+        return clinicName;
+    }
+
+    public void setClinicName(String clinicName) {
+        this.clinicName = clinicName;
+    }
+
     public String getPatientCi() {
         return patientCi;
     }
@@ -292,12 +413,28 @@ public class AccessRequest implements Serializable {
         this.documentId = documentId;
     }
 
+    public String getDocumentType() {
+        return documentType;
+    }
+
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
+
     public String getRequestReason() {
         return requestReason;
     }
 
     public void setRequestReason(String requestReason) {
         this.requestReason = requestReason;
+    }
+
+    public UrgencyLevel getUrgency() {
+        return urgency;
+    }
+
+    public void setUrgency(UrgencyLevel urgency) {
+        this.urgency = urgency;
     }
 
     public RequestStatus getStatus() {

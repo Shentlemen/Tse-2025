@@ -228,4 +228,49 @@ public class AccessRequestRepositoryImpl implements AccessRequestRepository {
             return 0;
         }
     }
+
+    @Override
+    public Optional<AccessRequest> findPendingRequest(String professionalId, String patientCi, Long documentId) {
+        if (professionalId == null || patientCi == null) {
+            return Optional.empty();
+        }
+
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            String jpql = "SELECT ar FROM AccessRequest ar " +
+                          "WHERE ar.professionalId = :professionalId " +
+                          "AND ar.patientCi = :patientCi " +
+                          "AND ar.status = :status " +
+                          "AND ar.expiresAt > :now ";
+
+            if (documentId != null) {
+                jpql += "AND ar.documentId = :documentId";
+            } else {
+                jpql += "AND ar.documentId IS NULL";
+            }
+
+            TypedQuery<AccessRequest> query = entityManager.createQuery(jpql, AccessRequest.class)
+                .setParameter("professionalId", professionalId)
+                .setParameter("patientCi", patientCi)
+                .setParameter("status", RequestStatus.PENDING)
+                .setParameter("now", now);
+
+            if (documentId != null) {
+                query.setParameter("documentId", documentId);
+            }
+
+            List<AccessRequest> results = query.getResultList();
+
+            if (results.isEmpty()) {
+                return Optional.empty();
+            }
+
+            // Return the first result if multiple found (should not happen due to business logic)
+            return Optional.of(results.get(0));
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding pending request for deduplication", e);
+            return Optional.empty();
+        }
+    }
 }

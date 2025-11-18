@@ -1,0 +1,17 @@
+# WildFly CLI Script to add local JNDI entries for JMS queues
+# This fixes the issue where prestador can't find queues using java:/jms/queue/* JNDI names
+
+# Connect to WildFly
+connect
+
+# Update UserRegistrationQueue to include local JNDI entry
+/subsystem=messaging-activemq/server=default/jms-queue=UserRegistrationQueue:write-attribute(name=entries,value=["java:/jms/queue/UserRegistration","java:jboss/exported/jms/queue/UserRegistration","jms/queue/UserRegistration"])
+
+# Update DocumentRegistrationQueue to include local JNDI entry
+/subsystem=messaging-activemq/server=default/jms-queue=DocumentRegistrationQueue:write-attribute(name=entries,value=["java:/jms/queue/DocumentRegistration","java:jboss/exported/jms/queue/DocumentRegistration","jms/queue/DocumentRegistration"])
+
+# Reload server to apply changes
+reload
+
+# Exit
+quit
