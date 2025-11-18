@@ -131,6 +131,11 @@ public class ClinicalDocumentServlet extends HttpServlet {
                 return;
             }
             
+            // Acción para abrir modal de agregar documento
+            if ("add".equals(action) || "create".equals(action)) {
+                request.setAttribute("action", "add");
+            }
+            
             // Acción para obtener un documento específico (para ver o editar)
             if (("view".equals(action) || "edit".equals(action)) && documentId != null) {
                 Optional<ClinicalDocument> docOpt = documentService.findById(Long.parseLong(documentId));

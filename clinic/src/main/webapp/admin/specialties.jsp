@@ -89,6 +89,67 @@
         .status-inactive {
             color: #f44336;
         }
+        
+        /* Estilos profesionales para botones de acción */
+        .btn-action-view {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-view:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-action-edit {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-edit:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-action-delete {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-delete:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-action-activate {
+            background-color: #d1e7dd;
+            border: 1px solid #198754;
+            color: #0f5132;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-activate:hover {
+            background-color: #198754;
+            border-color: #198754;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -247,25 +308,25 @@
                                                     </td>
                                                     <td>
                                                         <div class="btn-group" role="group">
-                                                            <button class="btn btn-sm btn-outline-warning" title="Editar" 
+                                                            <button class="btn btn-sm btn-action-edit" title="Editar" 
                                                                     onclick="editSpecialty('${specialty.id}')">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
                                                             <c:choose>
                                                                 <c:when test="${specialty.active}">
-                                                                    <button class="btn btn-sm btn-outline-danger" title="Desactivar" 
+                                                                    <button class="btn btn-sm btn-action-delete" title="Desactivar" 
                                                                             onclick="toggleSpecialtyStatus('${specialty.id}', false)">
                                                                         <i class="fas fa-ban"></i>
                                                                     </button>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <button class="btn btn-sm btn-outline-success" title="Activar" 
+                                                                    <button class="btn btn-sm btn-action-activate" title="Activar" 
                                                                             onclick="toggleSpecialtyStatus('${specialty.id}', true)">
                                                                         <i class="fas fa-check"></i>
                                                                     </button>
                                                                 </c:otherwise>
                                                             </c:choose>
-                                                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" 
+                                                            <button class="btn btn-sm btn-action-delete" title="Eliminar" 
                                                                     onclick="deleteSpecialty('${specialty.id}')">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>

@@ -76,6 +76,122 @@
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 10px;
         }
+        
+        /* Estilos profesionales para botones de acción */
+        .btn-action-view {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-view:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-action-edit {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-edit:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-action-delete {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action-delete:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Estilos modernos para modales */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem 2rem;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-header .btn-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            background: #ffffff;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .modal-footer .btn {
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-footer .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: white;
+        }
+        
+        .modal-footer .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 <body>
@@ -293,15 +409,15 @@
                                                     <td>
                                                         <c:set var="docId" value="${doc.id}" />
                                                         <div class="btn-group" role="group">
-                                                            <button class="btn btn-sm btn-outline-primary" title="Ver detalles" 
+                                                            <button class="btn btn-sm btn-action-view" title="Ver detalles" 
                                                                     onclick="viewDocument('${docId}')">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-outline-warning" title="Editar" 
+                                                            <button class="btn btn-sm btn-action-edit" title="Editar" 
                                                                     onclick="editDocument('${docId}')">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" 
+                                                            <button class="btn btn-sm btn-action-delete" title="Eliminar" 
                                                                     onclick="deleteDocument('${docId}')">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
@@ -538,7 +654,7 @@
     <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-file-medical me-2"></i>Ver Documento Clínico</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -931,6 +1047,8 @@
         String actionStr = (String) request.getAttribute("action");
         boolean hasSelectedDoc = selectedDoc != null;
         boolean isEditAction = "edit".equals(actionStr);
+        boolean isAddAction = "add".equals(actionStr) || "create".equals(actionStr);
+        boolean shouldOpenModal = hasSelectedDoc || isAddAction;
         
         // Función helper para escapar JavaScript de forma segura
         java.util.function.Function<String, String> escapeJs = s -> {
@@ -946,7 +1064,7 @@
         };
     %>
     <script>
-        var shouldOpenModal = <%= hasSelectedDoc %>;
+        var shouldOpenModal = <%= shouldOpenModal %>;
         var modalAction = '<%= actionStr != null ? escapeJs.apply(actionStr) : "" %>';
         
         <% if (hasSelectedDoc && isEditAction && selectedDoc != null) { 
@@ -1321,7 +1439,18 @@
             
             // Verificar variables y abrir modales
             if (typeof shouldOpenModal !== 'undefined' && shouldOpenModal) {
-                if (modalAction === 'view') {
+                if (modalAction === 'add' || modalAction === 'create') {
+                    const addModalEl = document.getElementById('addDocumentModal');
+                    if (addModalEl) {
+                        const addModal = new bootstrap.Modal(addModalEl);
+                        addModal.show();
+                        
+                        // Limpiar URL después de abrir el modal
+                        setTimeout(function() {
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }, 100);
+                    }
+                } else if (modalAction === 'view') {
                     const viewModalEl = document.getElementById('viewDocumentModal');
                     if (viewModalEl) {
                         const viewModal = new bootstrap.Modal(viewModalEl);
