@@ -331,16 +331,6 @@
             box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
         }
 
-        .btn-info {
-            background: #f8f9fa;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-info:hover {
-            background: #667eea;
-            color: white;
-        }
 
         .btn:disabled {
             opacity: 0.6;
@@ -576,29 +566,6 @@
         </div>
     </div>
 
-    <!-- Info Request Modal -->
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Solicitar Más Información</h2>
-                <button class="btn-close" onclick="closeModal('infoModal')">&times;</button>
-            </div>
-            <p style="margin-bottom: 20px; color: #7f8c8d;">
-                Puede solicitar información adicional al profesional antes de tomar una decisión.
-            </p>
-            <form id="infoForm">
-                <input type="hidden" id="infoRequestId">
-                <div class="form-group">
-                    <label>Su pregunta (requerido) *</label>
-                    <textarea id="infoQuestion" required placeholder="Ej: ¿Por qué necesita acceder a mis resultados de laboratorio?"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeModal('infoModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary" id="infoBtn">Enviar Pregunta</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script>
         const API_BASE = '/hcen/api';
@@ -752,9 +719,6 @@
                     <button class="btn btn-deny" onclick="openDenyModal(${'$'}{request.id})">
                         ✗ Denegar
                     </button>
-                    <button class="btn btn-info" onclick="openInfoModal(${'$'}{request.id})">
-                        ? Más Info
-                    </button>
                 </div>
             `;
             return card;
@@ -814,12 +778,6 @@
             document.getElementById('denyRequestId').value = requestId;
             document.getElementById('denyReason').value = '';
             document.getElementById('denyModal').classList.add('show');
-        }
-
-        function openInfoModal(requestId) {
-            document.getElementById('infoRequestId').value = requestId;
-            document.getElementById('infoQuestion').value = '';
-            document.getElementById('infoModal').classList.add('show');
         }
 
         function closeModal(modalId) {
@@ -893,42 +851,6 @@
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Denegar Acceso';
-            }
-        });
-
-        document.getElementById('infoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const requestId = document.getElementById('infoRequestId').value;
-            const question = document.getElementById('infoQuestion').value;
-
-            if (question.length < 10) {
-                showError('La pregunta debe tener al menos 10 caracteres');
-                return;
-            }
-
-            const btn = document.getElementById('infoBtn');
-            btn.disabled = true;
-            btn.textContent = 'Enviando...';
-
-            try {
-                const response = await apiCall('/access-requests/' + requestId + '/request-info', {
-                    method: 'POST',
-                    body: JSON.stringify({ question: question })
-                });
-
-                if (response && response.ok) {
-                    closeModal('infoModal');
-                    showInfo('Su pregunta ha sido enviada al profesional');
-                } else {
-                    const error = await response.json();
-                    showError(error.message || 'Error al enviar la pregunta');
-                }
-            } catch (error) {
-                console.error('Error requesting info:', error);
-                showError('Error al enviar la pregunta');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Enviar Pregunta';
             }
         });
 
