@@ -18,36 +18,36 @@ public class MockPersonRepository {
         // Mix of adults and minors for age verification testing
 
         // Adults (18+)
-        addPerson("12345678", "DO", "Juan", "Carlos", "Pérez", "González",
+        addPerson("uy-ci-12345678", "DO", "Juan", "Carlos", "Pérez", "González",
                   "1990-05-15", "M", "UY");
 
-        addPerson("11111111", "DO", "Pedro", "José", "López", "Suárez",
+        addPerson("uy-ci-11111111", "DO", "Pedro", "José", "López", "Suárez",
                   "1985-11-30", "M", "UY");
 
-        addPerson("33333333", "DO", "Carlos", "Alberto", "Silva", "Díaz",
+        addPerson("uy-ci-33333333", "DO", "Carlos", "Alberto", "Silva", "Díaz",
                   "1978-01-25", "M", "UY");
 
-        addPerson("44444444", "DO", "Laura", "Beatriz", "González", "Vázquez",
+        addPerson("uy-ci-44444444", "DO", "Laura", "Beatriz", "González", "Vázquez",
                   "1995-09-12", "F", "UY");
 
-        addPerson("66666666", "DO", "Sofía", "Isabel", "Sánchez", "Morales",
+        addPerson("uy-ci-6666666", "DO", "Sofía", "Isabel", "Sánchez", "Morales",
                   "1988-12-03", "F", "UY");
 
-        addPerson("77777777", "DO", "Roberto", "Andrés", "Martínez", "Ferreira",
+        addPerson("uy-ci-77777777", "DO", "Roberto", "Andrés", "Martínez", "Ferreira",
                   "1992-06-20", "M", "UY");
 
         // Minors (under 18) - for testing age restrictions
-        addPerson("87654321", "DO", "María", "Fernanda", "Rodríguez", "Martínez",
+        addPerson("uy-ci-87654321", "DO", "María", "Fernanda", "Rodríguez", "Martínez",
                   "2010-03-20", "F", "UY");
 
-        addPerson("22222222", "DO", "Ana", "Laura", "Fernández", "Castro",
+        addPerson("uy-ci-22222222", "DO", "Ana", "Laura", "Fernández", "Castro",
                   "2008-07-10", "F", "UY");
 
-        addPerson("55555555", "DO", "Diego", "Martín", "Hernández", "Ramos",
+        addPerson("uy-ci-55555555", "DO", "Diego", "Martín", "Hernández", "Ramos",
                   "2005-04-18", "M", "UY");
 
         // Edge case: just turned 18
-        addPerson("99999999", "DO", "Valentina", "María", "Costa", "Olivera",
+        addPerson("uy-ci-99999999", "DO", "Valentina", "María", "Costa", "Olivera",
                   "2007-01-01", "F", "UY");
     }
 

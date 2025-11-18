@@ -66,6 +66,7 @@ public class PeripheralNodeClient {
     private static final int INITIAL_RETRY_DELAY_MS = 1000;
     private static final int CIRCUIT_BREAKER_THRESHOLD = 5;
     private static final long CIRCUIT_BREAKER_RESET_TIMEOUT_MS = 60000; // 60 seconds
+    private static final String API_KEY_HEADER = "X-API-Key";
 
     // HTTP client components
     private CloseableHttpClient httpClient;
@@ -295,7 +296,7 @@ public class PeripheralNodeClient {
 
                 // Create HTTP GET request
                 HttpGet httpGet = new HttpGet(documentLocator);
-                httpGet.setHeader("Authorization", "Bearer " + apiKey);
+                httpGet.setHeader(API_KEY_HEADER,  apiKey);
                 httpGet.setHeader("Accept", "application/octet-stream, application/pdf, application/xml, application/fhir+json");
 
                 // Execute request
@@ -425,9 +426,10 @@ public class PeripheralNodeClient {
             throw new PeripheralNodeException("Peripheral node URL cannot be null or empty");
         }
 
-        if (!url.startsWith("https://")) {
-            throw new PeripheralNodeException("Peripheral node URL must use HTTPS: " + url);
-        }
+        // TODO: Uncomment this when deploying the code to the cloud.
+//        if (!url.startsWith("https://")) {
+//            throw new PeripheralNodeException("Peripheral node URL must use HTTPS: " + url);
+//        }
     }
 
     /**

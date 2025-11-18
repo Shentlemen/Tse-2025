@@ -1,5 +1,7 @@
 package uy.gub.hcen.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -22,6 +24,7 @@ import java.util.Objects;
  * @version 1.0
  * @since 2025-11-13
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class BaseMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -50,7 +50,7 @@ public class PolicyCreateRequest implements Serializable {
      * Must be between 7-9 digits (Uruguay CI format)
      */
     @NotBlank(message = "Patient CI is required")
-    @Pattern(regexp = "^\\d{7,9}$", message = "Patient CI must be 7-9 digits")
+    @Pattern(regexp = "^uy-ci-\\d{7,9}$", message = "Patient CI must be 7-9 digits")
     private String patientCi;
 
     /**

@@ -654,7 +654,16 @@ public class InusService {
         if (ci == null) {
             return null;
         }
-        return ci.replaceAll("[.\\-]", "").trim();
+
+        if(!ci.startsWith("uy-ci-")){
+            ci = "uy-ci-"+ ci;
+        }else{
+            String removedPrefix = ci.replaceAll("uy-ci-", "");
+
+            ci =  "uy-ci-"+removedPrefix.replaceAll("[.\\-]", "").trim();
+        }
+
+        return ci;
     }
 
     /**

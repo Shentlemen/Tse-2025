@@ -28,18 +28,19 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>Fetch patient documents from RNDC with filtering and pagination</li>
  *   <li>Calculate document statistics for dashboard</li>
- *   <li>Prepare documents for display with metadata enrichment</li>
+ *   <li>Prepare documents for display with metadata enrichment (clinic names)</li>
  *   <li>Audit logging of all document access</li>
- *   <li>Future: Integration with peripheral nodes for document content retrieval</li>
+ *   <li>Integration with peripheral nodes for document content retrieval (FHIR, binary)</li>
  * </ul>
  *
  * <p>Current Implementation:
- * - Uses RNDC data if available
- * - Falls back to mock data for development/testing
- * - Contains placeholder methods for future peripheral node integration
+ * - Queries real RNDC documents only (no mock data fallback)
+ * - Enriches document metadata with clinic names from clinic registry
+ * - Retrieves actual document content from peripheral nodes on-demand
+ * - Supports FHIR document retrieval for frontend display
  *
  * @author TSE 2025 Group 9
- * @version 1.0
+ * @version 2.0
  * @since 2025-11-04
  */
 @Stateless
@@ -99,9 +100,9 @@ public class ClinicalHistoryService {
                     size
             );
 
-            // Convert to DTOs
+            // Convert to DTOs with clinic name enrichment
             List<DocumentListItemDTO> documentDTOs = documents.stream()
-                    .map(DocumentListItemDTO::fromEntity)
+                    .map(doc -> enrichDocumentWithClinicName(doc))
                     .collect(Collectors.toList());
 
             // Get total count (without pagination)
@@ -110,13 +111,6 @@ public class ClinicalHistoryService {
 
             LOGGER.log(Level.INFO, "Found {0} documents for patient: {1} (total: {2})",
                     new Object[]{documentDTOs.size(), patientCi, totalCount});
-
-            // If no documents found in RNDC, use mock data for development
-            if (documentDTOs.isEmpty()) {
-                LOGGER.log(Level.WARNING, "No documents found in RNDC for patient: {0}, using mock data", patientCi);
-                documentDTOs = getMockDocuments(patientCi, page, size);
-                totalCount = getMockDocumentCount(patientCi);
-            }
 
             // Log access to clinical history (audit)
             auditService.logAccessEvent(
@@ -354,6 +348,179 @@ public class ClinicalHistoryService {
     }
 
     /**
+     * Retrieves FHIR-formatted document from peripheral node
+     *
+     * <p>This method retrieves the clinical document in FHIR format and returns it as a JSON string
+     * without any transformation. The flow is:
+     * <ol>
+     *   <li>Validates document exists in RNDC and belongs to patient</li>
+     *   <li>Looks up clinic configuration to get API key</li>
+     *   <li>Calls peripheral node with Accept: application/fhir+json header</li>
+     *   <li>Returns raw FHIR JSON string (no parsing or transformation)</li>
+     * </ol>
+     *
+     * <p>The peripheral node is expected to return FHIR-compliant resources such as:
+     * <ul>
+     *   <li>Bundle (type: document)</li>
+     *   <li>DocumentReference</li>
+     *   <li>DiagnosticReport</li>
+     *   <li>Observation</li>
+     * </ul>
+     *
+     * @param documentId Document ID from RNDC
+     * @param patientCi Patient's CI (for authorization)
+     * @return FHIR document as JSON string
+     * @throws DocumentRetrievalException if retrieval fails or patient is not authorized
+     */
+    public String getFhirDocument(Long documentId, String patientCi) {
+        LOGGER.log(Level.INFO, "Retrieving FHIR document for documentId: {0}, patient: {1}",
+                new Object[]{documentId, patientCi});
+
+        try {
+            // Step 1: Get document metadata from RNDC
+            Optional<RndcDocument> documentOpt = rndcRepository.findById(documentId);
+
+            if (documentOpt.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Document not found in RNDC: {0}", documentId);
+                throw new DocumentRetrievalException("Documento no encontrado");
+            }
+
+            RndcDocument document = documentOpt.get();
+
+            // Step 2: Verify patient owns this document (authorization check)
+            if (!document.getPatientCi().equals(patientCi)) {
+                LOGGER.log(Level.WARNING, "Unauthorized FHIR document access attempt - document: {0}, requestor: {1}, owner: {2}",
+                        new Object[]{documentId, patientCi, document.getPatientCi()});
+
+                // Log unauthorized access attempt
+                auditService.logAccessEvent(
+                        patientCi,
+                        "PATIENT",
+                        "DOCUMENT",
+                        documentId.toString(),
+                        AuditLog.ActionOutcome.DENIED,
+                        null,
+                        null,
+                        null
+                );
+
+                throw new DocumentRetrievalException("Acceso no autorizado");
+            }
+
+            // Step 3: Validate document has locator URL
+            if (document.getDocumentLocator() == null || document.getDocumentLocator().isEmpty()) {
+                LOGGER.log(Level.WARNING, "Document has no locator URL: {0}", documentId);
+                throw new DocumentRetrievalException("Contenido no disponible - localizador faltante");
+            }
+
+            // Step 4: Look up clinic to get API key
+            String clinicId = document.getClinicId();
+            Optional<uy.gub.hcen.clinic.entity.Clinic> clinicOpt = clinicRepository.findById(clinicId);
+
+            if (clinicOpt.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Clinic not found: {0} for document: {1}",
+                        new Object[]{clinicId, documentId});
+                throw new DocumentRetrievalException("Clínica no encontrada");
+            }
+
+            uy.gub.hcen.clinic.entity.Clinic clinic = clinicOpt.get();
+            String apiKey = clinic.getApiKey();
+
+            if (apiKey == null || apiKey.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Clinic {0} has no API key configured", clinicId);
+                throw new DocumentRetrievalException("Configuración de clínica incompleta");
+            }
+
+            // Step 5: Retrieve document from peripheral node
+            String documentLocator = document.getDocumentLocator();
+
+            LOGGER.log(Level.INFO, "Fetching FHIR document from peripheral node - locator: {0}, clinic: {1}",
+                    new Object[]{documentLocator, clinicId});
+
+            byte[] documentBytes = peripheralNodeClient.retrieveDocument(
+                    documentLocator,
+                    apiKey,
+                    null  // Skip hash verification for FHIR (content may be dynamically generated)
+            );
+
+            // Step 6: Convert bytes to JSON string
+            String fhirJson = new String(documentBytes, java.nio.charset.StandardCharsets.UTF_8);
+
+            // Step 7: Basic validation - ensure it's valid JSON
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.readTree(fhirJson); // Parse to validate JSON structure
+                LOGGER.log(Level.INFO, "Successfully retrieved and validated FHIR document {0} ({1} bytes)",
+                        new Object[]{documentId, documentBytes.length});
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Retrieved content is not valid JSON: {0}", documentId);
+                throw new DocumentRetrievalException("Formato de documento inválido - se esperaba JSON FHIR");
+            }
+
+            // Step 8: Log successful access
+            auditService.logDocumentAccess(
+                    patientCi,
+                    patientCi,
+                    documentId,
+                    document.getDocumentType(),
+                    AuditLog.ActionOutcome.SUCCESS,
+                    null, // IP address should be provided by REST layer
+                    null  // User agent should be provided by REST layer
+            );
+
+            return fhirJson;
+
+        } catch (DocumentRetrievalException e) {
+            // Re-throw business logic exceptions
+            throw e;
+        } catch (uy.gub.hcen.integration.peripheral.PeripheralNodeException e) {
+            LOGGER.log(Level.SEVERE, "Peripheral node error retrieving FHIR document: " + documentId, e);
+            throw new DocumentRetrievalException("Error comunicándose con nodo periférico: " + e.getMessage(), e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error retrieving FHIR document: " + documentId, e);
+            throw new DocumentRetrievalException("Error inesperado al recuperar documento FHIR", e);
+        }
+    }
+
+    /**
+     * Enriches a document DTO with actual clinic name
+     *
+     * <p>Converts RndcDocument entity to DTO and looks up the clinic name
+     * from the clinic repository. If clinic is not found, uses clinic ID as fallback.
+     *
+     * @param document RNDC document entity
+     * @return Enriched DocumentListItemDTO with clinic name
+     */
+    private DocumentListItemDTO enrichDocumentWithClinicName(RndcDocument document) {
+        // Convert entity to DTO
+        DocumentListItemDTO dto = DocumentListItemDTO.fromEntity(document);
+
+        // Look up actual clinic name
+        if (document.getClinicId() != null && !document.getClinicId().isEmpty()) {
+            try {
+                Optional<uy.gub.hcen.clinic.entity.Clinic> clinicOpt =
+                    clinicRepository.findById(document.getClinicId());
+
+                if (clinicOpt.isPresent()) {
+                    dto.setClinicName(clinicOpt.get().getClinicName());
+                } else {
+                    // Fallback: Use clinic ID if clinic not found in registry
+                    LOGGER.log(Level.WARNING, "Clinic not found in registry: {0} (document {1})",
+                            new Object[]{document.getClinicId(), document.getId()});
+                    dto.setClinicName("Clínica " + document.getClinicId());
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error looking up clinic name for: " + document.getClinicId(), e);
+                dto.setClinicName("Clínica " + document.getClinicId());
+            }
+        } else {
+            dto.setClinicName("Clínica Desconocida");
+        }
+
+        return dto;
+    }
+
+    /**
      * Custom exception for document retrieval errors
      */
     public static class DocumentRetrievalException extends RuntimeException {
@@ -368,10 +535,14 @@ public class ClinicalHistoryService {
 
 
     // =========================================================================
-    // MOCK DATA METHODS (FOR DEVELOPMENT/TESTING)
+    // MOCK DATA METHODS (DEPRECATED - TO BE REMOVED)
+    // =========================================================================
+    // These methods are kept for backward compatibility during transition period
+    // but are no longer used by the service. They will be removed in a future release.
     // =========================================================================
 
     /**
+     * @deprecated No longer used - service now returns real RNDC data only
      * Returns mock documents for development when RNDC has no data
      *
      * @param patientCi Patient's CI
@@ -379,6 +550,7 @@ public class ClinicalHistoryService {
      * @param size Page size
      * @return List of mock document DTOs
      */
+    @Deprecated
     private List<DocumentListItemDTO> getMockDocuments(String patientCi, int page, int size) {
         LOGGER.log(Level.INFO, "Generating mock documents for patient: {0}", patientCi);
 
@@ -509,11 +681,13 @@ public class ClinicalHistoryService {
     }
 
     /**
+     * @deprecated No longer used - service now returns real RNDC counts only
      * Returns mock document count
      *
      * @param patientCi Patient's CI
      * @return Total mock document count
      */
+    @Deprecated
     private long getMockDocumentCount(String patientCi) {
         return 8; // Match the number of mock documents above
     }

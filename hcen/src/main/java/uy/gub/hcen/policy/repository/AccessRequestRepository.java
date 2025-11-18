@@ -110,4 +110,17 @@ public interface AccessRequestRepository {
      * @return Count of requests with this status
      */
     long countByStatus(RequestStatus status);
+
+    /**
+     * Finds an existing pending request for deduplication
+     *
+     * Searches for a non-expired PENDING request with the same professional ID,
+     * patient CI, and document ID. Used to prevent duplicate access requests.
+     *
+     * @param professionalId Professional ID
+     * @param patientCi Patient CI
+     * @param documentId Document ID (nullable)
+     * @return Optional containing existing pending request if found
+     */
+    Optional<AccessRequest> findPendingRequest(String professionalId, String patientCi, Long documentId);
 }

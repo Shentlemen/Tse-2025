@@ -5,6 +5,8 @@ import com.prestador.entity.Patient;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 
@@ -44,6 +46,17 @@ public class ClinicalDocumentService {
      */
     public Patient findPatientById(Long patientId) {
         return entityManager.find(Patient.class, patientId);
+    }
+
+    /**
+     * Find patient by document number (for retrieving patient info)
+     */
+    public Patient findPatientByDocumentNumber(String documentNumber) {
+        TypedQuery<Patient> q = entityManager.createQuery(
+                "SELECT p FROM Patient p WHERE p.documentNumber = :doc", Patient.class);
+        q.setParameter("doc", documentNumber);
+        List<Patient> list = q.getResultList();
+        return list.isEmpty() ? null : list.get(0);
     }
 
     /**

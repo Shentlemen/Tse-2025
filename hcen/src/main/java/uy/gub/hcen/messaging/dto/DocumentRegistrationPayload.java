@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import uy.gub.hcen.rndc.entity.DocumentType;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Objects;
 
 /**
@@ -174,7 +176,14 @@ public class DocumentRegistrationPayload implements Serializable {
     }
 
     public String getDocumentHash() {
-        return documentHash;
+
+        String sha256 = null;
+        try{
+         sha256 = sha256OfBase64String(documentHash);
+        }
+        catch(Exception e){}
+
+        return sha256;
     }
 
     public void setDocumentHash(String documentHash) {
@@ -251,5 +260,21 @@ public class DocumentRegistrationPayload implements Serializable {
                 ", documentTitle='" + documentTitle + '\'' +
                 ", documentDescription='" + documentDescription + '\'' +
                 '}';
+    }
+
+    private String sha256OfBase64String(String base64Input) throws Exception {
+        // Step 1: decode base64
+        byte[] decoded = Base64.getDecoder().decode(base64Input);
+
+        // Step 2: compute SHA-256
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(decoded);
+
+        // Step 3: convert to hex (common format)
+        StringBuilder hex = new StringBuilder();
+        for (byte b : hash) {
+            hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
     }
 }

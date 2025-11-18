@@ -13,7 +13,7 @@
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <!-- Schema management via Flyway migrations - Hibernate validates only -->
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
 
             <!-- Connection pool settings -->
             <property name="hibernate.connection.pool_size" value="10"/>

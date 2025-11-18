@@ -181,8 +181,8 @@ public class FhirMessageBuilder {
             String documentHash,
             String createdBy,
             LocalDateTime createdAt,
-            Long clinicId,
-            Long specialtyId) {
+            String clinicId,
+            String specialtyId) {
 
         DocumentReference docRef = new DocumentReference();
 
@@ -288,7 +288,7 @@ public class FhirMessageBuilder {
         attachment.setTitle(documentTitle);
 
         if (documentHash != null) {
-            attachment.setHash(documentHash.replace("sha256:", "").getBytes());
+            attachment.setHash(documentHash.getBytes());
         }
 
         attachment.setCreation(createdAt != null ?

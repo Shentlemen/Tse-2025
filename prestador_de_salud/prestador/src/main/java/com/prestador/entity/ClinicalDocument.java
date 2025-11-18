@@ -57,18 +57,18 @@ public class ClinicalDocument implements Serializable {
 
     @NotNull(message = "Patient ID is required")
     @Column(name = "patient_id", nullable = false)
-    private Long patientId;
+    private String patientId;
 
     @NotNull(message = "Clinic ID is required")
     @Column(name = "clinic_id", nullable = false)
-    private Long clinicId;
+    private String clinicId;
 
     @NotNull(message = "Professional ID is required")
     @Column(name = "professional_id", nullable = false)
-    private Long professionalId;
+    private String professionalId;
 
     @Column(name = "specialty_id")
-    private Long specialtyId;
+    private String specialtyId;
 
     @NotNull(message = "Date of visit is required")
     @Column(name = "date_of_visit", nullable = false)
@@ -156,8 +156,8 @@ public class ClinicalDocument implements Serializable {
     public ClinicalDocument() {
     }
 
-    public ClinicalDocument(String title, String documentType, Long patientId,
-                           Long clinicId, Long professionalId, LocalDate dateOfVisit) {
+    public ClinicalDocument(String title, String documentType, String patientId,
+                            String clinicId, String professionalId, LocalDate dateOfVisit) {
         this.title = title;
         this.documentType = documentType;
         this.patientId = patientId;
@@ -214,35 +214,35 @@ public class ClinicalDocument implements Serializable {
         this.documentType = documentType;
     }
 
-    public Long getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(Long patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 
-    public Long getClinicId() {
+    public String getClinicId() {
         return clinicId;
     }
 
-    public void setClinicId(Long clinicId) {
+    public void setClinicId(String clinicId) {
         this.clinicId = clinicId;
     }
 
-    public Long getProfessionalId() {
+    public String getProfessionalId() {
         return professionalId;
     }
 
-    public void setProfessionalId(Long professionalId) {
+    public void setProfessionalId(String professionalId) {
         this.professionalId = professionalId;
     }
 
-    public Long getSpecialtyId() {
+    public String getSpecialtyId() {
         return specialtyId;
     }
 
-    public void setSpecialtyId(Long specialtyId) {
+    public void setSpecialtyId(String specialtyId) {
         this.specialtyId = specialtyId;
     }
 
