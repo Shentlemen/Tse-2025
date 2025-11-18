@@ -121,11 +121,8 @@ public class ClinicalDocumentServlet extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
         
         try {
-            String userRole = (String) request.getSession().getAttribute("role");
-            boolean isSuperAdmin = "SUPER_ADMIN".equals(userRole);
-            
             Long clinicId = (Long) request.getSession().getAttribute("clinicId");
-            if (clinicId == null && !isSuperAdmin) {
+            if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 request.getRequestDispatcher("/admin/documents.jsp").forward(request, response);
                 return;
@@ -141,25 +138,20 @@ public class ClinicalDocumentServlet extends HttpServlet {
                 Optional<ClinicalDocument> docOpt = documentService.findById(Long.parseLong(documentId));
                 if (docOpt.isPresent()) {
                     ClinicalDocument doc = docOpt.get();
-                    // Si es superadmin, puede ver cualquier documento. Si no, verificar que pertenece a su clínica
-                    if (isSuperAdmin) {
+                    // Verificar que el documento pertenece a la clínica del usuario
+                    Long docClinicId = doc.getClinic() != null ? doc.getClinic().getId() : null;
+                    if (docClinicId != null && docClinicId.equals(clinicId)) {
                         request.setAttribute("selectedDocument", doc);
                         request.setAttribute("action", action);
                     } else {
-                        Long docClinicId = doc.getClinic() != null ? doc.getClinic().getId() : null;
-                        if (docClinicId != null && docClinicId.equals(clinicId)) {
-                            request.setAttribute("selectedDocument", doc);
-                            request.setAttribute("action", action);
-                        } else {
-                            request.setAttribute("error", "Documento no encontrado o no pertenece a su clínica");
-                        }
+                        request.setAttribute("error", "Documento no encontrado o no pertenece a su clínica");
                     }
                 } else {
                     request.setAttribute("error", "Documento no encontrado");
                 }
             }
             
-            // Obtener documentos - si es superadmin, pasar null para obtener todos
+            // Obtener documentos
             List<ClinicalDocument> documents;
             
             // Aplicar filtros si existen
@@ -187,31 +179,17 @@ public class ClinicalDocumentServlet extends HttpServlet {
                 logger.warn("Error al parsear fechas de filtro", e);
             }
             
-            // Si es superadmin, pasar null como clinicId para obtener todos los documentos
-            Long searchClinicId = isSuperAdmin ? null : clinicId;
             documents = documentService.searchDocuments(
-                searchClinicId, specialtyId, patientId, professionalId, 
+                clinicId, specialtyId, patientId, professionalId, 
                 documentType, dateFrom, dateTo);
             
             request.setAttribute("documents", documents);
             
             // Cargar datos para filtros y formularios
-            // Si es superadmin, cargar de todas las clínicas
-            List<Patient> patients;
-            List<Professional> professionals;
-            List<Specialty> specialties;
-            
+            List<Patient> patients = patientService.getPatientsByClinic(clinicId);
+            List<Professional> professionals = professionalService.getProfessionalsByClinic(clinicId);
             // Las especialidades ahora son globales (sin filtrar por clínica)
-            specialties = specialtyService.getAllSpecialties();
-            
-            if (isSuperAdmin) {
-                // Para superadmin, obtener todos los datos
-                patients = patientService.getAllPatients();
-                professionals = professionalService.getAllProfessionals();
-            } else {
-                patients = patientService.getPatientsByClinic(clinicId);
-                professionals = professionalService.getProfessionalsByClinic(clinicId);
-            }
+            List<Specialty> specialties = specialtyService.getAllSpecialties();
             
             request.setAttribute("patients", patients);
             request.setAttribute("professionals", professionals);
@@ -745,10 +723,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
         try {
             // Verificar permisos
             Long clinicId = (Long) request.getSession().getAttribute("clinicId");
-            String userRole = (String) request.getSession().getAttribute("role");
-            boolean isSuperAdmin = "SUPER_ADMIN".equals(userRole);
-            
-            if (clinicId == null && !isSuperAdmin) {
+            if (clinicId == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("text/plain; charset=UTF-8");
                 response.getWriter().write("No autorizado para eliminar archivos");
@@ -759,8 +734,8 @@ public class ClinicalDocumentServlet extends HttpServlet {
             ClinicalDocument document = documentService.findById(documentId)
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado"));
             
-            // Verificar que el documento pertenece a la clínica del usuario (a menos que sea superadmin)
-            if (!isSuperAdmin && document.getClinic() != null && !document.getClinic().getId().equals(clinicId)) {
+            // Verificar que el documento pertenece a la clínica del usuario
+            if (document.getClinic() == null || !document.getClinic().getId().equals(clinicId)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("text/plain; charset=UTF-8");
                 response.getWriter().write("No tiene permiso para eliminar archivos de este documento");

@@ -62,51 +62,34 @@ public class DashboardServlet extends HttpServlet {
             System.out.println("Role desde sesión: " + role);
             logger.info("Dashboard - ClinicId: {}, Role: {}", clinicId, role);
 
-            // Obtener estadísticas según el rol
-            long professionalsCount;
-            long patientsCount;
+            // Validar que clinicId esté presente
+            if (clinicId == null) {
+                request.setAttribute("error", "Error de sesión: Clínica no identificada");
+                request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+                return;
+            }
+
+            // Obtener estadísticas de la clínica
+            long professionalsCount = professionalService.getProfessionalsByClinic(clinicId).stream()
+                    .filter(p -> p.getActive()).count();
+            long patientsCount = patientService.getPatientsByClinic(clinicId).stream()
+                    .filter(p -> p.getActive()).count();
             // Las especialidades ahora son globales (sin filtrar por clínica)
             long specialtiesCount = specialtyService.getAllSpecialties().stream()
                     .filter(s -> s.getActive()).count();
-
-            if (clinicId != null && clinicId == 0L) {
-                // Super Admin - ver todos los datos
-                professionalsCount = professionalService.getAllProfessionals().stream()
-                        .filter(p -> p.getActive()).count();
-                patientsCount = patientService.getAllPatients().stream()
-                        .filter(p -> p.getActive()).count();
-            } else {
-                // Administrador de clínica - datos de su clínica
-                professionalsCount = professionalService.getProfessionalsByClinic(clinicId).stream()
-                        .filter(p -> p.getActive()).count();
-                patientsCount = patientService.getPatientsByClinic(clinicId).stream()
-                        .filter(p -> p.getActive()).count();
-            }
 
             // Obtener documentos
             long documentsCount = 0;
             List<ClinicalDocument> recentDocuments = List.of();
             
             try {
-                if (clinicId != null && clinicId == 0L) {
-                    // Super Admin - todos los documentos
-                    List<ClinicalDocument> allDocs = clinicalDocumentService.findAll();
-                    documentsCount = allDocs.size();
-                    // Obtener los últimos 5 ordenados por fecha de creación
-                    recentDocuments = allDocs.stream()
-                        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                        .limit(5)
-                        .collect(Collectors.toList());
-                } else if (clinicId != null) {
-                    // Admin de clínica - documentos de su clínica
-                    List<ClinicalDocument> clinicDocs = clinicalDocumentService.findByClinic(clinicId);
-                    documentsCount = clinicDocs.size();
-                    // Obtener los últimos 5 ordenados por fecha de creación
-                    recentDocuments = clinicDocs.stream()
-                        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                        .limit(5)
-                        .collect(Collectors.toList());
-                }
+                List<ClinicalDocument> clinicDocs = clinicalDocumentService.findByClinic(clinicId);
+                documentsCount = clinicDocs.size();
+                // Obtener los últimos 5 ordenados por fecha de creación
+                recentDocuments = clinicDocs.stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .limit(5)
+                    .collect(Collectors.toList());
             } catch (Exception e) {
                 logger.warn("Error al obtener documentos para dashboard: {}", e.getMessage());
                 // Continuar sin documentos si hay error

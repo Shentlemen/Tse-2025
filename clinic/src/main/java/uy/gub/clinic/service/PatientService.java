@@ -124,19 +124,14 @@ public class PatientService {
      * Obtiene pacientes por clínica
      */
     public List<Patient> getPatientsByClinic(Long clinicId) {
-        List<Patient> patients;
-        
-        // Si clinicId es 0, significa que es super administrador - devolver todos los pacientes
-        if (clinicId != null && clinicId == 0L) {
-            TypedQuery<Patient> query = entityManager.createNamedQuery(
-                "Patient.findAll", Patient.class);
-            patients = query.getResultList();
-        } else {
-            TypedQuery<Patient> query = entityManager.createNamedQuery(
-                "Patient.findByClinic", Patient.class);
-            query.setParameter("clinicId", clinicId);
-            patients = query.getResultList();
+        if (clinicId == null) {
+            throw new IllegalArgumentException("clinicId no puede ser null");
         }
+        
+        TypedQuery<Patient> query = entityManager.createNamedQuery(
+            "Patient.findByClinic", Patient.class);
+        query.setParameter("clinicId", clinicId);
+        List<Patient> patients = query.getResultList();
         
         // Cargar las relaciones lazy para evitar LazyInitializationException
         for (Patient patient : patients) {

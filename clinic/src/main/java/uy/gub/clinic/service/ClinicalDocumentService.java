@@ -403,12 +403,12 @@ public class ClinicalDocumentService {
                                                   Long professionalId, String documentType, 
                                                   LocalDate dateFrom, LocalDate dateTo) {
         try {
-            StringBuilder jpql = new StringBuilder("SELECT d FROM ClinicalDocument d WHERE 1=1");
-            
-            // Si clinicId es null, no filtrar por clínica (para superadmin)
-            if (clinicId != null) {
-                jpql.append(" AND d.clinic.id = :clinicId");
+            if (clinicId == null) {
+                throw new IllegalArgumentException("clinicId no puede ser null");
             }
+            
+            StringBuilder jpql = new StringBuilder("SELECT d FROM ClinicalDocument d WHERE 1=1");
+            jpql.append(" AND d.clinic.id = :clinicId");
             
             if (specialtyId != null) {
                 jpql.append(" AND d.specialty.id = :specialtyId");
@@ -432,9 +432,7 @@ public class ClinicalDocumentService {
             jpql.append(" ORDER BY d.dateOfVisit DESC, d.createdAt DESC");
             
             TypedQuery<ClinicalDocument> query = entityManager.createQuery(jpql.toString(), ClinicalDocument.class);
-            if (clinicId != null) {
-                query.setParameter("clinicId", clinicId);
-            }
+            query.setParameter("clinicId", clinicId);
             
             if (specialtyId != null) {
                 query.setParameter("specialtyId", specialtyId);
