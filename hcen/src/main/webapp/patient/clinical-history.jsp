@@ -918,7 +918,6 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-modal btn-primary" onclick="downloadDocument()">📥 Descargar</button>
                 <button class="btn-modal btn-secondary" onclick="closeModal()">Cerrar</button>
             </div>
         </div>
@@ -1098,26 +1097,33 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 const response = await apiCall('/clinical-history?' + params.toString());
 
                 if (response) {
-                    allDocuments = response.documents;
-                    totalPages = response.totalPages;
+                    console.log('API response:', response);
+
+                    // Handle response format - could be array or object with documents property
+                    allDocuments = Array.isArray(response) ? response : (response.documents || []);
+                    totalPages = response.totalPages || 1;
+
+                    console.log('Documents loaded:', allDocuments.length);
 
                     // Apply client-side search filter
                     const searchTerm = document.getElementById('filterSearch').value.toLowerCase();
                     filteredDocuments = searchTerm
                         ? allDocuments.filter(doc => doc.title.toLowerCase().includes(searchTerm))
-                        : allDocuments;
+                        : [...allDocuments];
+
+                    console.log('Filtered documents:', filteredDocuments.length);
 
                     // Apply sorting
                     applySortToDocuments();
 
                     // Update UI
+                    hideLoading();
                     updateDocumentGrid();
                     updatePagination();
+                } else {
+                    console.error('No response from API');
                     hideLoading();
-
-                    if (filteredDocuments.length === 0) {
-                        showEmptyState();
-                    }
+                    showEmptyState();
                 }
             } catch (error) {
                 console.error('Error loading documents:', error);
@@ -1131,14 +1137,21 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
          */
         function updateDocumentGrid() {
             const grid = document.getElementById('documentGrid');
+            const emptyState = document.getElementById('emptyState');
+
             grid.innerHTML = '';
 
-            if (filteredDocuments.length === 0) {
+            console.log('Updating grid with', filteredDocuments.length, 'documents');
+
+            if (!filteredDocuments || filteredDocuments.length === 0) {
+                console.log('No documents to display - showing empty state');
                 grid.style.display = 'none';
+                emptyState.style.display = 'block';
                 return;
             }
 
             grid.style.display = 'grid';
+            emptyState.style.display = 'none';
 
             filteredDocuments.forEach(doc => {
                 const config = docTypeConfig[doc.documentType] || docTypeConfig['OTHER'];
@@ -1162,7 +1175,6 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                     <div class="doc-actions">
                         <button class="btn-fhir" onclick="viewFhirDocument(\${doc.id})">📋 Ver Documento</button>
                         <button class="btn-view" onclick="viewDocument(\${doc.id})">Ver Detalles</button>
-                        \${doc.hasContent ? '<button class="btn-download" onclick="downloadDocumentById(' + doc.id + ')">📥</button>' : ''}
                     </div>
                 `;
                 grid.appendChild(card);
@@ -1214,7 +1226,9 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
         /**
          * Download document
+         * DISABLED: Download functionality removed per user request
          */
+        /*
         async function downloadDocument() {
             if (!currentDocumentId) return;
             downloadDocumentById(currentDocumentId);
@@ -1222,7 +1236,9 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
         /**
          * Download document by ID
+         * DISABLED: Download functionality removed per user request
          */
+        /*
         async function downloadDocumentById(documentId) {
             try {
                 const content = await apiCall('/clinical-history/documents/' + documentId + '/content?patientCi=' + patientCi);
@@ -1239,6 +1255,7 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
                 showError('Error al descargar el documento');
             }
         }
+        */
 
         /**
          * Close modal
@@ -1602,6 +1619,7 @@ clclinical<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
         function hideLoading() {
             document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('documentGrid').style.display = 'grid';
         }
 
         function showEmptyState() {
