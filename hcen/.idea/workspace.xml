@@ -4,19 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: minor adjustments">
-      <change afterPath="$PROJECT_DIR$/src/main/resources/db/migration/V009__remove_rndc_hash.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/UserRegistrationMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/UserRegistrationMessage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/admin/documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/admin/documents.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: remove column not null constraint and fix registration flows">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/MedicalSpecialty.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/MedicalSpecialty.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/dto/DocumentRegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/dto/DocumentRegistrationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/entity/RndcDocument.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/entity/RndcDocument.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/rndc/RndcService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/rndc/RndcService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/AccessRequestCreationDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/AccessRequestCreationDTO.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -434,7 +424,7 @@
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
       <workItem from="1763003396511" duration="33974000" />
-      <workItem from="1763416028699" duration="54967000" />
+      <workItem from="1763416028699" duration="57888000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -764,7 +754,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763498987539</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="feat: remove column not null constraint and fix registration flows">
+      <option name="closed" value="true" />
+      <created>1763505531044</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1763505531044</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -811,7 +809,8 @@
     <MESSAGE value="feat: fhir document pulled from health providers" />
     <MESSAGE value="feat: access requests configuration" />
     <MESSAGE value="fix: minor adjustments" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: minor adjustments" />
+    <MESSAGE value="feat: remove column not null constraint and fix registration flows" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: remove column not null constraint and fix registration flows" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

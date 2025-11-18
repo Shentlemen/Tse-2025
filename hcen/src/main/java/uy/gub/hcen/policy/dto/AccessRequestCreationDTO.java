@@ -191,6 +191,12 @@ public class AccessRequestCreationDTO implements Serializable {
     }
 
     public String getPatientCi() {
+
+        if(!patientCi.startsWith("uy-ci-"))
+        {
+            return "uy-ci-" + patientCi;
+        }
+
         return patientCi;
     }
 
