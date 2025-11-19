@@ -185,6 +185,31 @@ public class ClinicService {
         }
     }
     
+    /**
+     * Busca una clínica por su API key
+     * 
+     * @param apiKey API key de la clínica
+     * @return Optional con la clínica si se encuentra, vacío si no
+     */
+    public Optional<Clinic> getClinicByApiKey(String apiKey) {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        
+        try {
+            TypedQuery<Clinic> query = entityManager.createQuery(
+                "SELECT c FROM Clinic c WHERE c.apiKey = :apiKey AND c.active = true", 
+                Clinic.class);
+            query.setParameter("apiKey", apiKey.trim());
+            return query.getResultList().stream().findFirst();
+        } catch (Exception e) {
+            logger.error("Error al obtener clínica por API key de la BD, usando datos hardcodeados", e);
+            return hardcodedClinics.values().stream()
+                    .filter(clinic -> apiKey.equals(clinic.getApiKey()))
+                    .findFirst();
+        }
+    }
+    
     @Transactional
     public Clinic createClinic(Clinic clinic) {
         Long newId = hardcodedClinics.keySet().stream().mapToLong(Long::longValue).max().orElse(0L) + 1;
