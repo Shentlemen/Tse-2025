@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "clinical_documents")
 @NamedQueries({
-    @NamedQuery(name = "ClinicalDocument.findAll", query = "SELECT d FROM ClinicalDocument d"),
-    @NamedQuery(name = "ClinicalDocument.findByPatient", query = "SELECT d FROM ClinicalDocument d WHERE d.patient.id = :patientId"),
-    @NamedQuery(name = "ClinicalDocument.findByProfessional", query = "SELECT d FROM ClinicalDocument d WHERE d.professional.id = :professionalId"),
-    @NamedQuery(name = "ClinicalDocument.findByClinic", query = "SELECT d FROM ClinicalDocument d WHERE d.clinic.id = :clinicId ORDER BY d.dateOfVisit DESC, d.createdAt DESC"),
-    @NamedQuery(name = "ClinicalDocument.findByClinicAndSpecialty", query = "SELECT d FROM ClinicalDocument d WHERE d.clinic.id = :clinicId AND d.specialty.id = :specialtyId ORDER BY d.dateOfVisit DESC, d.createdAt DESC")
+    @NamedQuery(name = "ClinicalDocument.findAll", query = "SELECT d FROM ClinicalDocument d LEFT JOIN FETCH d.patient"),
+    @NamedQuery(name = "ClinicalDocument.findByPatient", query = "SELECT d FROM ClinicalDocument d LEFT JOIN FETCH d.patient WHERE d.patient.id = :patientId"),
+    @NamedQuery(name = "ClinicalDocument.findByProfessional", query = "SELECT d FROM ClinicalDocument d LEFT JOIN FETCH d.patient WHERE d.professional.id = :professionalId"),
+    @NamedQuery(name = "ClinicalDocument.findByClinic", query = "SELECT d FROM ClinicalDocument d LEFT JOIN FETCH d.patient WHERE d.clinic.id = :clinicId ORDER BY d.dateOfVisit DESC, d.createdAt DESC"),
+    @NamedQuery(name = "ClinicalDocument.findByClinicAndSpecialty", query = "SELECT d FROM ClinicalDocument d LEFT JOIN FETCH d.patient WHERE d.clinic.id = :clinicId AND d.specialty.id = :specialtyId ORDER BY d.dateOfVisit DESC, d.createdAt DESC")
 })
 public class ClinicalDocument {
     
