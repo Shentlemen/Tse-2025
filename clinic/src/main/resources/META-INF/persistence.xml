@@ -20,9 +20,9 @@
         <properties>
             <!-- Configuración de Hibernate -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/clinic_db"/>
-            <property name="jakarta.persistence.jdbc.user" value="clinic_user"/>
-            <property name="jakarta.persistence.jdbc.password" value="clinic_pass"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/clinic"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
             
             <!-- Configuración de Hibernate -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>

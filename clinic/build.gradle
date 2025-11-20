@@ -1,6 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.postgresql:postgresql:42.7.0'
+        classpath 'org.flywaydb:flyway-database-postgresql:10.0.0'
+    }
+}
+
+
 plugins {
     id 'java'
     id 'war'
+    id 'org.flywaydb.flyway' version '10.0.0'
 }
 
 group = 'uy.gub.clinic'
@@ -13,6 +25,11 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+// Configuration for Flyway plugin dependencies
+configurations {
+    flywayConfiguration
 }
 
 dependencies {
@@ -60,6 +77,14 @@ dependencies {
 
     // PostgreSQL Driver (runtime dependency)
     runtimeOnly 'org.postgresql:postgresql:42.7.0'
+
+    // PostgreSQL Driver for Flyway plugin
+    flywayConfiguration 'org.postgresql:postgresql:42.7.0'
+    flywayConfiguration 'org.flywaydb:flyway-database-postgresql:10.0.0'
+
+    // Flyway Core library
+    implementation "org.flywaydb:flyway-core:10.0.0"
+    implementation 'org.flywaydb:flyway-database-postgresql:10.0.0'
 
     // Apache HTTP Client for REST integrations
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3'
@@ -124,4 +149,79 @@ task undeployFromWildFly(type: Delete) {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     options.compilerArgs += ['-parameters']
+}
+
+// Flyway database migration configuration
+flyway {
+    // Database connection properties (use environment variables or gradle.properties)
+    url = System.getenv('FLYWAY_URL') ?: findProperty('flyway.url') ?: 'jdbc:postgresql://localhost:5432/clinic'
+    user = System.getenv('FLYWAY_USER') ?: findProperty('flyway.user') ?: 'postgres'
+    password = System.getenv('FLYWAY_PASSWORD') ?: findProperty('flyway.password') ?: 'postgres'
+
+    // Migration scripts location
+    locations = ['filesystem:src/main/resources/db/migration']
+
+    // Migration file naming
+    sqlMigrationPrefix = 'V'
+    sqlMigrationSeparator = '__'
+    sqlMigrationSuffixes = ['.sql']
+
+    // Schema configuration
+    schemas = ['public']
+    defaultSchema = 'public'
+
+    // Migration table
+    table = 'flyway_schema_history'
+
+    // Baseline configuration (for existing databases)
+    baselineOnMigrate = false
+    baselineVersion = '0'
+
+    // Validation and behavior
+    validateOnMigrate = true
+    cleanDisabled = true  // Disable clean in production (safety measure)
+    outOfOrder = false
+
+    // Encoding
+    encoding = 'UTF-8'
+
+    // Placeholders (optional, for parameterized migrations)
+    placeholders = [
+        'schema': 'public'
+    ]
+
+    // Plugin classpath
+    configurations = ['flywayConfiguration']
+}
+
+// Task descriptions for Flyway commands
+tasks.named('flywayMigrate') {
+    description = 'Migrates the database to the latest version'
+}
+
+tasks.named('flywayInfo') {
+    description = 'Prints the details and status of all migrations'
+}
+
+tasks.named('flywayValidate') {
+    description = 'Validates the applied migrations against the available ones'
+}
+
+tasks.named('flywayClean') {
+    description = 'Drops all objects in the configured schemas (DANGEROUS - disabled by default)'
+}
+
+tasks.named('flywayBaseline') {
+    description = 'Baselines an existing database at the baselineVersion'
+}
+
+tasks.named('flywayRepair') {
+    description = 'Repairs the schema history table'
+}
+
+// Custom task to run migrations before deployment
+task migrateAndDeploy {
+    dependsOn flywayMigrate, deployToWildFly
+    deployToWildFly.mustRunAfter flywayMigrate
+    description = 'Run database migrations and deploy to WildFly'
 }

@@ -4,9 +4,39 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: remove column not null constraint and fix registration flows">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: normalize ci when sending access request">
+      <change afterPath="$PROJECT_DIR$/../clinic/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../clinic/src/main/resources/bkp/V001__initial_migration.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/gradlew" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/setup-database.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/setup-database.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/auth/AuthServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/auth/AuthServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/entity/Clinic.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/entity/Clinic.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ClinicService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ClinicService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ClinicalDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ClinicalDocumentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/PatientService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/PatientService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ProfessionalService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/ProfessionalService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ClinicSelectorServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ClinicSelectorServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ClinicalDocumentServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ClinicalDocumentServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/DashboardServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/DashboardServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/PatientServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/PatientServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalRequestsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalRequestsServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/SuperAdminServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/SuperAdminServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/UserManagementServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/UserManagementServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/filter/ApiKeyAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/filter/ApiKeyAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V002__add_hcen_integration_fields.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/bkp/V002__add_hcen_integration_fields.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V003__fix_access_requests_patient_id.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/bkp/V003__fix_access_requests_patient_id.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/db/schema.sql" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/AccessRequestCreationDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/dto/AccessRequestCreationDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,6 +150,7 @@
     "Gradle.hcen [buildDependents].executor": "Run",
     "Gradle.hcen [build].executor": "Run",
     "Gradle.hcen [clean].executor": "Run",
+    "Gradle.hcen [flywayInfo].executor": "Run",
     "Gradle.hcen [flywayMigrate].executor": "Run",
     "HTTP Request.generated-requests | #1.executor": "Run",
     "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
@@ -171,28 +202,6 @@
     </option>
   </component>
   <component name="RunManager" selected="JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final">
-    <configuration name="hcen [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="buildDependents" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
     <configuration name="hcen [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -227,6 +236,28 @@
         <option name="taskNames">
           <list>
             <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="hcen [flywayInfo]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="flywayInfo" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -383,8 +414,8 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Gradle.hcen [flywayInfo]" />
       <item itemvalue="Gradle.hcen [flywayMigrate]" />
-      <item itemvalue="Gradle.hcen [buildDependents]" />
       <item itemvalue="Gradle.hcen [clean]" />
       <item itemvalue="Gradle.hcen [build]" />
       <item itemvalue="HTTP Request.generated-requests | #1" />
@@ -393,11 +424,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.hcen [flywayInfo]" />
         <item itemvalue="Gradle.hcen [flywayMigrate]" />
         <item itemvalue="HTTP Request.generated-requests | #1" />
         <item itemvalue="Gradle.hcen [build]" />
         <item itemvalue="Gradle.hcen [clean]" />
-        <item itemvalue="Gradle.hcen [buildDependents]" />
       </list>
     </recent_temporary>
   </component>
@@ -424,7 +455,7 @@
       <workItem from="1761865867022" duration="23054000" />
       <workItem from="1762299823812" duration="30746000" />
       <workItem from="1763003396511" duration="33974000" />
-      <workItem from="1763416028699" duration="57888000" />
+      <workItem from="1763416028699" duration="73440000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -762,7 +793,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763505531044</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="fix: normalize ci when sending access request">
+      <option name="closed" value="true" />
+      <created>1763508445489</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1763508445489</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -810,7 +849,8 @@
     <MESSAGE value="feat: access requests configuration" />
     <MESSAGE value="fix: minor adjustments" />
     <MESSAGE value="feat: remove column not null constraint and fix registration flows" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: remove column not null constraint and fix registration flows" />
+    <MESSAGE value="fix: normalize ci when sending access request" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: normalize ci when sending access request" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -894,6 +934,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyManagementResource.java</url>
           <line>255</line>
           <option name="timeStamp" value="53" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java</url>
+          <line>179</line>
+          <option name="timeStamp" value="54" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

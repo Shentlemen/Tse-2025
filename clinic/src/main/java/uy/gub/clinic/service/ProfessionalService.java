@@ -28,7 +28,7 @@ public class ProfessionalService {
     @Transactional
     public Professional registerProfessional(String name, String lastName, String email, 
                                            String licenseNumber, String phone, 
-                                           Long clinicId, Long specialtyId) {
+                                           String clinicId, Long specialtyId) {
         
         // Validar que la clínica existe
         Clinic clinic = entityManager.find(Clinic.class, clinicId);
@@ -103,7 +103,7 @@ public class ProfessionalService {
     /**
      * Obtiene profesionales por clínica
      */
-    public List<Professional> getProfessionalsByClinic(Long clinicId) {
+    public List<Professional> getProfessionalsByClinic(String clinicId) {
         if (clinicId == null) {
             throw new IllegalArgumentException("clinicId no puede ser null");
         }

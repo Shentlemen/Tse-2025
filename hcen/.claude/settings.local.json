@@ -34,7 +34,8 @@
       "Bash(gradlew.bat:*)",
       "Bash(grep:*)",
       "Bash(tree:*)",
-      "Bash(.gradlew.bat build -x test)"
+      "Bash(.gradlew.bat build -x test)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

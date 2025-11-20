@@ -54,7 +54,7 @@ public class DashboardServlet extends HttpServlet {
                 return;
             }
 
-            Long clinicId = (Long) session.getAttribute("clinicId");
+            String clinicId = (String) session.getAttribute("clinicId");
             String role = (String) session.getAttribute("role");
 
             System.out.println("=== DashboardServlet.doGet ===");

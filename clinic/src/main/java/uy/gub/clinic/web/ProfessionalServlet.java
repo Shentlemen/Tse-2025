@@ -48,7 +48,7 @@ public class ProfessionalServlet extends HttpServlet {
 
         try {
             // Obtener la clínica del usuario logueado
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 System.out.println("ERROR: No se encontró clinicId en la sesión");
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
@@ -151,11 +151,11 @@ public class ProfessionalServlet extends HttpServlet {
         String phone = request.getParameter("phone");
         
         // Obtener clinicId de la sesión o del request
-        Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+        String clinicId = (String) request.getSession().getAttribute("clinicId");
         if (clinicId == null) {
             String clinicIdStr = request.getParameter("clinicId");
             if (clinicIdStr != null && !clinicIdStr.trim().isEmpty()) {
-                clinicId = Long.valueOf(clinicIdStr);
+                clinicId = clinicIdStr.trim();
             }
         }
         

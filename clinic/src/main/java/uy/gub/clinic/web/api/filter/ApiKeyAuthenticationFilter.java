@@ -30,7 +30,8 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
     
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    
+    private static final String CLINIC_ID_HEADER = "__clinic";
+
     // Endpoints que NO requieren autenticación
     private static final List<String> PUBLIC_ENDPOINTS = List.of(
         "/api/health"
@@ -84,10 +85,10 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
         }
-        
+
         // Para otros endpoints, validar contra API key de clínica
         Optional<Clinic> clinicOpt = clinicService.getClinicByApiKey(apiKey);
-        
+
         if (clinicOpt.isEmpty()) {
             logger.warn("Invalid clinic API key for endpoint: {} {}", method, path);
             requestContext.abortWith(
@@ -97,7 +98,7 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
             );
             return;
         }
-        
+
         Clinic clinic = clinicOpt.get();
         logger.debug("API key validated for clinic: {} (ID: {})", clinic.getName(), clinic.getId());
         
@@ -124,6 +125,19 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
             return authHeader.substring(7).trim();
         }
         
+        return null;
+    }
+
+    /**
+     * Extrae el identificador de la clinica de los headers de la petición
+     */
+    private String extractClinicId(ContainerRequestContext requestContext) {
+        String clinicId = requestContext.getHeaderString(CLINIC_ID_HEADER);
+
+        if (clinicId != null && !clinicId.isEmpty()) {
+            return clinicId.trim();
+        }
+
         return null;
     }
     

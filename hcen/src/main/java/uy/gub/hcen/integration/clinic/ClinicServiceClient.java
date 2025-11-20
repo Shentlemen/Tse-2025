@@ -55,6 +55,7 @@ public class ClinicServiceClient {
     private static final int READ_TIMEOUT_SECONDS = 30;
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final int INITIAL_RETRY_DELAY_MS = 1000;
+    private static final String API_KEY_HEADER = "X-API-Key";
 
     // HTTP client components
     private CloseableHttpClient httpClient;
@@ -168,7 +169,7 @@ public class ClinicServiceClient {
                 // Add API key if configured
                 String apiKey = config.getClinicServiceApiKey();
                 if (apiKey != null && !apiKey.isEmpty()) {
-                    httpPost.setHeader("Authorization", "Bearer " + apiKey);
+                    httpPost.setHeader(API_KEY_HEADER, apiKey);
                 }
 
                 // Execute request

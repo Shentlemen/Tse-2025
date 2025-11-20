@@ -67,7 +67,7 @@ public class UserService {
     /**
      * Buscar usuarios por clínica
      */
-    public List<User> findByClinic(Long clinicId) {
+    public List<User> findByClinic(String clinicId) {
         try {
             // Usar JOIN FETCH para cargar las relaciones lazy de una vez
             // NO filtrar por active = true para mostrar todos los usuarios (activos e inactivos)

@@ -73,8 +73,8 @@ public class ClinicSelectorServlet extends HttpServlet {
         
         if (clinicIdStr != null && !clinicIdStr.trim().isEmpty()) {
             try {
-                Long clinicId = Long.parseLong(clinicIdStr);
-                
+                String clinicId = clinicIdStr.trim();
+
                 // Verificar que la clínica existe
                 if (clinicService.getClinicById(clinicId).isPresent()) {
                     Clinic clinic = clinicService.getClinicById(clinicId).get();

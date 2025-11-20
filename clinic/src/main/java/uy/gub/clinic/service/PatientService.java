@@ -36,7 +36,7 @@ public class PatientService {
     @Transactional
     public Patient registerPatient(String name, String lastName, String documentNumber, 
                                  String inusId, LocalDate birthDate, String gender, 
-                                 String phone, String email, String address, Long clinicId) {
+                                 String phone, String email, String address, String clinicId) {
         
         // Validar que la clínica existe
         Clinic clinic = entityManager.find(Clinic.class, clinicId);
@@ -123,7 +123,7 @@ public class PatientService {
     /**
      * Obtiene pacientes por clínica
      */
-    public List<Patient> getPatientsByClinic(Long clinicId) {
+    public List<Patient> getPatientsByClinic(String clinicId) {
         if (clinicId == null) {
             throw new IllegalArgumentException("clinicId no puede ser null");
         }

@@ -99,47 +99,47 @@ public class AuthServlet extends HttpServlet {
             
             boolean loginExitoso = false;
             String role = null;
-            Long clinicId = null;
+            String clinicId = null;
             String clinicName = null;
             Long professionalId = null;
-            
+
             // Verificar usuarios hardcodeados primero
             if (SUPER_ADMIN_USER.equals(username) && SUPER_ADMIN_PASS.equals(password)) {
                 loginExitoso = true;
                 role = "SUPER_ADMIN";
-                clinicId = 0L; // ID especial para super admin (acceso completo)
+                clinicId = "clinic-00000000-0000-0000-0000-000000000000"; // ID especial para super admin (acceso completo)
                 clinicName = "Super Administrador - Acceso Completo";
                 professionalId = null;
                 logger.info("Login exitoso con super administrador: {}", username);
-                
+
             } else if (ADMIN_USER_CLINIC1.equals(username) && ADMIN_PASS_CLINIC1.equals(password)) {
                 loginExitoso = true;
                 role = "ADMIN_CLINIC";
-                clinicId = 4L;
+                clinicId = "clinic-00000000-0000-0000-0000-000000000004";
                 clinicName = "Clínica del Corazón";
                 professionalId = null;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
-                
+
             } else if (PROF_USER_CLINIC1.equals(username) && PROF_PASS_CLINIC1.equals(password)) {
                 loginExitoso = true;
                 role = "PROFESSIONAL";
-                clinicId = 4L;
+                clinicId = "clinic-00000000-0000-0000-0000-000000000004";
                 clinicName = "Clínica del Corazón";
                 professionalId = 1L;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
-                
+
             } else if (ADMIN_USER_CLINIC2.equals(username) && ADMIN_PASS_CLINIC2.equals(password)) {
                 loginExitoso = true;
                 role = "ADMIN_CLINIC";
-                clinicId = 5L;
+                clinicId = "clinic-00000000-0000-0000-0000-000000000005";
                 clinicName = "Centro Neurológico";
                 professionalId = null;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
-                
+
             } else if (PROF_USER_CLINIC2.equals(username) && PROF_PASS_CLINIC2.equals(password)) {
                 loginExitoso = true;
                 role = "PROFESSIONAL";
-                clinicId = 5L;
+                clinicId = "clinic-00000000-0000-0000-0000-000000000005";
                 clinicName = "Centro Neurológico";
                 professionalId = 2L;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);

@@ -121,25 +121,25 @@ public class ClinicalDocumentServlet extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
         
         try {
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 request.getRequestDispatcher("/admin/documents.jsp").forward(request, response);
                 return;
             }
-            
+
             // Acción para abrir modal de agregar documento
             if ("add".equals(action) || "create".equals(action)) {
                 request.setAttribute("action", "add");
             }
-            
+
             // Acción para obtener un documento específico (para ver o editar)
             if (("view".equals(action) || "edit".equals(action)) && documentId != null) {
                 Optional<ClinicalDocument> docOpt = documentService.findById(Long.parseLong(documentId));
                 if (docOpt.isPresent()) {
                     ClinicalDocument doc = docOpt.get();
                     // Verificar que el documento pertenece a la clínica del usuario
-                    Long docClinicId = doc.getClinic() != null ? doc.getClinic().getId() : null;
+                    String docClinicId = doc.getClinic() != null ? doc.getClinic().getId() : null;
                     if (docClinicId != null && docClinicId.equals(clinicId)) {
                         request.setAttribute("selectedDocument", doc);
                         request.setAttribute("action", action);
@@ -213,13 +213,13 @@ public class ClinicalDocumentServlet extends HttpServlet {
         String action = request.getParameter("action");
         
         try {
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 doGet(request, response);
                 return;
             }
-            
+
             switch (action) {
                 case "create":
                     createDocument(request, response, clinicId);
@@ -241,7 +241,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
         }
     }
     
-    private void createDocument(HttpServletRequest request, HttpServletResponse response, Long clinicId)
+    private void createDocument(HttpServletRequest request, HttpServletResponse response, String clinicId)
             throws ServletException, IOException {
         
         try {
@@ -364,7 +364,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
         }
     }
     
-    private void updateDocument(HttpServletRequest request, HttpServletResponse response, Long clinicId)
+    private void updateDocument(HttpServletRequest request, HttpServletResponse response, String clinicId)
             throws ServletException, IOException {
         
         try {
@@ -546,7 +546,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
         return clinicUploadsDir;
     }
     
-    private String saveFile(Part part, Long clinicId, Long documentId) throws IOException {
+    private String saveFile(Part part, String clinicId, Long documentId) throws IOException {
         if (part.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("El archivo excede el tamaño máximo permitido (10MB)");
         }

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Entidad que representa una clínica en el sistema multi-tenant
@@ -19,8 +20,8 @@ import java.util.List;
 public class Clinic {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id", length = 50)
+    private String id;
     
     @NotBlank
     @Size(max = 255)
@@ -80,9 +81,10 @@ public class Clinic {
     
     // Constructores
     public Clinic() {
+        this.id = "clinic-" + UUID.randomUUID().toString();
         this.createdAt = LocalDateTime.now();
     }
-    
+
     public Clinic(String name, String code) {
         this();
         this.name = name;
@@ -101,11 +103,11 @@ public class Clinic {
     }
     
     // Getters y Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
-    
-    public void setId(Long id) {
+
+    public void setId(String id) {
         this.id = id;
     }
     

@@ -83,7 +83,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
 
         try {
             // Validar sesión
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
@@ -199,9 +199,9 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         String action = request.getParameter("action");
         
         try {
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             Long professionalId = (Long) request.getSession().getAttribute("professionalId");
-            
+
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 doGet(request, response);
@@ -235,7 +235,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         }
     }
     
-    private void createDocument(HttpServletRequest request, HttpServletResponse response, Long clinicId, Long professionalId)
+    private void createDocument(HttpServletRequest request, HttpServletResponse response, String clinicId, Long professionalId)
             throws ServletException, IOException {
         
         try {
@@ -347,7 +347,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/professional/patient-documents?patientId=" + patientIdStr);
     }
     
-    private void updateDocument(HttpServletRequest request, HttpServletResponse response, Long clinicId, Long professionalId)
+    private void updateDocument(HttpServletRequest request, HttpServletResponse response, String clinicId, Long professionalId)
             throws ServletException, IOException {
         
         try {
@@ -484,7 +484,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         return clinicUploadsDir;
     }
     
-    private String saveFile(Part part, Long clinicId, Long documentId) throws IOException {
+    private String saveFile(Part part, String clinicId, Long documentId) throws IOException {
         if (part.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("El archivo excede el tamaño máximo permitido (10MB)");
         }
@@ -644,7 +644,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         }
     }
     
-    private void requestAccessToHCEN(HttpServletRequest request, HttpServletResponse response, Long clinicId, Long professionalId)
+    private void requestAccessToHCEN(HttpServletRequest request, HttpServletResponse response, String clinicId, Long professionalId)
             throws ServletException, IOException {
         
         try {

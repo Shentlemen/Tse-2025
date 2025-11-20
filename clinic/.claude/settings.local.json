@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(cmd /c \"dir C:\\Users\\agust\\fing\\tse\\tse-2025\\clinic\\src\\main\\resources\\db\\migration\")",
+      "Bash(./gradlew flywayInfo:*)",
+      "Bash(./gradlew wrapper:*)",
+      "Bash(./gradlew:*)",
+      "Bash(del \"C:\\Users\\agust\\fing\\tse\\tse-2025\\clinic\\src\\main\\java\\uy\\gub\\clinic\\web\\api\\ClinicResource.java\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

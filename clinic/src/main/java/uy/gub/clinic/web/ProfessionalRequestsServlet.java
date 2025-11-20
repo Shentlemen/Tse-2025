@@ -83,8 +83,8 @@ public class ProfessionalRequestsServlet extends HttpServlet {
         
         try {
             Long professionalId = (Long) request.getSession().getAttribute("professionalId");
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
-            
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
+
             if (professionalId == null || clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Profesional o clínica no identificados");
                 doGet(request, response);

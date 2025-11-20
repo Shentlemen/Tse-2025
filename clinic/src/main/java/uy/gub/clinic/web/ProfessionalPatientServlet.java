@@ -33,7 +33,7 @@ public class ProfessionalPatientServlet extends HttpServlet {
 
         try {
             // Obtener la clínica del profesional logueado
-            Long clinicId = (Long) request.getSession().getAttribute("clinicId");
+            String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
                 request.getRequestDispatcher("/professional/patients.jsp").forward(request, response);

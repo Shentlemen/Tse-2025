@@ -6,13 +6,12 @@
 DO $$
 BEGIN
     IF EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_schema = 'public' 
-        AND table_name = 'access_requests' 
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'access_requests'
         AND column_name = 'patient_id'
     ) THEN
         ALTER TABLE access_requests ALTER COLUMN patient_id DROP NOT NULL;
         RAISE NOTICE 'Columna patient_id ahora es nullable';
     END IF;
 END $$;
-

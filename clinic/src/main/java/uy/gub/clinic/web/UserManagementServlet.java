@@ -98,11 +98,11 @@ public class UserManagementServlet extends HttpServlet {
         
         try {
             HttpSession session = request.getSession(false);
-            Long clinicId = null;
+            String clinicId = null;
             String role = null;
-            
+
             if (session != null) {
-                clinicId = (Long) session.getAttribute("clinicId");
+                clinicId = (String) session.getAttribute("clinicId");
                 role = (String) session.getAttribute("role");
             }
             
@@ -223,8 +223,8 @@ public class UserManagementServlet extends HttpServlet {
             }
             
             String currentRole = (String) session.getAttribute("role");
-            Long currentClinicId = (Long) session.getAttribute("clinicId");
-            
+            String currentClinicId = (String) session.getAttribute("clinicId");
+
             if (!"ADMIN_CLINIC".equals(currentRole) && !"SUPER_ADMIN".equals(currentRole)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado");
                 return;
@@ -271,14 +271,7 @@ public class UserManagementServlet extends HttpServlet {
                 return;
             }
             
-            Long clinicId;
-            try {
-                clinicId = Long.parseLong(clinicIdStr);
-            } catch (NumberFormatException e) {
-                request.setAttribute("error", "ID de clínica inválido");
-                handleListUsers(request, response);
-                return;
-            }
+            String clinicId = clinicIdStr.trim();
             
             // Si es ADMIN_CLINIC, solo puede crear usuarios para su propia clínica
             if ("ADMIN_CLINIC".equals(currentRole) && currentClinicId != null && !currentClinicId.equals(clinicId)) {

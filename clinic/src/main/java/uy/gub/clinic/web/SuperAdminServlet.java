@@ -153,9 +153,9 @@ public class SuperAdminServlet extends HttpServlet {
                 doGet(request, response);
                 return;
             }
-            
-            Long clinicId = Long.parseLong(clinicIdStr);
-            
+
+            String clinicId = clinicIdStr.trim();
+
             // Verificar que la clínica existe
             if (!clinicService.getClinicById(clinicId).isPresent()) {
                 request.setAttribute("error", "La clínica seleccionada no existe");

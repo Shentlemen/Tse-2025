@@ -29,8 +29,6 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO clinic_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO clinic_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO clinic_user;
 
--- 7. Ejecutar el script de creación de tablas
-\i src/main/resources/db/schema.sql
 
 -- Mensaje de confirmación
 SELECT 'Base de datos clinic_db configurada correctamente' as status;

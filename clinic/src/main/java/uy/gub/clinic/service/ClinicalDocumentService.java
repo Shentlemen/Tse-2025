@@ -61,7 +61,7 @@ public class ClinicalDocumentService {
     /**
      * Obtener todos los documentos de una clínica
      */
-    public List<ClinicalDocument> findByClinic(Long clinicId) {
+    public List<ClinicalDocument> findByClinic(String clinicId) {
         try {
             TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
                 "ClinicalDocument.findByClinic", ClinicalDocument.class);
@@ -86,7 +86,7 @@ public class ClinicalDocumentService {
     /**
      * Obtener documentos por clínica y especialidad
      */
-    public List<ClinicalDocument> findByClinicAndSpecialty(Long clinicId, Long specialtyId) {
+    public List<ClinicalDocument> findByClinicAndSpecialty(String clinicId, Long specialtyId) {
         try {
             TypedQuery<ClinicalDocument> query = entityManager.createNamedQuery(
                 "ClinicalDocument.findByClinicAndSpecialty", ClinicalDocument.class);
@@ -398,7 +398,7 @@ public class ClinicalDocumentService {
     /**
      * Buscar documentos con filtros
      */
-    public List<ClinicalDocument> searchDocuments(Long clinicId, Long specialtyId, Long patientId, 
+    public List<ClinicalDocument> searchDocuments(String clinicId, Long specialtyId, Long patientId, 
                                                   Long professionalId, String documentType, 
                                                   LocalDate dateFrom, LocalDate dateTo) {
         try {
