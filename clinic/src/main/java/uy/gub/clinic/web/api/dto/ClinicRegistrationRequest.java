@@ -26,7 +26,7 @@ import jakarta.validation.constraints.Size;
  * </pre>
  *
  * @author TSE 2025 Group 9
- * @version 1.0
+ * @version 1.0|OK
  * @since 2025-11-19
  */
 public class ClinicRegistrationRequest {
@@ -82,11 +82,26 @@ public class ClinicRegistrationRequest {
     private String hcenEndpoint;
 
     /**
+     * URL for JMS connection to HCEN central
+     * Example: http-remoting://localhost:8080
+     */
+    @JsonProperty("hcen_jms_url")
+    private String hcenJmsUrl;
+
+    /**
      * Active status (default: true)
      */
     @NotNull(message = "Active status is required")
     @JsonProperty("active")
     private Boolean active;
+
+    /**
+     * API key for authenticating requests to this clinic's services
+     */
+    @NotBlank(message = "API key is required")
+    @Size(min = 32, message = "API key must be at least 32 characters")
+    @JsonProperty("api_key")
+    private String apiKey;
 
     // ================================================================
     // Constructors
@@ -110,10 +125,11 @@ public class ClinicRegistrationRequest {
      * @param email        Contact email
      * @param hcenEndpoint HCEN central API URL
      * @param active       Active status
+     * @param apiKey       API key for clinic authentication
      */
     public ClinicRegistrationRequest(String code, String name, String description,
                                      String address, String phone, String email,
-                                     String hcenEndpoint, Boolean active) {
+                                     String hcenEndpoint, Boolean active, String apiKey) {
         this.code = code;
         this.name = name;
         this.description = description;
@@ -122,6 +138,7 @@ public class ClinicRegistrationRequest {
         this.email = email;
         this.hcenEndpoint = hcenEndpoint;
         this.active = active != null ? active : true;
+        this.apiKey = apiKey;
     }
 
     // ================================================================
@@ -184,12 +201,28 @@ public class ClinicRegistrationRequest {
         this.hcenEndpoint = hcenEndpoint;
     }
 
+    public String getHcenJmsUrl() {
+        return hcenJmsUrl;
+    }
+
+    public void setHcenJmsUrl(String hcenJmsUrl) {
+        this.hcenJmsUrl = hcenJmsUrl;
+    }
+
     public Boolean getActive() {
         return active;
     }
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     // ================================================================

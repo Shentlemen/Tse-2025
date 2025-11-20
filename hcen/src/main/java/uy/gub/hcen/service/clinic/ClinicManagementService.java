@@ -660,7 +660,8 @@ public class ClinicManagementService {
                 clinic.getPhoneNumber(),        // phone
                 clinic.getEmail(),              // email
                 HCEN_CENTRAL_URL,               // hcen_endpoint (same for all clinics)
-                true                            // active
+                true,                            // active
+                clinic.getApiKey()              //apiKey
         );
     }
 }

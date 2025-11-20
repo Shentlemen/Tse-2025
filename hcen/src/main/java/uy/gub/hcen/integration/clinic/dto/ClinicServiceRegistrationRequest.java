@@ -1,6 +1,8 @@
 package uy.gub.hcen.integration.clinic.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Clinic Service Registration Request DTO
@@ -81,6 +83,11 @@ public class ClinicServiceRegistrationRequest {
     @JsonProperty("active")
     private Boolean active;
 
+    @NotBlank(message = "API key is required")
+    @Size(min = 32, message = "API key must be at least 32 characters")
+    @JsonProperty("api_key")
+    private String apiKey;
+
     // ================================================================
     // Constructors
     // ================================================================
@@ -106,7 +113,7 @@ public class ClinicServiceRegistrationRequest {
      */
     public ClinicServiceRegistrationRequest(String code, String name, String description,
                                             String address, String phone, String email,
-                                            String hcenEndpoint, Boolean active) {
+                                            String hcenEndpoint, Boolean active, String apiKey) {
         this.code = code;
         this.name = name;
         this.description = description;
@@ -115,6 +122,7 @@ public class ClinicServiceRegistrationRequest {
         this.email = email;
         this.hcenEndpoint = hcenEndpoint;
         this.active = active != null ? active : true;
+        this.apiKey = apiKey;
     }
 
     // ================================================================
@@ -184,6 +192,15 @@ public class ClinicServiceRegistrationRequest {
     public void setActive(Boolean active) {
         this.active = active;
     }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
 
     // ================================================================
     // Object Methods

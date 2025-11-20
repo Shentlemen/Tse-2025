@@ -12,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.config.ApiConfigurationService;
 import uy.gub.clinic.entity.Clinic;
+import uy.gub.clinic.entity.User;
 import uy.gub.clinic.service.ClinicService;
+import uy.gub.clinic.service.UserService;
+import uy.gub.clinic.util.PasswordUtil;
 import uy.gub.clinic.web.api.dto.ClinicRegistrationRequest;
 
 import java.io.BufferedReader;
@@ -43,6 +46,9 @@ public class ClinicRegistrationServlet extends HttpServlet {
 
     @Inject
     private ClinicService clinicService;
+
+    @Inject
+    private UserService userService;
 
     @Inject
     private ApiConfigurationService apiConfigService;
@@ -122,6 +128,11 @@ public class ClinicRegistrationServlet extends HttpServlet {
             logger.info("Clinic registered successfully - ID: {}, code: {}, name: {}",
                     createdClinic.getId(), createdClinic.getCode(), createdClinic.getName());
 
+            // Create admin user for the clinic
+            User adminUser = createAdminUser(createdClinic, registrationRequest);
+            logger.info("Admin user created for clinic - username: {}, email: {}",
+                    adminUser.getUsername(), adminUser.getEmail());
+
             // Build response
             ClinicRegistrationResponse responseDto = buildResponse(createdClinic);
 
@@ -178,6 +189,8 @@ public class ClinicRegistrationServlet extends HttpServlet {
         clinic.setPhone(request.getPhone());
         clinic.setEmail(request.getEmail());
         clinic.setHcenEndpoint(request.getHcenEndpoint());
+        clinic.setHcenJmsUrl(request.getHcenJmsUrl());
+        clinic.setApiKey(request.getApiKey());
         clinic.setActive(request.getActive() != null ? request.getActive() : true);
 
         return clinic;
@@ -203,6 +216,32 @@ public class ClinicRegistrationServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.print("{\"error\": \"" + message.replace("\"", "\\\"") + "\"}");
         out.flush();
+    }
+
+    private User createAdminUser(Clinic clinic, ClinicRegistrationRequest request) {
+        User adminUser = new User();
+
+        // Use email as username
+        adminUser.setUsername(request.getEmail());
+        adminUser.setEmail(request.getEmail());
+
+        // Use apiKey as password, hashed with BCrypt
+        String hashedPassword = PasswordUtil.hashPassword(request.getApiKey());
+        adminUser.setPassword(hashedPassword);
+
+        // Set name
+        adminUser.setFirstName("Super");
+        adminUser.setLastName("Admin");
+
+        // Set role and status
+        adminUser.setRole("ADMIN_CLINIC");
+        adminUser.setActive(true);
+
+        // Associate with clinic
+        adminUser.setClinic(clinic);
+
+        // Create the user
+        return userService.createUser(adminUser);
     }
 
     /**
