@@ -289,35 +289,68 @@
                                                 <tr style="cursor: pointer;" 
                                                     onclick="openRequestModal(this)"
                                                     data-request-id="${request.id}"
-                                                    data-patient-name="${fn:escapeXml(request.patient.fullName)}"
-                                                    data-patient-document="${fn:escapeXml(request.patient.documentNumber != null ? request.patient.documentNumber : '')}"
-                                                    data-patient-inus="${fn:escapeXml(request.patient.inusId != null ? request.patient.inusId : '')}"
-                                                    data-specialty="${fn:escapeXml(request.specialty != null ? request.specialty.name : 'Todas las especialidades')}"
-                                                    data-reason="${fn:escapeXml(request.reason != null ? request.reason : 'Sin motivo especificado')}"
+                                                    <c:choose>
+                                                        <c:when test="${request.patient != null}">
+                                                            <c:set var="patientNameAttr" value="${request.patient.fullName}"/>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <c:set var="patientNameAttr" value="Paciente CI: ${request.patientCI}"/>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    data-patient-name="${fn:escapeXml(patientNameAttr)}"
+                                                    data-patient-document="${fn:escapeXml(request.patient != null && request.patient.documentNumber != null ? request.patient.documentNumber : request.patientCI)}"
+                                                    data-patient-inus="${fn:escapeXml(request.patient != null && request.patient.inusId != null ? request.patient.inusId : 'N/A')}"
+                                                    data-specialty="${fn:escapeXml(request.specialties != null && !request.specialties.isEmpty() ? request.specialties : 'Todas las especialidades')}"
+                                                    data-reason="${fn:escapeXml(request.requestReason != null ? request.requestReason : 'Sin motivo especificado')}"
                                                     data-status="${request.status}"
                                                     data-request-date="${requestDateStr}">
                                                     <td>
                                                         <div class="d-flex align-items-center">
                                                             <div class="patient-avatar me-2">
-                                                                <c:set var="patientName" value="${request.patient.fullName}"/>
-                                                                <c:set var="initials" value="${fn:substring(patientName, 0, 1)}${fn:substring(patientName, fn:indexOf(patientName, ' ') + 1, fn:indexOf(patientName, ' ') + 2)}"/>
-                                                                ${initials}
+                                                                <c:choose>
+                                                                    <c:when test="${request.patient != null && request.patient.fullName != null}">
+                                                                        <c:set var="patientName" value="${request.patient.fullName}"/>
+                                                                        <c:set var="spaceIndex" value="${fn:indexOf(patientName, ' ')}"/>
+                                                                        <c:choose>
+                                                                            <c:when test="${spaceIndex > 0}">
+                                                                                <c:set var="initials" value="${fn:substring(patientName, 0, 1)}${fn:substring(patientName, spaceIndex + 1, spaceIndex + 2)}"/>
+                                                                            </c:when>
+                                                                            <c:otherwise>
+                                                                                <c:set var="initials" value="${fn:substring(patientName, 0, 1)}"/>
+                                                                            </c:otherwise>
+                                                                        </c:choose>
+                                                                        ${initials}
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <c:set var="ciInitials" value="${fn:substring(request.patientCI, fn:length(request.patientCI) - 2, fn:length(request.patientCI))}"/>
+                                                                        ${ciInitials}
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                             </div>
                                                             <div>
-                                                                <strong>${request.patient.fullName}</strong>
+                                                                <strong>
+                                                                    <c:choose>
+                                                                        <c:when test="${request.patient != null && request.patient.fullName != null}">
+                                                                            ${request.patient.fullName}
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            Paciente CI: ${request.patientCI}
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </strong>
                                                                 <br>
                                                                 <small class="text-muted">
                                                                     <i class="fas fa-id-card me-1"></i>
-                                                                    ${request.patient.documentNumber != null ? request.patient.documentNumber : 'N/A'}
+                                                                    ${request.patientCI}
                                                                 </small>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <c:if test="${request.specialty != null}">
-                                                            <span class="badge bg-info">${request.specialty.name}</span>
+                                                        <c:if test="${not empty request.specialties}">
+                                                            <span class="badge bg-info">${request.specialties}</span>
                                                         </c:if>
-                                                        <c:if test="${request.specialty == null}">
+                                                        <c:if test="${empty request.specialties}">
                                                             <span class="text-muted">Todas las especialidades</span>
                                                         </c:if>
                                                     </td>
@@ -325,10 +358,10 @@
                                                         ${requestDateStr != null && !requestDateStr.isEmpty() ? requestDateStr : 'N/A'}
                                                     </td>
                                                     <td>
-                                                        <c:if test="${not empty request.reason}">
-                                                            ${fn:substring(request.reason, 0, 50)}${fn:length(request.reason) > 50 ? '...' : ''}
+                                                        <c:if test="${not empty request.requestReason}">
+                                                            ${fn:substring(request.requestReason, 0, 50)}${fn:length(request.requestReason) > 50 ? '...' : ''}
                                                         </c:if>
-                                                        <c:if test="${empty request.reason}">
+                                                        <c:if test="${empty request.requestReason}">
                                                             <span class="text-muted">Sin motivo especificado</span>
                                                         </c:if>
                                                     </td>
@@ -340,8 +373,11 @@
                                                             <c:when test="${request.status == 'APPROVED'}">
                                                                 <span class="status-badge status-approved">Aprobada</span>
                                                             </c:when>
-                                                            <c:when test="${request.status == 'REJECTED'}">
+                                                            <c:when test="${request.status == 'DENIED'}">
                                                                 <span class="status-badge status-rejected">Rechazada</span>
+                                                            </c:when>
+                                                            <c:when test="${request.status == 'EXPIRED'}">
+                                                                <span class="status-badge status-rejected">Expirada</span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="status-badge">${request.status}</span>
@@ -471,9 +507,12 @@
             } else if (status === 'APPROVED') {
                 statusBadge.className += 'status-approved';
                 statusBadge.textContent = 'Aprobada';
-            } else if (status === 'REJECTED') {
+            } else if (status === 'DENIED') {
                 statusBadge.className += 'status-rejected';
                 statusBadge.textContent = 'Rechazada';
+            } else if (status === 'EXPIRED') {
+                statusBadge.className += 'status-rejected';
+                statusBadge.textContent = 'Expirada';
             } else {
                 statusBadge.textContent = status;
             }

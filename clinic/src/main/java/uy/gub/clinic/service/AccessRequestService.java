@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.AccessRequest;
 import uy.gub.clinic.entity.Clinic;
+import uy.gub.clinic.entity.Patient;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.integration.HcenRestClient;
 import uy.gub.clinic.integration.dto.AccessRequestCreationRequest;
@@ -35,6 +36,9 @@ public class AccessRequestService {
     @Inject
     private HcenRestClient hcenRestClient;
     
+    @Inject
+    private PatientService patientService;
+    
     /**
      * Crea una nueva solicitud de acceso y la envía al HCEN
      * 
@@ -58,11 +62,24 @@ public class AccessRequestService {
             String urgency) {
         
         try {
+            // Buscar paciente local por CI si existe
+            Patient patient = null;
+            if (patientCI != null && !patientCI.trim().isEmpty()) {
+                Optional<Patient> patientOpt = patientService.getPatientByDocumentNumber(patientCI.trim());
+                if (patientOpt.isPresent()) {
+                    patient = patientOpt.get();
+                    logger.debug("Found local patient for CI {}: {}", patientCI, patient.getId());
+                } else {
+                    logger.debug("No local patient found for CI {}, will create request with patient_id = null", patientCI);
+                }
+            }
+            
             // Crear entidad local
             AccessRequest accessRequest = new AccessRequest();
             accessRequest.setProfessional(professional);
             accessRequest.setClinic(clinic);
             accessRequest.setPatientCI(patientCI);
+            accessRequest.setPatient(patient); // Puede ser null si es paciente externo
             accessRequest.setDocumentId(documentId);
             accessRequest.setSpecialties(specialties);
             accessRequest.setRequestReason(requestReason);
@@ -152,7 +169,7 @@ public class AccessRequestService {
      */
     public List<AccessRequest> findPendingByProfessional(Long professionalId) {
         TypedQuery<AccessRequest> query = entityManager.createQuery(
-            "SELECT ar FROM AccessRequest ar WHERE ar.professional.id = :professionalId AND ar.status = 'PENDING' ORDER BY ar.requestedAt DESC",
+            "SELECT ar FROM AccessRequest ar LEFT JOIN FETCH ar.patient WHERE ar.professional.id = :professionalId AND ar.status = 'PENDING' ORDER BY ar.requestedAt DESC",
             AccessRequest.class);
         query.setParameter("professionalId", professionalId);
         return query.getResultList();

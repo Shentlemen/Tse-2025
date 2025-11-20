@@ -447,18 +447,43 @@
                                                             <td>
                                                                 <div class="d-flex align-items-center">
                                                                     <div class="patient-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
-                                                                        <c:set var="patientName" value="${request.patient.fullName}"/>
-                                                                        <c:set var="initials" value="${fn:substring(patientName, 0, 1)}${fn:substring(patientName, fn:indexOf(patientName, ' ') + 1, fn:indexOf(patientName, ' ') + 2)}"/>
-                                                                        ${initials}
+                                                                        <c:choose>
+                                                                            <c:when test="${request.patient != null && request.patient.fullName != null}">
+                                                                                <c:set var="patientName" value="${request.patient.fullName}"/>
+                                                                                <c:set var="spaceIndex" value="${fn:indexOf(patientName, ' ')}"/>
+                                                                                <c:choose>
+                                                                                    <c:when test="${spaceIndex > 0}">
+                                                                                        <c:set var="initials" value="${fn:substring(patientName, 0, 1)}${fn:substring(patientName, spaceIndex + 1, spaceIndex + 2)}"/>
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                        <c:set var="initials" value="${fn:substring(patientName, 0, 1)}"/>
+                                                                                    </c:otherwise>
+                                                                                </c:choose>
+                                                                                ${initials}
+                                                                            </c:when>
+                                                                            <c:otherwise>
+                                                                                <c:set var="ciInitials" value="${fn:substring(request.patientCI, fn:length(request.patientCI) - 2, fn:length(request.patientCI))}"/>
+                                                                                ${ciInitials}
+                                                                            </c:otherwise>
+                                                                        </c:choose>
                                                                     </div>
-                                                                    <span>${request.patient.fullName}</span>
+                                                                    <span>
+                                                                        <c:choose>
+                                                                            <c:when test="${request.patient != null && request.patient.fullName != null}">
+                                                                                ${request.patient.fullName}
+                                                                            </c:when>
+                                                                            <c:otherwise>
+                                                                                CI: ${request.patientCI}
+                                                                            </c:otherwise>
+                                                                        </c:choose>
+                                                                    </span>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <c:if test="${request.specialty != null}">
-                                                                    <span class="badge bg-info">${request.specialty.name}</span>
+                                                                <c:if test="${not empty request.specialties}">
+                                                                    <span class="badge bg-info">${request.specialties}</span>
                                                                 </c:if>
-                                                                <c:if test="${request.specialty == null}">
+                                                                <c:if test="${empty request.specialties}">
                                                                     <span class="text-muted">Todas</span>
                                                                 </c:if>
                                                             </td>
@@ -480,10 +505,10 @@
                                                                 %>
                                                             </td>
                                                             <td>
-                                                                <c:if test="${not empty request.reason}">
-                                                                    ${fn:substring(request.reason, 0, 40)}${fn:length(request.reason) > 40 ? '...' : ''}
+                                                                <c:if test="${not empty request.requestReason}">
+                                                                    ${fn:substring(request.requestReason, 0, 40)}${fn:length(request.requestReason) > 40 ? '...' : ''}
                                                                 </c:if>
-                                                                <c:if test="${empty request.reason}">
+                                                                <c:if test="${empty request.requestReason}">
                                                                     <span class="text-muted">Sin motivo</span>
                                                                 </c:if>
                                                             </td>

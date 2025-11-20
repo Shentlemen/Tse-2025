@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "access_requests")
 @NamedQueries({
-    @NamedQuery(name = "AccessRequest.findAll", query = "SELECT ar FROM AccessRequest ar"),
+    @NamedQuery(name = "AccessRequest.findAll", query = "SELECT ar FROM AccessRequest ar LEFT JOIN FETCH ar.patient"),
     @NamedQuery(name = "AccessRequest.findByProfessional", 
-                query = "SELECT ar FROM AccessRequest ar WHERE ar.professional.id = :professionalId ORDER BY ar.requestedAt DESC"),
+                query = "SELECT ar FROM AccessRequest ar LEFT JOIN FETCH ar.patient WHERE ar.professional.id = :professionalId ORDER BY ar.requestedAt DESC"),
     @NamedQuery(name = "AccessRequest.findByClinic", 
-                query = "SELECT ar FROM AccessRequest ar WHERE ar.clinic.id = :clinicId ORDER BY ar.requestedAt DESC"),
+                query = "SELECT ar FROM AccessRequest ar LEFT JOIN FETCH ar.patient WHERE ar.clinic.id = :clinicId ORDER BY ar.requestedAt DESC"),
     @NamedQuery(name = "AccessRequest.findByStatus", 
-                query = "SELECT ar FROM AccessRequest ar WHERE ar.status = :status ORDER BY ar.requestedAt DESC")
+                query = "SELECT ar FROM AccessRequest ar LEFT JOIN FETCH ar.patient WHERE ar.status = :status ORDER BY ar.requestedAt DESC")
 })
 public class AccessRequest {
     
@@ -76,6 +76,10 @@ public class AccessRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id")
+    private Patient patient; // Paciente local (opcional, puede ser null si es paciente externo)
     
     // Constructores
     public AccessRequest() {
@@ -204,6 +208,14 @@ public class AccessRequest {
     
     public void setClinic(Clinic clinic) {
         this.clinic = clinic;
+    }
+    
+    public Patient getPatient() {
+        return patient;
+    }
+    
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
     
     // Métodos de negocio

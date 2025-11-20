@@ -147,7 +147,7 @@ dependencies {
 
 flyway {
     // Database connection - use environment variables for production
-    url = System.getenv('FLYWAY_DB_URL') ?: 'jdbc:postgresql://localhost:5432/hcen'
+    url = System.getenv('FLYWAY_DB_URL') ?: 'jdbc:postgresql://localhost:5434/hcen'
     user = System.getenv('FLYWAY_DB_USER') ?: 'postgres'
     password = System.getenv('FLYWAY_DB_PASSWORD') ?: 'postgres'
     driver = 'org.postgresql.Driver'
