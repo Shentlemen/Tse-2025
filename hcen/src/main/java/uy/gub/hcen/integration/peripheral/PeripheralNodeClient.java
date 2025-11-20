@@ -1,6 +1,7 @@
 package uy.gub.hcen.integration.peripheral;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,6 +16,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uy.gub.hcen.integration.peripheral.dto.AccessRequestNotificationDTO;
 import uy.gub.hcen.service.clinic.dto.OnboardingRequest;
 
 import java.io.IOException;
@@ -94,7 +96,9 @@ public class PeripheralNodeClient {
                 .setDefaultRequestConfig(requestConfig)
                 .build();
 
+        // Configure ObjectMapper with Java 8 date/time support
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
 
         logger.info("Peripheral Node HTTP Client initialized successfully (connection timeout: {}s, read timeout: {}s)",
                 CONNECTION_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS);
@@ -358,6 +362,81 @@ public class PeripheralNodeClient {
     }
 
     // ================================================================
+    // Access Request Notification
+    // ================================================================
+
+    /**
+     * Notifies peripheral node (clinic) about patient's access request decision.
+     * <p>
+     * This method is called when a patient approves or denies an access request,
+     * allowing the clinic to notify the professional and update their local state.
+     * <p>
+     * Endpoint: POST {peripheralNodeUrl}/api/access-request-notifications
+     * <p>
+     * Example notification:
+     * <pre>
+     * {
+     *   "requestId": 123,
+     *   "professionalId": "prof-456",
+     *   "patientCi": "12345678",
+     *   "documentId": 789,
+     *   "decision": "APPROVED",
+     *   "decisionReason": "Patient approved access",
+     *   "decidedAt": "2025-11-20T14:30:00"
+     * }
+     * </pre>
+     *
+     * @param peripheralNodeUrl Peripheral node base URL (e.g., https://clinic-001.hcen.uy)
+     * @param notification      Access request notification with decision details
+     * @throws PeripheralNodeException if notification fails (logged but not thrown to avoid blocking approval/denial)
+     */
+    public void notifyAccessRequestDecision(String peripheralNodeUrl, AccessRequestNotificationDTO notification) {
+        logger.info("Notifying peripheral node about access request decision: {} for requestId: {}",
+                notification.getDecision(), notification.getRequestId());
+
+        try {
+            // Validate URL
+            validatePeripheralNodeUrl(peripheralNodeUrl);
+
+            // Build notification endpoint URL
+            String notificationUrl = buildNotificationUrl(peripheralNodeUrl);
+
+            // Serialize notification to JSON
+            String requestJson = objectMapper.writeValueAsString(notification);
+
+            // Create HTTP POST request
+            HttpPost httpPost = new HttpPost(notificationUrl);
+            httpPost.setEntity(new StringEntity(requestJson, ContentType.APPLICATION_JSON));
+            httpPost.setHeader("Content-Type", "application/json");
+            httpPost.setHeader("Accept", "application/json");
+
+            // Execute request (single attempt, no retries for notifications)
+            httpClient.execute(httpPost, response -> {
+                int statusCode = response.getCode();
+                String responseBody = EntityUtils.toString(response.getEntity());
+
+                logger.debug("Peripheral node notification response: status={}, body={}", statusCode, responseBody);
+
+                if (statusCode >= 200 && statusCode < 300) {
+                    logger.info("Peripheral node acknowledged decision notification for requestId: {}",
+                            notification.getRequestId());
+                } else {
+                    logger.warn("Peripheral node did not acknowledge notification: status={}, body={}",
+                            statusCode, responseBody);
+                }
+
+                return null;
+            });
+
+        } catch (Exception e) {
+            // Log error but don't throw - notification is best-effort
+            // We don't want to block approval/denial if clinic notification fails
+            logger.error("Failed to notify peripheral node about access request decision (requestId: {}): {}",
+                    notification.getRequestId(), e.getMessage(), e);
+        }
+    }
+
+    // ================================================================
     // Circuit Breaker Pattern
     // ================================================================
 
@@ -445,6 +524,21 @@ public class PeripheralNodeClient {
                 : peripheralNodeUrl;
 
         return baseUrl + "/api/onboard";
+    }
+
+    /**
+     * Builds access request notification endpoint URL
+     *
+     * @param peripheralNodeUrl Base URL
+     * @return Complete notification URL
+     */
+    private String buildNotificationUrl(String peripheralNodeUrl) {
+        // Remove trailing slash if present
+        String baseUrl = peripheralNodeUrl.endsWith("/")
+                ? peripheralNodeUrl.substring(0, peripheralNodeUrl.length() - 1)
+                : peripheralNodeUrl;
+
+        return baseUrl + "/api/access-request-notifications";
     }
 
     /**

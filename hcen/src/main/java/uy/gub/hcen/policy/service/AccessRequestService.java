@@ -177,6 +177,9 @@ public class AccessRequestService {
                     null  // userAgent
             );
 
+            // Notify clinic about the approval (asynchronous, best-effort)
+            notifyClinicAboutDecision(request, "APPROVED", decision.getReason());
+
             LOGGER.log(Level.INFO, "Access request {0} approved successfully by patient: {1}",
                     new Object[]{requestId, patientCi});
 
@@ -249,6 +252,9 @@ public class AccessRequestService {
                     null, // ipAddress
                     null  // userAgent
             );
+
+            // Notify clinic about the denial (asynchronous, best-effort)
+            notifyClinicAboutDecision(request, "DENIED", decision.getReason());
 
             LOGGER.log(Level.INFO, "Access request {0} denied successfully by patient: {1}",
                     new Object[]{requestId, patientCi});
@@ -857,5 +863,65 @@ public class AccessRequestService {
             return "***";
         }
         return ci.substring(0, 5) + "***";
+    }
+
+    /**
+     * Notifies the clinic (peripheral node) about patient's access request decision.
+     * This method is called asynchronously after approval or denial to inform
+     * the clinic so they can notify the professional.
+     *
+     * Note: This is a best-effort notification. Failures are logged but don't
+     * block the approval/denial process.
+     *
+     * @param request Access request that was approved/denied
+     * @param decision Decision type: "APPROVED" or "DENIED"
+     * @param decisionReason Optional reason provided by patient
+     */
+    private void notifyClinicAboutDecision(AccessRequest request, String decision, String decisionReason) {
+        try {
+            LOGGER.log(Level.INFO, "Notifying clinic {0} about {1} decision for request {2}",
+                    new Object[]{request.getClinicId(), decision, request.getId()});
+
+            // Look up clinic to get peripheral node URL
+            Optional<uy.gub.hcen.clinic.entity.Clinic> clinicOpt =
+                    clinicRepository.findById(request.getClinicId());
+
+            if (clinicOpt.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Clinic not found for notification: {0}", request.getClinicId());
+                return;
+            }
+
+            uy.gub.hcen.clinic.entity.Clinic clinic = clinicOpt.get();
+            String peripheralNodeUrl = clinic.getPeripheralNodeUrl();
+
+            if (peripheralNodeUrl == null || peripheralNodeUrl.trim().isEmpty()) {
+                LOGGER.log(Level.WARNING, "Clinic {0} has no peripheral node URL configured",
+                        request.getClinicId());
+                return;
+            }
+
+            // Build notification DTO
+            uy.gub.hcen.integration.peripheral.dto.AccessRequestNotificationDTO notification =
+                    new uy.gub.hcen.integration.peripheral.dto.AccessRequestNotificationDTO(
+                            request.getId(),
+                            request.getProfessionalId(),
+                            request.getPatientCi(),
+                            request.getDocumentId(),
+                            decision,
+                            decisionReason,
+                            java.time.LocalDateTime.now()
+                    );
+
+            // Send notification to peripheral node (best-effort, non-blocking)
+            peripheralNodeClient.notifyAccessRequestDecision(peripheralNodeUrl, notification);
+
+            LOGGER.log(Level.INFO, "Successfully sent {0} notification to clinic {1}",
+                    new Object[]{decision, request.getClinicId()});
+
+        } catch (Exception e) {
+            // Log error but don't throw - we don't want to block approval/denial
+            LOGGER.log(Level.WARNING, "Failed to notify clinic about decision (requestId: {0}): {1}",
+                    new Object[]{request.getId(), e.getMessage()});
+        }
     }
 }

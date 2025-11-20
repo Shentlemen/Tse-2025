@@ -225,8 +225,7 @@ public class AccessRequestService {
         if (request == null) {
             throw new IllegalArgumentException("Access request not found: " + id);
         }
-        
-        request.setStatus(status);
+
         request.setRespondedAt(LocalDateTime.now());
         
         if ("APPROVED".equals(status)) {

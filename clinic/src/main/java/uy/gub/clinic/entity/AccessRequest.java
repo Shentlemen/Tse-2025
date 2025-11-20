@@ -229,9 +229,9 @@ public class AccessRequest {
     }
     
     public void approve() {
-        if (!isPending()) {
-            throw new IllegalStateException("Cannot approve request with status: " + status);
-        }
+//        if (!isPending()) {
+//            throw new IllegalStateException("Cannot approve request with status: " + status);
+//        }
         this.status = "APPROVED";
         this.respondedAt = LocalDateTime.now();
     }

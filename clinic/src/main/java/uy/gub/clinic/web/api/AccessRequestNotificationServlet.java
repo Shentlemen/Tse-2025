@@ -26,12 +26,15 @@ import java.util.Optional;
 
 /**
  * Servlet REST para recibir notificaciones del HCEN cuando se aprueban/deniegan access requests
- * 
- * Endpoint: POST /api/clinic/access-requests/notifications
- * 
+ *
+ * Endpoint: POST /api/access-request-notifications
+ *
+ * This endpoint receives notifications from HCEN Central when a patient approves or denies
+ * an access request. The clinic then updates the local request status and can notify the professional.
+ *
  * @author TSE 2025 Group 9
  */
-@WebServlet("/api/clinic/access-requests/notifications")
+@WebServlet("/api/access-request-notifications")
 public class AccessRequestNotificationServlet extends HttpServlet {
     
     private static final Logger logger = LoggerFactory.getLogger(AccessRequestNotificationServlet.class);
