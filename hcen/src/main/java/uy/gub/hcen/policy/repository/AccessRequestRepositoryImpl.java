@@ -107,12 +107,17 @@ public class AccessRequestRepositoryImpl implements AccessRequestRepository {
     @Override
     public List<AccessRequest> findByPatientCiAndStatus(String patientCi, RequestStatus status, int page, int size) {
         try {
+            LocalDateTime now = LocalDateTime.now();
+
+            // Query to exclude expired requests: only return requests where expiresAt > now
+            // This means LocalDateTime.now().isAfter(expiresAt) is false (not expired)
             TypedQuery<AccessRequest> query = entityManager.createQuery(
-                    "SELECT r FROM AccessRequest r WHERE r.patientCi = :patientCi AND r.status = :status ORDER BY r.requestedAt DESC",
+                    "SELECT r FROM AccessRequest r WHERE r.patientCi = :patientCi AND r.status = :status AND r.expiresAt > :now ORDER BY r.requestedAt DESC",
                     AccessRequest.class
             );
             query.setParameter("patientCi", patientCi);
             query.setParameter("status", status);
+            query.setParameter("now", now);
             query.setFirstResult(page * size);
             query.setMaxResults(size);
 

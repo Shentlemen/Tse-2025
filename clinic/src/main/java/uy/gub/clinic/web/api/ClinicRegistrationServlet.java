@@ -192,6 +192,7 @@ public class ClinicRegistrationServlet extends HttpServlet {
         clinic.setHcenJmsUrl(request.getHcenJmsUrl());
         clinic.setApiKey(request.getApiKey());
         clinic.setActive(request.getActive() != null ? request.getActive() : true);
+        clinic.setHcenEndpoint(apiConfigService.getHcenUrl());
 
         return clinic;
     }

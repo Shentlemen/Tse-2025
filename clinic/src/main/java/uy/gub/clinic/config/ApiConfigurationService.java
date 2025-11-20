@@ -36,6 +36,7 @@ public class ApiConfigurationService {
     private static final String CONFIG_FILE = "api-config.properties";
     private static final String API_KEY_PROPERTY = "api.key";
     private static final String API_AUTH_ENABLED_PROPERTY = "api.auth.enabled";
+    private static final String HCEN_URL="api.hcen.url";
 
     private Properties properties;
     private long lastModified;
@@ -110,6 +111,16 @@ public class ApiConfigurationService {
     public String getApiKey() {
         reloadIfModified();
         return properties.getProperty(API_KEY_PROPERTY);
+    }
+
+    /**
+     * Get the configured HCEN URL
+     *
+     * @return URL where the HCEN is located
+     */
+    public String getHcenUrl() {
+        reloadIfModified();
+        return properties.getProperty(HCEN_URL);
     }
 
     /**

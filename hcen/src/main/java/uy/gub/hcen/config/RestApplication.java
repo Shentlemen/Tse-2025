@@ -30,6 +30,10 @@ public class RestApplication extends Application {
         resources.add(uy.gub.hcen.admin.rest.StatisticsResource.class);
         resources.add(uy.gub.hcen.patient.api.rest.PatientStatisticsResource.class);
 
+        // Register authentication filters
+        resources.add(uy.gub.hcen.auth.filter.JwtAuthenticationFilter.class);
+        resources.add(uy.gub.hcen.auth.filter.ClinicApiKeyAuthenticationFilter.class);
+
         return resources;
     }
 }

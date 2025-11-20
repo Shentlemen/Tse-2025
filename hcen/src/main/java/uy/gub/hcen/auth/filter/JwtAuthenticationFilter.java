@@ -60,14 +60,25 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) {
         String path = requestContext.getUriInfo().getPath();
 
+        logger.info("=== JwtAuthenticationFilter RUNNING for path: {}", path);
+
         // Skip authentication for public endpoints
         if (isPublicEndpoint(path)) {
-            logger.debug("Skipping authentication for public endpoint: {}", path);
+            logger.info("Skipping authentication for public endpoint: {}", path);
+            return;
+        }
+
+        // Check if this is a clinic API key request (has X-Clinic-Id header)
+        // If so, let ClinicApiKeyAuthenticationFilter handle it
+        String clinicIdHeader = requestContext.getHeaderString("X-Clinic-Id");
+        if (clinicIdHeader != null && !clinicIdHeader.trim().isEmpty()) {
+            logger.info("Skipping JWT authentication for clinic API key request: {}", path);
             return;
         }
 
         // Extract Authorization header
         String authHeader = requestContext.getHeaderString("Authorization");
+        logger.info("Authorization header: {}", authHeader != null ? "Present (Bearer: " + authHeader.startsWith("Bearer ") + ")" : "NULL");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.warn("Missing or invalid Authorization header for path: {}", path);
@@ -77,10 +88,12 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
 
         // Extract token
         String token = authHeader.substring(7); // Remove "Bearer " prefix
+        logger.info("Extracted token (first 20 chars): {}", token.substring(0, Math.min(20, token.length())));
 
         try {
             // Validate token
             Map<String, Object> claims = jwtService.validateToken(token);
+            logger.info("Token validated successfully. Claims: {}", claims);
 
             // Check if token is blacklisted
             if (isTokenBlacklisted(token)) {
@@ -92,15 +105,15 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
             // Extract user info
             String userCi = (String) claims.get("sub");
             String role = (String) claims.get("role");
+            logger.info("Extracted user info - CI: {}, Role: {}", userCi, role);
 
             // Set security context
             SecurityContext securityContext = new JwtSecurityContext(userCi, role);
             requestContext.setSecurityContext(securityContext);
-
-            logger.debug("Authentication successful for user: {}", userCi);
+            logger.info("SecurityContext set successfully. Principal: {}", securityContext.getUserPrincipal().getName());
 
         } catch (Exception e) {
-            logger.warn("Token validation failed: {}", e.getMessage());
+            logger.error("Token validation failed", e);
             abortWithUnauthorized(requestContext, "Invalid or expired token");
         }
     }
@@ -108,14 +121,23 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
     /**
      * Checks if endpoint is public (doesn't require authentication)
      *
-     * @param path Request path
+     * @param path Request path (relative to /api base path)
      * @return true if public, false otherwise
      */
     private boolean isPublicEndpoint(String path) {
-        return path.startsWith("auth/login") ||
-               path.startsWith("auth/callback") ||
-               path.equals("health") ||
-               path.startsWith("api/health");
+        // Auth endpoints (login, callback, etc.)
+        if (path.startsWith("/auth/login") ||
+            path.startsWith("/auth/callback") ||
+            path.startsWith("/auth/token/refresh")) {
+            return true;
+        }
+
+        // Health check endpoints
+        if (path.equals("health") || path.startsWith("health/")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

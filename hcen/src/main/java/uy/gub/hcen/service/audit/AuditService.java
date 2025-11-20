@@ -413,7 +413,7 @@ public class AuditService {
         details.put("professionalId", professionalId);
 
         logEvent(EventType.ACCESS_APPROVAL, patientCi, "PATIENT", "DOCUMENT",
-                documentId.toString(), ActionOutcome.SUCCESS, ipAddress, userAgent, details);
+                documentId == null ? null : documentId.toString(), ActionOutcome.SUCCESS, ipAddress, userAgent, details);
     }
 
     /**

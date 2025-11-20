@@ -1,0 +1,1 @@
+ALTER TABLE access_requests ALTER COLUMN patient_id DROP NOT NULL;

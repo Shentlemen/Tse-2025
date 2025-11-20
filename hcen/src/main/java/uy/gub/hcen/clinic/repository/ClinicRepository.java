@@ -129,4 +129,15 @@ public interface ClinicRepository {
      * @throws IllegalArgumentException if status is null
      */
     long countByStatus(ClinicStatus status);
+
+    /**
+     * Finds a clinic by its ID and validates the API key
+     * Used for API key authentication from peripheral nodes
+     *
+     * @param clinicId Unique clinic ID
+     * @param apiKey API key to validate
+     * @return Optional containing the clinic if found and API key matches, empty otherwise
+     * @throws IllegalArgumentException if clinicId or apiKey is null or empty
+     */
+    Optional<Clinic> findByIdAndApiKey(String clinicId, String apiKey);
 }

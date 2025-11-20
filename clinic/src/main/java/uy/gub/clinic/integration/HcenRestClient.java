@@ -61,13 +61,14 @@ public class HcenRestClient {
                 endpoint, request.getProfessionalId(), request.getPatientCi());
             
             // Construir API key en formato base64(clinicId:apiKey)
-            String authValue = clinicId + ":" + (apiKey != null ? apiKey : "");
-            String apiKeyHeader = Base64.getEncoder().encodeToString(authValue.getBytes());
+//            String authValue = clinicId + ":" + (apiKey != null ? apiKey : "");
+//            String apiKeyHeader = Base64.getEncoder().encodeToString(authValue.getBytes());
             
             // Realizar petición POST
             Response response = httpClient.target(endpoint)
                 .request(MediaType.APPLICATION_JSON)
-                .header("Authorization", "ApiKey " + apiKeyHeader)
+                .header("X-API-Key",  apiKey)
+                    .header("X-Clinic-Id", clinicId)
                 .post(Entity.entity(request, MediaType.APPLICATION_JSON));
             
             // Procesar respuesta

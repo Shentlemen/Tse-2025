@@ -8,6 +8,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import uy.gub.hcen.api.dto.ErrorResponse;
+import uy.gub.hcen.clinic.entity.Clinic;
+import uy.gub.hcen.clinic.repository.ClinicRepository;
 import uy.gub.hcen.policy.dto.*;
 import uy.gub.hcen.policy.entity.AccessRequest.RequestStatus;
 import uy.gub.hcen.policy.service.AccessRequestService;
@@ -55,6 +57,9 @@ public class AccessRequestResource {
 
     @Inject
     private AccessRequestService accessRequestService;
+
+    @Inject
+    private ClinicRepository clinicRepository;
 
     // ================================================================
     // GET /api/access-requests - Get Access Requests
@@ -166,26 +171,26 @@ public class AccessRequestResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createAccessRequest(
             @Valid AccessRequestCreationDTO request,
+            @HeaderParam("X-Clinic-Id") String clinicId,
             @Context SecurityContext securityContext) {
 
-        LOGGER.log(Level.INFO, "POST create access request: professional={0}, patient={1}",
-                new Object[]{request.getProfessionalId(), request.getPatientCi()});
+        LOGGER.log(Level.INFO, "POST create access request: professional={0}, patient={1}, clinic={2}",
+                new Object[]{request.getProfessionalId(), request.getPatientCi(), clinicId});
 
         try {
-            // Extract clinic ID from SecurityContext (set by API key authentication filter)
-            // For MVP, we'll use a simple approach - the clinic ID comes from the authenticated principal
-            String clinicId = securityContext.getUserPrincipal() != null ?
-                    securityContext.getUserPrincipal().getName() : null;
+            // Validate clinic ID header is present
+            // Note: ClinicApiKeyAuthenticationFilter validates X-Clinic-Id and X-API-Key
+//            if (clinicId == null || clinicId.trim().isEmpty()) {
+//                return Response.status(Response.Status.UNAUTHORIZED)
+//                        .entity(ErrorResponse.unauthorized("Missing X-Clinic-Id header"))
+//                        .build();
+//            }
 
-            if (clinicId == null) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(ErrorResponse.unauthorized("Clinic authentication required"))
-                        .build();
-            }
-
-            // TODO: Look up clinic name from clinic registry
-            // For now, use clinic ID as name
-            String clinicName = "Clinic " + clinicId;
+            // Look up clinic name from clinic registry
+            // The clinic is guaranteed to exist and be ACTIVE by ClinicApiKeyAuthenticationFilter
+            String clinicName = clinicRepository.findById(clinicId)
+                    .map(Clinic::getClinicName)
+                    .orElse("Clinic " + clinicId);
 
             // Create access request
             AccessRequestCreationResponseDTO response =
@@ -248,6 +253,10 @@ public class AccessRequestResource {
             @Context SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "POST approve request: {0}", requestId);
+        LOGGER.log(Level.INFO, "SecurityContext type: {0}", securityContext.getClass().getName());
+        LOGGER.log(Level.INFO, "UserPrincipal: {0}", securityContext.getUserPrincipal());
+        LOGGER.log(Level.INFO, "UserPrincipal name: {0}",
+            securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName() : "NULL");
 
         try {
             // Extract patient CI from SecurityContext (set by JwtAuthenticationFilter)
@@ -255,10 +264,13 @@ public class AccessRequestResource {
                     securityContext.getUserPrincipal().getName() : null;
 
             if (patientCi == null) {
+                LOGGER.log(Level.SEVERE, "Patient CI is NULL! SecurityContext: {0}", securityContext);
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(ErrorResponse.unauthorized("Authentication required"))
                         .build();
             }
+
+            LOGGER.log(Level.INFO, "Extracted patient CI: {0}", patientCi);
 
             String message = accessRequestService.approveRequest(requestId, patientCi, decision);
 

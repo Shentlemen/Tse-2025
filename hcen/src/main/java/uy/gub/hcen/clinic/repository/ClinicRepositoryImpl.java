@@ -250,4 +250,35 @@ public class ClinicRepositoryImpl implements ClinicRepository {
             return 0;
         }
     }
+
+    @Override
+    public Optional<Clinic> findByIdAndApiKey(String clinicId, String apiKey) {
+        if (clinicId == null || clinicId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Clinic ID cannot be null or empty");
+        }
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            throw new IllegalArgumentException("API key cannot be null or empty");
+        }
+
+        try {
+            TypedQuery<Clinic> query = entityManager.createQuery(
+                    "SELECT c FROM Clinic c WHERE c.clinicId = :clinicId AND c.apiKey = :apiKey",
+                    Clinic.class
+            );
+            query.setParameter("clinicId", clinicId);
+            query.setParameter("apiKey", apiKey);
+
+            List<Clinic> results = query.getResultList();
+            if (results.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Clinic not found or API key mismatch for clinic ID: {0}", clinicId);
+                return Optional.empty();
+            }
+
+            LOGGER.log(Level.INFO, "Successfully authenticated clinic: {0}", clinicId);
+            return Optional.of(results.get(0));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding clinic by ID and API key: " + clinicId, e);
+            return Optional.empty();
+        }
+    }
 }
