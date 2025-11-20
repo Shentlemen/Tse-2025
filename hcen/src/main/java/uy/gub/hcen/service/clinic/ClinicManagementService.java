@@ -66,10 +66,10 @@ public class ClinicManagementService {
     private static final Logger logger = LoggerFactory.getLogger(ClinicManagementService.class);
 
     /**
-     * HCEN Central API base URL (from configuration)
-     * TODO: Read from application.properties
+     * HCEN Configuration (for accessing HCEN API URL)
      */
-    private static final String HCEN_CENTRAL_URL = "https://hcen.uy/api";
+    @Inject
+    private uy.gub.hcen.config.HcenConfiguration hcenConfiguration;
 
     /**
      * Secure random generator for API key generation
@@ -556,7 +556,7 @@ public class ClinicManagementService {
         return new OnboardingRequest(
                 clinic.getClinicId(),
                 clinic.getApiKey(),
-                HCEN_CENTRAL_URL,
+                hcenConfiguration.getHcenApiUrl(),
                 config
         );
     }
@@ -659,7 +659,7 @@ public class ClinicManagementService {
                 clinic.getAddress(),            // address
                 clinic.getPhoneNumber(),        // phone
                 clinic.getEmail(),              // email
-                HCEN_CENTRAL_URL,               // hcen_endpoint (same for all clinics)
+                hcenConfiguration.getHcenApiUrl(), // hcen_endpoint (from configuration)
                 true,                            // active
                 clinic.getApiKey()              //apiKey
         );
