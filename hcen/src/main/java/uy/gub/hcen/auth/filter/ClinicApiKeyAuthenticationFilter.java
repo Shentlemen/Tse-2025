@@ -29,17 +29,23 @@ import java.util.logging.Logger;
  * - Set SecurityContext with clinic ID as principal
  * - Abort request with 401/403 if authentication fails
  *
+ * Authentication Modes:
+ * - Required: Endpoints that strictly require clinic authentication (e.g., /api/access-requests)
+ * - Optional: Endpoints that accept both clinic and patient authentication (e.g., /api/clinical-history)
+ *   - If clinic headers present → validate and set SecurityContext
+ *   - If clinic headers absent → skip (allow other auth mechanisms like JWT)
+ *
  * Protected Endpoints:
- * - POST /api/access-requests (clinic creates access request)
- * - GET /api/access-requests/{requestId}/approved-document (professional retrieves document)
- * - Any other clinic-to-central communication
+ * - POST /api/access-requests (clinic creates access request) - REQUIRED
+ * - GET /api/access-requests/{requestId}/approved-document (professional retrieves document) - REQUIRED
+ * - GET /api/clinical-history (clinic accesses patient metadata) - OPTIONAL
  *
  * Header Format:
  * - X-Clinic-Id: clinic-001
  * - X-API-Key: abc123xyz456...
  *
  * @author TSE 2025 Group 9
- * @version 1.0
+ * @version 1.1
  * @since 2025-11-20
  */
 @Provider
@@ -71,29 +77,31 @@ public class ClinicApiKeyAuthenticationFilter implements ContainerRequestFilter 
             return;
         }
 
-        // Only apply this filter to clinic-related endpoints
-        if (!requiresClinicAuthentication(path)) {
-            LOGGER.log(Level.FINE, "Skipping clinic API key authentication for path: {0}", path);
-            return;
-        }
-
         // Extract headers
         String clinicId = requestContext.getHeaderString(CLINIC_ID_HEADER);
         String apiKey = requestContext.getHeaderString(API_KEY_HEADER);
 
-        // Validate headers are present
-        if (clinicId == null || clinicId.trim().isEmpty()) {
-            LOGGER.log(Level.WARNING, "Missing {0} header for path: {1}", new Object[]{CLINIC_ID_HEADER, path});
-            abortWithUnauthorized(requestContext, "Missing " + CLINIC_ID_HEADER + " header");
+        // Check if this endpoint strictly requires clinic authentication
+        boolean requiresAuth = requiresClinicAuthentication(path);
+
+        // Check if clinic headers are present (optional authentication mode)
+        boolean hasClinicHeaders = (clinicId != null && !clinicId.trim().isEmpty())
+                && (apiKey != null && !apiKey.trim().isEmpty());
+
+        // If endpoint requires auth but headers are missing, abort
+        if (requiresAuth && !hasClinicHeaders) {
+            LOGGER.log(Level.WARNING, "Missing clinic authentication headers for protected path: {0}", path);
+            abortWithUnauthorized(requestContext, "Missing clinic authentication headers");
             return;
         }
 
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            LOGGER.log(Level.WARNING, "Missing {0} header for path: {1}", new Object[]{API_KEY_HEADER, path});
-            abortWithUnauthorized(requestContext, "Missing " + API_KEY_HEADER + " header");
+        // If no clinic headers present and not required, skip
+        if (!hasClinicHeaders) {
+            LOGGER.log(Level.FINE, "No clinic headers present for path: {0}, skipping", path);
             return;
         }
 
+        // Clinic headers are present - validate them
         try {
             // Validate clinic ID and API key
             Optional<Clinic> clinicOpt = clinicRepository.findByIdAndApiKey(clinicId, apiKey);

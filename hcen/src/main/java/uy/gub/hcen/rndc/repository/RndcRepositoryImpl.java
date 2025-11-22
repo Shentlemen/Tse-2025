@@ -317,6 +317,11 @@ public class RndcRepositoryImpl implements RndcRepository {
 
             // Add predicates for each non-null parameter
             if (patientCi != null && !patientCi.trim().isEmpty()) {
+
+                if(!patientCi.startsWith("uy-ci-")){
+                    patientCi = "uy-ci-" + patientCi ;
+                }
+
                 predicates.add(cb.equal(document.get("patientCi"), patientCi));
             }
 

@@ -86,6 +86,7 @@ public class ClinicalHistoryService {
      * @param clinicId Optional clinic filter
      * @param page Page number (0-indexed)
      * @param size Page size
+     * @param requestingClinicId Optional clinic ID from security context (for filtering out clinic's own documents)
      * @return Paginated document list response
      */
     public PaginatedDocumentListResponse getClinicalHistory(
@@ -95,10 +96,11 @@ public class ClinicalHistoryService {
             LocalDateTime toDate,
             String clinicId,
             int page,
-            int size) {
+            int size,
+            String requestingClinicId) {
 
-        LOGGER.log(Level.INFO, "Fetching clinical history for patient: {0}, page: {1}, size: {2}",
-                new Object[]{patientCi, page, size});
+        LOGGER.log(Level.INFO, "Fetching clinical history for patient: {0}, page: {1}, size: {2}, requestingClinicId: {3}",
+                new Object[]{patientCi, page, size, requestingClinicId});
 
         try {
             // Fetch documents from RNDC with filters
@@ -113,14 +115,37 @@ public class ClinicalHistoryService {
                     size
             );
 
+            // Filter out documents from requesting clinic if applicable
+            // Flow 1: Patient accessing their own history -> requestingClinicId is null -> show all documents
+            // Flow 2: Clinic accessing patient metadata -> requestingClinicId is set -> filter out clinic's own documents
+            List<RndcDocument> filteredDocuments = documents;
+            if (requestingClinicId != null && !requestingClinicId.trim().isEmpty()) {
+                LOGGER.log(Level.INFO, "Filtering out documents from requesting clinic: {0}", requestingClinicId);
+                filteredDocuments = documents.stream()
+                        .filter(doc -> !requestingClinicId.equals(doc.getClinicId()))
+                        .collect(Collectors.toList());
+                LOGGER.log(Level.INFO, "Filtered from {0} to {1} documents after excluding clinic''s own documents",
+                        new Object[]{documents.size(), filteredDocuments.size()});
+            }
+
             // Convert to DTOs with clinic name enrichment
-            List<DocumentListItemDTO> documentDTOs = documents.stream()
+            List<DocumentListItemDTO> documentDTOs = filteredDocuments.stream()
                     .map(doc -> enrichDocumentWithClinicName(doc))
                     .collect(Collectors.toList());
 
             // Get total count (without pagination)
             // Note: This is inefficient - ideally RNDC repository should have a count method with filters
             long totalCount = rndcRepository.countByPatientCiAndStatus(patientCi, DocumentStatus.ACTIVE);
+
+            // Adjust total count if filtering by requesting clinic
+            if (requestingClinicId != null && !requestingClinicId.trim().isEmpty()) {
+                // Recalculate total count excluding requesting clinic's documents
+                List<RndcDocument> allDocuments = rndcRepository.findByPatientCiAndStatus(
+                        patientCi, DocumentStatus.ACTIVE, 0, Integer.MAX_VALUE);
+                totalCount = allDocuments.stream()
+                        .filter(doc -> !requestingClinicId.equals(doc.getClinicId()))
+                        .count();
+            }
 
             LOGGER.log(Level.INFO, "Found {0} documents for patient: {1} (total: {2})",
                     new Object[]{documentDTOs.size(), patientCi, totalCount});

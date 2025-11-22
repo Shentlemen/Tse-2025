@@ -5,14 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: audit entry, accept request and jwt validation">
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/entity/AccessRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/entity/AccessRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/AccessRequestNotificationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/AccessRequestNotificationRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/AccessRequestNotificationServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/AccessRequestNotificationServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentListItemDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentListItemDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/wildfly-datasource.cli" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/wildfly-datasource.cli" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/repository/RndcRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/repository/RndcRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -434,7 +443,7 @@
       <workItem from="1762299823812" duration="30746000" />
       <workItem from="1763003396511" duration="33974000" />
       <workItem from="1763416028699" duration="81659000" />
-      <workItem from="1763671489670" duration="11174000" />
+      <workItem from="1763671489670" duration="18582000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -899,12 +908,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>374</line>
+          <line>399</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>348</line>
+          <line>373</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -946,6 +955,21 @@
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
           <line>294</line>
           <option name="timeStamp" value="67" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java</url>
+          <line>73</line>
+          <option name="timeStamp" value="69" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java</url>
+          <line>141</line>
+          <option name="timeStamp" value="73" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/api/rest/ClinicResource.java</url>
+          <line>333</line>
+          <option name="timeStamp" value="74" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

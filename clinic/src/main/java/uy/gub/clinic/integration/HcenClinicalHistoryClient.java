@@ -18,7 +18,6 @@ import uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO;
 import uy.gub.clinic.integration.dto.hcen.HcenPaginatedDocumentListResponse;
 
 import java.io.InputStream;
-import java.util.Base64;
 import java.util.Optional;
 
 /**
@@ -170,12 +169,10 @@ public class HcenClinicalHistoryClient {
     }
 
     private Invocation.Builder prepareAuthorizedRequest(WebTarget target, String clinicId, String apiKey) {
-        String authValue = clinicId + ":" + (apiKey != null ? apiKey : "");
-        String apiKeyHeader = Base64.getEncoder().encodeToString(authValue.getBytes());
-
         return target
                 .request()
-                .header("Authorization", "ApiKey " + apiKeyHeader);
+                .header("X-Clinic-Id", clinicId)
+                .header("X-API-Key", apiKey != null ? apiKey : "");
     }
 
     private String buildBaseUrl(String baseUrl) {

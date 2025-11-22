@@ -61,7 +61,7 @@ createdb -U postgres -h localhost -p 5432 clinic_db
     <driver>postgresql</driver>
     <security>
         <user-name>postgres</user-name>
-        <password>sora</password>
+        <password>postgres</password>
     </security>
 </datasource>
 ```

@@ -242,8 +242,8 @@ public class ClinicManagementService {
      * Find clinics by status with pagination
      *
      * @param status Clinic status
-     * @param page Page number
-     * @param size Page size
+     * @param page   Page number
+     * @param size   Page size
      * @return Paginated list of clinics
      */
     public ClinicListResponse findClinicsByStatus(ClinicStatus status, int page, int size) {
@@ -289,7 +289,7 @@ public class ClinicManagementService {
      * Update clinic information
      *
      * @param clinicId Clinic ID
-     * @param request Update request
+     * @param request  Update request
      * @return Updated clinic response
      * @throws ClinicNotFoundException if clinic not found
      */
@@ -441,7 +441,7 @@ public class ClinicManagementService {
      * @param clinicId Clinic ID to onboard
      * @return Onboarding response with status
      * @throws ClinicNotFoundException if clinic not found
-     * @throws OnboardingException if onboarding fails (network, peripheral node error, etc.)
+     * @throws OnboardingException     if onboarding fails (network, peripheral node error, etc.)
      */
     public OnboardingResponse onboardClinic(String clinicId) throws ClinicNotFoundException, OnboardingException {
         logger.info("Starting onboarding process for clinic: {}", clinicId);
@@ -468,73 +468,52 @@ public class ClinicManagementService {
         }
 
         try {
-            // Build onboarding request
-            OnboardingRequest onboardingRequest = buildOnboardingRequest(clinic);
+            // Activate clinic (sets status to ACTIVE and onboardedAt timestamp)
+            clinic.activate();
+            clinicRepository.update(clinic);
 
-            // Send onboarding request to peripheral node (AC016)
-            boolean peripheralConfirmed = peripheralNodeClient.sendOnboardingData(
-                    clinic.getPeripheralNodeUrl(),
-                    onboardingRequest
+            logger.info("Successfully onboarded clinic: {}", clinicId);
+
+            // Log onboarding event in audit trail
+            auditService.logEvent(
+                    EventType.MODIFICATION,
+                    "ADMIN", // TODO: Get from security context
+                    "ADMIN",
+                    "CLINIC",
+                    clinicId,
+                    ActionOutcome.SUCCESS,
+                    null,
+                    null,
+                    java.util.Map.of(
+                            "action", "CLINIC_ONBOARDING",
+                            "peripheralNodeUrl", clinic.getPeripheralNodeUrl(),
+                            "onboardedAt", LocalDateTime.now().toString()
+                    )
             );
 
-            if (peripheralConfirmed) {
-                // Activate clinic (sets status to ACTIVE and onboardedAt timestamp)
-                clinic.activate();
-                clinicRepository.update(clinic);
+            return new OnboardingResponse(
+                    clinicId,
+                    clinic.getClinicName(),
+                    "SUCCESS",
+                    "Clinic successfully onboarded to peripheral node",
+                    true
+            );
 
-                logger.info("Successfully onboarded clinic: {}", clinicId);
-
-                // Log onboarding event in audit trail
-                auditService.logEvent(
-                        EventType.MODIFICATION,
-                        "ADMIN", // TODO: Get from security context
-                        "ADMIN",
-                        "CLINIC",
-                        clinicId,
-                        ActionOutcome.SUCCESS,
-                        null,
-                        null,
-                        java.util.Map.of(
-                                "action", "CLINIC_ONBOARDING",
-                                "peripheralNodeUrl", clinic.getPeripheralNodeUrl(),
-                                "onboardedAt", LocalDateTime.now().toString()
-                        )
-                );
-
-                return new OnboardingResponse(
-                        clinicId,
-                        clinic.getClinicName(),
-                        "SUCCESS",
-                        "Clinic successfully onboarded to peripheral node",
-                        true
-                );
-            } else {
-                logger.error("Peripheral node did not confirm onboarding for clinic: {}", clinicId);
-
-                // Log failed onboarding
-                auditService.logEvent(
-                        EventType.MODIFICATION,
-                        "ADMIN",
-                        "ADMIN",
-                        "CLINIC",
-                        clinicId,
-                        ActionOutcome.FAILURE,
-                        null,
-                        null,
-                        java.util.Map.of("action", "CLINIC_ONBOARDING_FAILED")
-                );
-
-                throw new OnboardingException("Peripheral node did not confirm successful onboarding");
-            }
-
-        } catch (PeripheralNodeException e) {
-            logger.error("Peripheral node communication failed for clinic: {}", clinicId, e);
-            throw new OnboardingException("Failed to communicate with peripheral node: " + e.getMessage(), e);
-        } catch (OnboardingException e) {
-            throw e;
         } catch (Exception e) {
-            logger.error("Failed to onboard clinic: {}", clinicId, e);
-            throw new OnboardingException("Failed to onboard clinic: " + e.getMessage(), e);
+            // Log failed onboarding
+            auditService.logEvent(
+                    EventType.MODIFICATION,
+                    "ADMIN",
+                    "ADMIN",
+                    "CLINIC",
+                    clinicId,
+                    ActionOutcome.FAILURE,
+                    null,
+                    null,
+                    java.util.Map.of("action", "CLINIC_ONBOARDING_FAILED")
+            );
+
+            throw new OnboardingException("Peripheral node did not confirm successful onboarding");
         }
     }
 

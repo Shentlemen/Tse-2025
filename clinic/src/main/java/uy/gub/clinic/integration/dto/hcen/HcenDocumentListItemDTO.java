@@ -25,6 +25,7 @@ public class HcenDocumentListItemDTO {
     private String status;
     private boolean hasContent;
     private String documentHash;
+    private String previewUrl;
 
     public Long getId() {
         return id;
@@ -122,6 +123,14 @@ public class HcenDocumentListItemDTO {
 
     public void setDocumentHash(String documentHash) {
         this.documentHash = documentHash;
+    }
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
     }
 }
 

@@ -90,6 +90,13 @@ public class ClinicalHistoryResource {
      *   <li>Clinic (clinicId query param)</li>
      * </ul>
      *
+     * <p>Flow Variants:
+     * <ul>
+     *   <li><b>Flow 1 - Patient accessing own history:</b> No X-Clinic-Id header. Returns ALL documents.</li>
+     *   <li><b>Flow 2 - Clinic accessing patient metadata:</b> X-Clinic-Id header present. Filters out documents
+     *       from the requesting clinic (clinic already has these locally).</li>
+     * </ul>
+     *
      * <p>Example:
      * GET /api/clinical-history?patientCi=12345678&documentType=LAB_RESULT&page=0&size=20
      *
@@ -100,6 +107,7 @@ public class ClinicalHistoryResource {
      * @param clinicId Optional clinic filter
      * @param page Page number (0-indexed, default: 0)
      * @param size Page size (default: 20, max: 100)
+     * @param securityContext Security context (injected by JAX-RS, contains clinic ID if present)
      * @return 200 OK with PaginatedDocumentListResponse
      *         400 Bad Request if parameters are invalid
      *         500 Internal Server Error if operation fails
@@ -113,7 +121,8 @@ public class ClinicalHistoryResource {
             @QueryParam("toDate") String toDate,
             @QueryParam("clinicId") String clinicId,
             @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size) {
+            @QueryParam("size") @DefaultValue("20") int size,
+            @Context jakarta.ws.rs.core.SecurityContext securityContext) {
 
         LOGGER.log(Level.INFO, "GET /api/clinical-history - patientCi: {0}, type: {1}, page: {2}, size: {3}",
                 new Object[]{patientCi, documentType, page, size});
@@ -125,6 +134,18 @@ public class ClinicalHistoryResource {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(ErrorResponse.validationError("Patient CI is required"))
                         .build();
+            }
+
+            // Extract requesting clinic ID from security context (if present)
+            // Flow 1: Patient accessing their own history -> no clinic ID in context
+            // Flow 2: Clinic accessing patient metadata -> clinic ID present in context
+            String requestingClinicId = null;
+            if (securityContext != null && securityContext.getUserPrincipal() != null) {
+                // Check if this is a clinic request (clinic API key authentication)
+                if (securityContext.isUserInRole("CLINIC")) {
+                    requestingClinicId = securityContext.getUserPrincipal().getName();
+                    LOGGER.log(Level.INFO, "Clinic request detected - requestingClinicId: {0}", requestingClinicId);
+                }
             }
 
             // TODO: Extract patientCi from JWT SecurityContext instead of query param
@@ -192,7 +213,7 @@ public class ClinicalHistoryResource {
                         .build();
             }
 
-            // Call service
+            // Call service with requesting clinic ID
             PaginatedDocumentListResponse response = clinicalHistoryService.getClinicalHistory(
                     patientCi,
                     docType,
@@ -200,7 +221,8 @@ public class ClinicalHistoryResource {
                     to,
                     clinicId,
                     page,
-                    size
+                    size,
+                    requestingClinicId
             );
 
             LOGGER.log(Level.INFO, "Returning {0} documents for patient: {1} (page {2})",
@@ -249,6 +271,10 @@ public class ClinicalHistoryResource {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(ErrorResponse.validationError("Patient CI is required"))
                         .build();
+            }
+
+            if(!patientCi.startsWith("uy-ci-")){
+                patientCi = "uy-ci-" + patientCi;
             }
 
             // TODO: Extract patientCi from JWT SecurityContext
