@@ -44,12 +44,9 @@ public class SpecialtyServlet extends HttpServlet {
         try {
             // Obtener el contexto de clínica del usuario
             HttpSession session = request.getSession(false);
-            Long clinicId = null;
-            
-            if (session != null) {
-                clinicId = (Long) session.getAttribute("clinicId");
-                System.out.println("ClinicId desde sesión: " + clinicId);
-            }
+            Object clinicIdAttr = session != null ? session.getAttribute("clinicId") : null;
+            String clinicId = clinicIdAttr != null ? clinicIdAttr.toString() : null;
+            System.out.println("ClinicId desde sesión: " + clinicId);
             
             // Las especialidades ahora son globales (sin filtrar por clínica)
             System.out.println("DEBUG SpecialtyServlet: Obteniendo todas las especialidades (globales)");
@@ -139,12 +136,16 @@ public class SpecialtyServlet extends HttpServlet {
         
         // Obtener la clínica del usuario
         HttpSession session = request.getSession(false);
+        Object clinicIdAttr = session != null ? session.getAttribute("clinicId") : null;
         Long clinicId = null;
-        
-        if (session != null) {
-            clinicId = (Long) session.getAttribute("clinicId");
-            System.out.println("ClinicId desde sesión: " + clinicId);
+        if (clinicIdAttr != null) {
+            try {
+                clinicId = Long.valueOf(clinicIdAttr.toString());
+            } catch (NumberFormatException ex) {
+                System.out.println("ClinicId en sesión no es numérico: " + clinicIdAttr);
+            }
         }
+        System.out.println("ClinicId desde sesión: " + clinicId);
         
         System.out.println("Datos recibidos:");
         System.out.println("- Name: " + name);

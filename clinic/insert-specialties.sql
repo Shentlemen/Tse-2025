@@ -1,6 +1,6 @@
 -- Script para insertar especialidades médicas en la base de datos
 -- Ejecutar en la base de datos clinic_db
--- Uso: psql -U clinic_user -d clinic_db -f insert-specialties.sql
+-- Uso: psql -U postgres -d clinic_db -f insert-specialties.sql
 
 -- Insertar especialidades médicas (evitar duplicados con ON CONFLICT)
 INSERT INTO specialties (name, code, description, active) VALUES

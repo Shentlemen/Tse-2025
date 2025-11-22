@@ -288,7 +288,7 @@
                             <button type="button" class="btn btn-primary" onclick="openNewDocumentModal()">
                                 <i class="fas fa-plus me-2"></i>Registrar Nuevo Documento
                             </button>
-                            <button type="button" class="btn btn-outline-primary" onclick="requestAccessToOtherClinics()" title="Solicitar acceso a documentos del paciente en otras clínicas (HCEN)">
+                            <button type="button" class="btn btn-outline-primary" onclick="openRequestAccessModal()" title="Solicitar acceso a documentos del paciente en otras clínicas (HCEN)">
                                 <i class="fas fa-exchange-alt me-2"></i>Solicitar Acceso HCEN
                             </button>
                         </div>
@@ -310,6 +310,123 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 </c:if>
+
+                <!-- Documentos disponibles en HCEN -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-cloud-download-alt me-2"></i>Documentos en HCEN</h5>
+                        <small class="text-white-50">Metadatos cargados automáticamente desde el HCEN</small>
+                    </div>
+                    <div class="card-body">
+                        <c:if test="${not empty externalDocumentsError}">
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${externalDocumentsError}
+                            </div>
+                        </c:if>
+                        <c:if test="${not empty externalDocumentsInfo}">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>${externalDocumentsInfo}
+                            </div>
+                        </c:if>
+                        <c:choose>
+                            <c:when test="${empty externalDocuments}">
+                                <div class="alert alert-light text-center" role="alert">
+                                    <i class="fas fa-file-import fa-3x mb-3 d-block text-muted"></i>
+                                    <h5>No hay documentos externos disponibles.</h5>
+                                    <p class="mb-0">Los documentos publicados en el HCEN aparecerán aquí cuando la clínica reciba acceso.</p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="row">
+                                    <c:forEach var="remoteDoc" items="${externalDocuments}">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border border-2 border-secondary h-100">
+                                                <div class="card-body d-flex flex-column">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <div class="small text-muted">Documento #${remoteDoc.id}</div>
+                                                            <h6 class="card-title mb-0">
+                                                                ${remoteDoc.title != null ? remoteDoc.title : 'Documento sin título'}
+                                                            </h6>
+                                                        </div>
+                                                        <span class="badge bg-secondary">
+                                                            ${remoteDoc.documentTypeDisplayName != null ? remoteDoc.documentTypeDisplayName : remoteDoc.documentType}
+                                                        </span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="badge ${remoteDoc.hasContent ? 'bg-success' : 'bg-warning text-dark'}">
+                                                            <c:choose>
+                                                                <c:when test="${remoteDoc.hasContent}">
+                                                                    Acceso concedido
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    Permiso requerido
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </span>
+                                                        <c:if test="${not empty remoteDoc.status}">
+                                                            <span class="badge bg-light text-muted ms-1">${remoteDoc.status}</span>
+                                                        </c:if>
+                                                    </div>
+                                                    <p class="card-text text-muted small mb-2">
+                                                        <i class="fas fa-hospital me-1"></i>
+                                                        ${remoteDoc.clinicName != null ? remoteDoc.clinicName : remoteDoc.clinicId}
+                                                    </p>
+                                                    <div class="row small text-muted mb-2">
+                                                        <div class="col-6">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            <c:choose>
+                                                                <c:when test="${not empty remoteDoc.createdAtDate}">
+                                                                    <fmt:formatDate value="${remoteDoc.createdAtDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                </c:when>
+                                                                <c:otherwise>N/A</c:otherwise>
+                                                            </c:choose>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <i class="fas fa-user-md me-1"></i>
+                                                            ${remoteDoc.professionalName != null ? remoteDoc.professionalName : 'N/A'}
+                                                        </div>
+                                                        <div class="col-12 mt-1">
+                                                            <i class="fas fa-fingerprint me-1"></i>
+                                                            <span class="text-truncate d-inline-block" style="max-width: 100%;">
+                                                                ${remoteDoc.documentHash != null ? remoteDoc.documentHash : 'Sin hash'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-auto w-100">
+                                                        <c:choose>
+                                                            <c:when test="${remoteDoc.hasContent}">
+                                                                <div class="btn-group w-100" role="group">
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                                            onclick="viewExternalDocument(${remoteDoc.id})">
+                                                                        <i class="fas fa-eye me-1"></i>Ver
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                                            onclick="downloadExternalDocument(${remoteDoc.id})">
+                                                                        <i class="fas fa-download me-1"></i>Descargar
+                                                                    </button>
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="alert alert-warning py-2 small" role="alert">
+                                                                    <i class="fas fa-lock me-1"></i>Este documento requiere solicitar acceso al HCEN.
+                                                                </div>
+                                                                <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                                                        onclick="openRequestAccessModal(${remoteDoc.id})">
+                                                                    <i class="fas fa-paper-plane me-1"></i>Solicitar acceso
+                                                                </button>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
 
                 <!-- Lista de Documentos -->
                 <div class="card">
@@ -377,6 +494,7 @@
                         </c:choose>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -760,6 +878,88 @@
         </div>
     </div>
 
+    <!-- Modal Ver Documento Externo -->
+    <div class="modal fade" id="viewRemoteDocumentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title"><i class="fas fa-cloud me-2"></i>Documento disponible en HCEN</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <c:if test="${not empty selectedRemoteDocument}">
+                        <c:set var="remoteDetail" value="${selectedRemoteDocument}"/>
+                        <div class="card mb-3 border-secondary">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Metadatos del documento</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Título:</strong> ${remoteDetail.title}</p>
+                                        <p><strong>Tipo:</strong> ${remoteDetail.documentType}</p>
+                                        <p><strong>Clínica:</strong> ${remoteDetail.clinicName}</p>
+                                        <p><strong>Profesional:</strong> ${remoteDetail.professionalName}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Estado:</strong> ${remoteDetail.status}</p>
+                                        <p><strong>Hash:</strong> ${remoteDetail.documentHash}</p>
+                                        <p><strong>Creado:</strong>
+                                            <c:if test="${not empty remoteDetail.createdAt}">
+                                                <%
+                                                    uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO rd =
+                                                        (uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO) pageContext.getAttribute("remoteDetail");
+                                                    if (rd != null && rd.getCreatedAt() != null) {
+                                                        java.util.Date createdAtDate = java.util.Date.from(rd.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant());
+                                                        pageContext.setAttribute("remoteDetailCreatedAtDate", createdAtDate);
+                                                %>
+                                                    <fmt:formatDate value="${remoteDetailCreatedAtDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                                <%
+                                                    }
+                                                %>
+                                            </c:if>
+                                        </p>
+                                        <p><strong>Locator HCEN:</strong>
+                                            <c:out value="${remoteDetail.documentLocator != null ? remoteDetail.documentLocator : 'N/A'}"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <c:if test="${not empty remoteDetail.description}">
+                                    <div class="mt-3">
+                                        <strong>Descripción:</strong>
+                                        <p class="text-muted">${remoteDetail.description}</p>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <c:if test="${not empty remoteDocumentInlineContent}">
+                            <div class="card mb-3 border-secondary">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Contenido</h6>
+                                </div>
+                                <div class="card-body">
+                                    <pre class="bg-light p-3 rounded" style="white-space: pre-wrap;"><c:out value="${remoteDocumentInlineContent}"/></pre>
+                                </div>
+                            </div>
+                        </c:if>
+
+                        <c:if test="${remoteDocumentHasBinaryContent}">
+                            <div class="alert alert-info" role="alert">
+                                Este documento está disponible en formato <strong>${remoteDocumentBinaryContentType}</strong>.
+                                Puede descargarlo para visualizarlo:
+                                <a class="btn btn-sm btn-outline-secondary ms-2"
+                                   href="<c:url value='/professional/patient-documents'/>?patientId=${patient.id}&action=downloadRemote&remoteDocumentId=${remoteDocumentBinaryId}">
+                                    <i class="fas fa-download me-1"></i>Descargar desde HCEN
+                                </a>
+                            </div>
+                        </c:if>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Nuevo/Editar Documento -->
     <div class="modal fade" id="addDocumentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -1011,38 +1211,19 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Especialidades Solicitadas *</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="specialtyOption" id="allSpecialties" value="ALL" checked onchange="toggleSpecialtySelection()">
-                                <label class="form-check-label" for="allSpecialties">
-                                    Todas las especialidades
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="specialtyOption" id="specificSpecialties" value="SPECIFIC" onchange="toggleSpecialtySelection()">
-                                <label class="form-check-label" for="specificSpecialties">
-                                    Especialidades específicas
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3" id="specialtySelection" style="display: none;">
-                            <label class="form-label">Seleccionar Especialidades <span class="text-danger" id="specialtyRequired" style="display: none;">*</span></label>
-                            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 10px;">
+                            <label class="form-label">Especialidad solicitada *</label>
+                            <select class="form-select" name="specialtySelection" id="specialtySelectionDropdown" required>
+                                <option value="ALL" selected>Todas las especialidades</option>
                                 <c:forEach var="specialty" items="${specialties}">
-                                    <div class="form-check">
-                                        <input class="form-check-input specialty-checkbox" type="checkbox" name="selectedSpecialties" 
-                                               value="${specialty.id}" id="specialty_${specialty.id}" onchange="validateSpecialtySelection()">
-                                        <label class="form-check-label" for="specialty_${specialty.id}">
-                                            ${specialty.name} ${not empty specialty.code ? '(' += specialty.code += ')' : ''}
-                                        </label>
-                                    </div>
+                                    <option value="${specialty.id}">
+                                        ${specialty.name}
+                                        <c:if test="${not empty specialty.code}">
+                                            (${specialty.code})
+                                        </c:if>
+                                    </option>
                                 </c:forEach>
-                            </div>
-                            <small class="text-muted">Selecciona una o más especialidades para las que deseas acceso a documentos.</small>
-                            <div class="text-danger" id="specialtyError" style="display: none; margin-top: 5px;">
-                                <small><i class="fas fa-exclamation-circle me-1"></i>Debe seleccionar al menos una especialidad.</small>
-                            </div>
+                            </select>
+                            <small class="text-muted">Elija “Todas las especialidades” o seleccione una en particular.</small>
                         </div>
                         
                         <div class="mb-3">
@@ -1064,9 +1245,17 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Documento Específico (Opcional)</label>
-                            <input type="number" class="form-control" name="documentId" 
-                                   placeholder="ID del documento específico (dejar vacío para solicitar todos)">
-                            <small class="text-muted">Si conoce el ID de un documento específico, puede ingresarlo aquí. De lo contrario, deje vacío para solicitar todos los documentos disponibles.</small>
+                            <div class="d-flex gap-2">
+                                <input type="number" class="form-control" name="documentId" id="documentIdInput"
+                                       placeholder="ID del documento en HCEN">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearDocumentSelectionBtn"
+                                        style="display: none;" onclick="clearDocumentSelection()" title="Limpiar selección de documento específico">
+                                    Limpiar
+                                </button>
+                            </div>
+                            <small class="text-muted d-block" id="documentIdHelp">
+                                Complete este campo solo si quiere solicitar acceso a un documento puntual. De lo contrario, déjelo vacío.
+                            </small>
                         </div>
                     </div>
                     
@@ -1086,11 +1275,16 @@
     <%-- Generar variables JavaScript para controlar la apertura de modales --%>
     <%
         uy.gub.clinic.entity.ClinicalDocument selectedDoc = (uy.gub.clinic.entity.ClinicalDocument) request.getAttribute("selectedDocument");
+        uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO selectedRemoteDoc =
+                (uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO) request.getAttribute("selectedRemoteDocument");
         Boolean viewDocument = (Boolean) request.getAttribute("viewDocument");
         Boolean editDocument = (Boolean) request.getAttribute("editDocument");
+        Boolean viewRemoteDocument = (Boolean) request.getAttribute("viewRemoteDocument");
         boolean hasSelectedDoc = selectedDoc != null;
+        boolean hasSelectedRemoteDoc = selectedRemoteDoc != null;
         boolean isViewAction = viewDocument != null && viewDocument;
         boolean isEditAction = editDocument != null && editDocument;
+        boolean isRemoteViewAction = viewRemoteDocument != null && viewRemoteDocument;
         
         java.util.function.Function<String, String> escapeJs = s -> {
             if (s == null) return "";
@@ -1107,6 +1301,7 @@
     <script>
         var shouldOpenViewModal = <%= isViewAction && hasSelectedDoc %>;
         var shouldOpenEditModal = <%= isEditAction && hasSelectedDoc %>;
+        var shouldOpenRemoteViewModal = <%= isRemoteViewAction && hasSelectedRemoteDoc %>;
         
         <% if (hasSelectedDoc && isEditAction && selectedDoc != null) { 
             String dateOfVisitStr = selectedDoc.getDateOfVisit() != null ? selectedDoc.getDateOfVisit().toString() : "";
@@ -1150,77 +1345,73 @@
             window.location.href = '<c:url value="/professional/patient-documents"/>?patientId=${patient.id}&action=edit&documentId=' + documentId;
         }
 
-        function requestAccessToOtherClinics() {
-            // Limpiar el formulario
+        function viewExternalDocument(documentId) {
+            window.location.href = '<c:url value="/professional/patient-documents"/>?patientId=${patient.id}&action=viewRemote&remoteDocumentId=' + documentId;
+        }
+
+        function downloadExternalDocument(documentId) {
+            window.open('<c:url value="/professional/patient-documents"/>?patientId=${patient.id}&action=downloadRemote&remoteDocumentId=' + documentId, '_blank');
+        }
+
+        function openRequestAccessModal(documentId) {
             const form = document.getElementById('requestAccessForm');
             if (form) {
                 form.reset();
-                // Restablecer valores por defecto
-                document.getElementById('allSpecialties').checked = true;
-                document.getElementById('specificSpecialties').checked = false;
-                document.getElementById('specialtySelection').style.display = 'none';
-                // Limpiar checkboxes de especialidades
-                document.querySelectorAll('.specialty-checkbox').forEach(cb => cb.checked = false);
             }
-            
-            // Abrir modal
+
+            const specialtyDropdown = document.getElementById('specialtySelectionDropdown');
+            if (specialtyDropdown) {
+                specialtyDropdown.value = 'ALL';
+            }
+
+            const documentIdInput = document.getElementById('documentIdInput');
+            const clearButton = document.getElementById('clearDocumentSelectionBtn');
+            if (documentIdInput) {
+                if (documentId) {
+                    documentIdInput.value = documentId;
+                    documentIdInput.readOnly = true;
+                    documentIdInput.classList.add('bg-light');
+                    if (clearButton) {
+                        clearButton.style.display = 'inline-block';
+                    }
+                    const help = document.getElementById('documentIdHelp');
+                    if (help) {
+                        help.textContent = 'Solicitando acceso al documento #' + documentId + ' publicado en HCEN.';
+                    }
+                } else {
+                    documentIdInput.value = '';
+                    documentIdInput.readOnly = false;
+                    documentIdInput.classList.remove('bg-light');
+                    if (clearButton) {
+                        clearButton.style.display = 'none';
+                    }
+                    const help = document.getElementById('documentIdHelp');
+                    if (help) {
+                        help.textContent = 'Complete este campo solo si quiere solicitar acceso a un documento puntual. De lo contrario, déjelo vacío.';
+                    }
+                }
+            }
+
             const modal = new bootstrap.Modal(document.getElementById('requestAccessModal'));
             modal.show();
         }
-        
-        function toggleSpecialtySelection() {
-            const allSpecialtiesRadio = document.getElementById('allSpecialties');
-            const specificSpecialtiesRadio = document.getElementById('specificSpecialties');
-            const specialtySelection = document.getElementById('specialtySelection');
-            const specialtyRequired = document.getElementById('specialtyRequired');
-            const specialtyError = document.getElementById('specialtyError');
-            
-            if (specificSpecialtiesRadio.checked) {
-                specialtySelection.style.display = 'block';
-                if (specialtyRequired) specialtyRequired.style.display = 'inline';
-                validateSpecialtySelection();
-            } else {
-                specialtySelection.style.display = 'none';
-                if (specialtyRequired) specialtyRequired.style.display = 'none';
-                if (specialtyError) specialtyError.style.display = 'none';
-                // Limpiar checkboxes cuando se selecciona "Todas"
-                document.querySelectorAll('.specialty-checkbox').forEach(cb => cb.checked = false);
+
+        function clearDocumentSelection() {
+            const documentIdInput = document.getElementById('documentIdInput');
+            if (documentIdInput) {
+                documentIdInput.value = '';
+                documentIdInput.readOnly = false;
+                documentIdInput.classList.remove('bg-light');
+            }
+            const clearButton = document.getElementById('clearDocumentSelectionBtn');
+            if (clearButton) {
+                clearButton.style.display = 'none';
+            }
+            const help = document.getElementById('documentIdHelp');
+            if (help) {
+                help.textContent = 'Complete este campo solo si quiere solicitar acceso a un documento puntual. De lo contrario, déjelo vacío.';
             }
         }
-        
-        function validateSpecialtySelection() {
-            const specialtyOption = document.querySelector('input[name="specialtyOption"]:checked');
-            const specialtySelection = document.getElementById('specialtySelection');
-            const specialtyError = document.getElementById('specialtyError');
-            
-            if (specialtyOption && specialtyOption.value === 'SPECIFIC' && specialtySelection && specialtySelection.style.display !== 'none') {
-                const checkedSpecialties = document.querySelectorAll('.specialty-checkbox:checked');
-                if (checkedSpecialties.length === 0) {
-                    if (specialtyError) specialtyError.style.display = 'block';
-                    return false;
-                } else {
-                    if (specialtyError) specialtyError.style.display = 'none';
-                    return true;
-                }
-            }
-            return true;
-        }
-        
-        // Validar formulario antes de enviar
-        document.addEventListener('DOMContentLoaded', function() {
-            const requestAccessForm = document.getElementById('requestAccessForm');
-            if (requestAccessForm) {
-                requestAccessForm.addEventListener('submit', function(e) {
-                    if (!validateSpecialtySelection()) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        alert('Por favor seleccione al menos una especialidad.');
-                        return false;
-                    }
-                    return true;
-                });
-            }
-        });
 
         function openNewDocumentModal() {
             // Limpiar el formulario antes de abrir
@@ -1583,6 +1774,15 @@
                 if (editModalEl) {
                     const editModal = new bootstrap.Modal(editModalEl);
                     editModal.show();
+                    setTimeout(function() {
+                        window.history.replaceState({}, document.title, window.location.pathname + '?patientId=${patient.id}');
+                    }, 100);
+                }
+            } else if (typeof shouldOpenRemoteViewModal !== 'undefined' && shouldOpenRemoteViewModal) {
+                const remoteModalEl = document.getElementById('viewRemoteDocumentModal');
+                if (remoteModalEl) {
+                    const remoteModal = new bootstrap.Modal(remoteModalEl);
+                    remoteModal.show();
                     setTimeout(function() {
                         window.history.replaceState({}, document.title, window.location.pathname + '?patientId=${patient.id}');
                     }, 100);

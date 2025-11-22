@@ -11,24 +11,8 @@ CREATE DATABASE clinic_db
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
 
--- 2. Crear usuario específico para la aplicación
-CREATE USER clinic_user WITH PASSWORD 'clinic_pass';
-
--- 3. Otorgar permisos al usuario
-GRANT ALL PRIVILEGES ON DATABASE clinic_db TO clinic_user;
-
--- 4. Conectar a la base de datos
+-- 2. Conectar a la base de datos con el usuario postgres
 \c clinic_db;
 
--- 5. Otorgar permisos en el esquema público
-GRANT ALL ON SCHEMA public TO clinic_user;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO clinic_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO clinic_user;
-
--- 6. Configurar permisos por defecto para objetos futuros
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO clinic_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO clinic_user;
-
-
--- Mensaje de confirmación
+-- 3. Mensaje de confirmación
 SELECT 'Base de datos clinic_db configurada correctamente' as status;

@@ -16,12 +16,16 @@ import uy.gub.clinic.entity.Patient;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.entity.Specialty;
 import uy.gub.clinic.entity.AccessRequest;
+import uy.gub.clinic.integration.dto.hcen.HcenDocumentDetailDTO;
+import uy.gub.clinic.integration.dto.hcen.HcenDocumentListItemDTO;
 import uy.gub.clinic.service.ClinicalDocumentService;
 import uy.gub.clinic.service.PatientService;
 import uy.gub.clinic.service.ProfessionalService;
 import uy.gub.clinic.service.SpecialtyService;
 import uy.gub.clinic.service.AccessRequestService;
 import uy.gub.clinic.service.ClinicService;
+import uy.gub.clinic.service.HcenDocumentService;
+import uy.gub.clinic.service.dto.RemoteDocumentContent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -73,6 +77,9 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
     @Inject
     private ClinicService clinicService;
 
+    @Inject
+    private HcenDocumentService hcenDocumentService;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -89,6 +96,9 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                 request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
                 return;
             }
+
+            Clinic clinicEntity = clinicService.getClinicById(clinicId)
+                .orElseThrow(() -> new ServletException("Clínica no encontrada"));
             
             // Obtener ID del paciente
             String patientIdStr = request.getParameter("patientId");
@@ -120,7 +130,13 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             // Verificar si es acción de ver documento
             String action = request.getParameter("action");
             String documentIdStr = request.getParameter("documentId");
+            String remoteDocumentIdStr = request.getParameter("remoteDocumentId");
             
+            if ("downloadRemote".equals(action) && remoteDocumentIdStr != null) {
+                handleRemoteDocumentDownload(response, clinicEntity, patient, remoteDocumentIdStr);
+                return;
+            }
+
             if ("view".equals(action) && documentIdStr != null) {
                 // Cargar el documento para verlo en el modal
                 Optional<ClinicalDocument> docOpt = documentService.findById(Long.parseLong(documentIdStr));
@@ -136,6 +152,10 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                 } else {
                     request.setAttribute("error", "Documento no encontrado");
                 }
+            }
+
+            if ("viewRemote".equals(action) && remoteDocumentIdStr != null) {
+                prepareRemoteDocumentView(request, clinicEntity, patient, remoteDocumentIdStr);
             }
             
             if ("edit".equals(action) && documentIdStr != null) {
@@ -157,6 +177,25 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             
             // Obtener todos los documentos del paciente
             List<ClinicalDocument> documents = documentService.findByPatient(patientId);
+
+            // Obtener documentos disponibles en HCEN
+            if (patient.getDocumentNumber() != null && !patient.getDocumentNumber().isBlank()) {
+                try {
+                    List<HcenDocumentListItemDTO> externalDocs =
+                            hcenDocumentService.fetchDocumentsForPatient(clinicEntity, patient.getDocumentNumber());
+                    request.setAttribute("externalDocuments", externalDocs);
+                } catch (Exception ex) {
+                    logger.error("Error al obtener documentos externos de HCEN", ex);
+                    request.setAttribute("externalDocuments", java.util.Collections.emptyList());
+                    request.setAttribute("externalDocumentsError",
+                            "No se pudieron obtener los documentos disponibles en HCEN.");
+                }
+            } else {
+                request.setAttribute("externalDocuments",
+                        java.util.Collections.emptyList());
+                request.setAttribute("externalDocumentsInfo",
+                        "El paciente no tiene cédula registrada, por lo que no es posible consultar HCEN.");
+            }
             
             // Ordenar por fecha de visita descendente (más recientes primero)
             documents.sort((d1, d2) -> {
@@ -232,6 +271,109 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             logger.error("Error en doPost", e);
             request.setAttribute("error", "Error: " + e.getMessage());
             doGet(request, response);
+        }
+    }
+
+    private void prepareRemoteDocumentView(HttpServletRequest request,
+                                           Clinic clinic,
+                                           Patient patient,
+                                           String remoteDocumentIdStr) {
+        try {
+            if (patient.getDocumentNumber() == null || patient.getDocumentNumber().isBlank()) {
+                request.setAttribute("error", "El paciente no tiene cédula registrada para consultar HCEN.");
+                return;
+            }
+
+            Long documentId = Long.parseLong(remoteDocumentIdStr);
+
+            Optional<HcenDocumentDetailDTO> detailOpt = hcenDocumentService.fetchDocumentDetail(
+                    clinic,
+                    patient.getDocumentNumber(),
+                    documentId
+            );
+
+            if (detailOpt.isEmpty()) {
+                request.setAttribute("error", "No se encontró el documento en HCEN o no tiene acceso.");
+                return;
+            }
+
+            request.setAttribute("selectedRemoteDocument", detailOpt.get());
+            request.setAttribute("viewRemoteDocument", true);
+
+            Optional<RemoteDocumentContent> contentOpt = hcenDocumentService.fetchDocumentContent(
+                    clinic,
+                    patient.getDocumentNumber(),
+                    documentId
+            );
+
+            if (contentOpt.isPresent()) {
+                RemoteDocumentContent content = contentOpt.get();
+                if (content.isBinary()) {
+                    content.setBinaryData(null); // liberar memoria, solo necesitamos saber que es binario
+                    request.setAttribute("remoteDocumentHasBinaryContent", true);
+                    request.setAttribute("remoteDocumentBinaryId", documentId);
+                    request.setAttribute("remoteDocumentBinaryContentType", content.getContentType());
+                } else if (content.getInlineContent() != null) {
+                    request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
+                    request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                }
+            }
+        } catch (NumberFormatException ex) {
+            request.setAttribute("error", "Identificador de documento externo inválido.");
+        } catch (Exception ex) {
+            logger.error("Error al preparar la vista de documento externo", ex);
+            request.setAttribute("error", "Ocurrió un error al consultar el documento en HCEN.");
+        }
+    }
+
+    private void handleRemoteDocumentDownload(HttpServletResponse response,
+                                              Clinic clinic,
+                                              Patient patient,
+                                              String remoteDocumentIdStr) throws ServletException {
+        if (patient.getDocumentNumber() == null || patient.getDocumentNumber().isBlank()) {
+            throw new ServletException("El paciente no tiene cédula registrada para consultar HCEN.");
+        }
+
+        try {
+            Long documentId = Long.parseLong(remoteDocumentIdStr);
+            Optional<RemoteDocumentContent> contentOpt = hcenDocumentService.fetchDocumentContent(
+                    clinic,
+                    patient.getDocumentNumber(),
+                    documentId
+            );
+
+            if (contentOpt.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "No se pudo obtener el documento desde HCEN.");
+                return;
+            }
+
+            RemoteDocumentContent content = contentOpt.get();
+            if (content.isBinary() && content.getBinaryData() != null) {
+                response.setContentType(content.getContentType() != null ? content.getContentType()
+                        : "application/octet-stream");
+                String fileName = content.getSuggestedFileName() != null
+                        ? content.getSuggestedFileName()
+                        : ("document-" + documentId);
+                response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+                response.setContentLength(content.getBinaryData().length);
+                response.getOutputStream().write(content.getBinaryData());
+                response.flushBuffer();
+            } else if (content.getInlineContent() != null) {
+                response.setContentType(content.getContentType() != null ? content.getContentType()
+                        : "application/json");
+                byte[] data = content.getInlineContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                response.setHeader("Content-Disposition", "inline; filename=\"document-" + documentId + ".json\"");
+                response.setContentLength(data.length);
+                response.getOutputStream().write(data);
+                response.flushBuffer();
+            } else {
+                response.sendError(HttpServletResponse.SC_NO_CONTENT, "El documento no tiene contenido disponible.");
+            }
+        } catch (NumberFormatException ex) {
+            throw new ServletException("Identificador de documento externo inválido.", ex);
+        } catch (Exception ex) {
+            logger.error("Error al descargar documento externo desde HCEN", ex);
+            throw new ServletException("No se pudo descargar el documento solicitado.", ex);
         }
     }
     
@@ -650,8 +792,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         try {
             // Obtener datos del formulario
             String patientCI = request.getParameter("patientCI");
-            String specialtyOption = request.getParameter("specialtyOption");
-            String[] selectedSpecialties = request.getParameterValues("selectedSpecialties");
+            String specialtySelection = request.getParameter("specialtySelection");
             String requestReason = request.getParameter("requestReason");
             String urgency = request.getParameter("urgency");
             String documentIdStr = request.getParameter("documentId");
@@ -678,25 +819,20 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             
             // Construir string de especialidades
             String specialtiesStr = null;
-            if ("SPECIFIC".equals(specialtyOption) && selectedSpecialties != null && selectedSpecialties.length > 0) {
-                // Obtener nombres de especialidades
-                List<String> specialtyNames = new ArrayList<>();
-                for (String specialtyIdStr : selectedSpecialties) {
-                    try {
-                        Long specialtyId = Long.parseLong(specialtyIdStr);
-                        Optional<Specialty> specialtyOpt = specialtyService.getSpecialtyById(specialtyId);
-                        if (specialtyOpt.isPresent()) {
-                            specialtyNames.add(specialtyOpt.get().getName());
-                        }
-                    } catch (NumberFormatException e) {
-                        logger.warn("Invalid specialty ID: {}", specialtyIdStr);
+            if (specialtySelection != null && !"ALL".equalsIgnoreCase(specialtySelection)) {
+                try {
+                    Long specialtyId = Long.parseLong(specialtySelection);
+                    Optional<Specialty> specialtyOpt = specialtyService.getSpecialtyById(specialtyId);
+                    if (specialtyOpt.isPresent()) {
+                        specialtiesStr = specialtyOpt.get().getName();
+                    } else {
+                        logger.warn("Especialidad no encontrada para ID {}", specialtySelection);
                     }
-                }
-                if (!specialtyNames.isEmpty()) {
-                    specialtiesStr = String.join(",", specialtyNames);
+                } catch (NumberFormatException e) {
+                    logger.warn("Invalid specialty ID: {}", specialtySelection);
                 }
             }
-            // Si es "ALL", specialtiesStr queda como null (solicitar todas las especialidades)
+            // Si se selecciona "ALL" o es inválida, specialtiesStr queda null (solicitar todas las especialidades)
             
             // Parsear documentId si existe
             Long documentId = null;

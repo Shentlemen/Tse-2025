@@ -14,6 +14,7 @@ import uy.gub.clinic.entity.Patient;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.entity.Specialty;
 import uy.gub.clinic.integration.HcenJmsService;
+import uy.gub.clinic.service.FhirMappingService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +33,9 @@ public class ClinicalDocumentService {
     
     @Inject
     private HcenJmsService hcenJmsService;
+
+    @Inject
+    private FhirMappingService fhirMappingService;
     
     /**
      * Obtener todos los documentos
@@ -291,7 +295,14 @@ public class ClinicalDocumentService {
                         documentBaseUrl = documentBaseUrl.substring(0, documentBaseUrl.length() - 1);
                     }
                     
-                    hcenJmsService.sendDocumentRegistration(document, clinic, patient, documentBaseUrl);
+                    String fhirDocumentJson = null;
+                    try {
+                        fhirDocumentJson = fhirMappingService.convertDocumentToFhirJson(document);
+                    } catch (Exception mappingEx) {
+                        logger.warn("No se pudo generar la representación FHIR del documento {}: {}", document.getId(), mappingEx.getMessage());
+                    }
+
+                    hcenJmsService.sendDocumentRegistration(document, clinic, patient, documentBaseUrl, fhirDocumentJson);
                     logger.info("Document registration sent to HCEN - Document ID: {}, Patient CI: {}", 
                         document.getId(), patient.getDocumentNumber());
                 } catch (Exception e) {

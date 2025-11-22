@@ -48,11 +48,8 @@ Este componente permite a las clínicas gestionar sus profesionales, pacientes y
 ### 1. Configurar Base de Datos
 
 ```bash
-# Crear base de datos
-createdb clinic_db
-
-# Crear usuario
-createuser clinic_user
+# Crear base de datos (con el usuario postgres)
+createdb -U postgres -h localhost -p 5432 clinic_db
 ```
 
 ### 2. Configurar WildFly
@@ -63,8 +60,8 @@ createuser clinic_user
     <connection-url>jdbc:postgresql://localhost:5432/clinic_db</connection-url>
     <driver>postgresql</driver>
     <security>
-        <user-name>clinic_user</user-name>
-        <password>clinic_pass</password>
+        <user-name>postgres</user-name>
+        <password>sora</password>
     </security>
 </datasource>
 ```

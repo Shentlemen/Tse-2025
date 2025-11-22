@@ -163,6 +163,17 @@ public class FhirMappingService {
         
         return bundle;
     }
+
+    /**
+     * Convierte un documento clínico en un Bundle FHIR serializado en JSON.
+     * Este formato se utiliza para enviar el documento al HCEN a través de los mensajes JMS.
+     */
+    public String convertDocumentToFhirJson(ClinicalDocument document) {
+        Bundle bundle = convertDocumentToFhirBundle(document);
+        IParser parser = fhirContext.newJsonParser();
+        parser.setPrettyPrint(true);
+        return parser.encodeResourceToString(bundle);
+    }
     
     /**
      * Convierte un Professional a recurso FHIR Practitioner

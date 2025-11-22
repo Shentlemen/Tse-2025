@@ -90,6 +90,11 @@ public class DocumentRegistrationMessage {
         private Long specialtyId;
         private String documentTitle;
         private String documentDescription;
+        /**
+         * Representación FHIR (DocumentReference/Bundle) del documento recién creado.
+         * Permite al HCEN reconstruir la información clínica completa.
+         */
+        private String fhirDocument;
         
         public DocumentRegistrationPayload() {
         }
@@ -191,6 +196,14 @@ public class DocumentRegistrationMessage {
         
         public void setDocumentDescription(String documentDescription) {
             this.documentDescription = documentDescription;
+        }
+
+        public String getFhirDocument() {
+            return fhirDocument;
+        }
+
+        public void setFhirDocument(String fhirDocument) {
+            this.fhirDocument = fhirDocument;
         }
     }
 }

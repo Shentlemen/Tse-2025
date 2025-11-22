@@ -141,8 +141,11 @@ public class HcenJmsService {
      * @param patient Paciente del documento
      * @param documentBaseUrl URL base para construir el documentLocator (ej: http://clinic.uy/clinic)
      */
-    public void sendDocumentRegistration(ClinicalDocument document, Clinic clinic, 
-                                        Patient patient, String documentBaseUrl) {
+    public void sendDocumentRegistration(ClinicalDocument document,
+                                         Clinic clinic,
+                                         Patient patient,
+                                         String documentBaseUrl,
+                                         String fhirDocumentJson) {
         if (document == null || clinic == null || patient == null) {
             logger.warn("Cannot send document registration: document, clinic or patient is null");
             return;
@@ -181,6 +184,7 @@ public class HcenJmsService {
             
             payload.setDocumentTitle(document.getTitle());
             payload.setDocumentDescription(document.getDescription());
+            payload.setFhirDocument(fhirDocumentJson);
             
             // Construir mensaje completo
             DocumentRegistrationMessage message = new DocumentRegistrationMessage(messageId, payload);

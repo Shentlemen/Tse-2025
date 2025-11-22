@@ -9,7 +9,9 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.User;
+import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.service.UserService;
+import uy.gub.clinic.service.ClinicService;
 import uy.gub.clinic.util.PasswordUtil;
 
 import java.io.IOException;
@@ -24,6 +26,9 @@ public class AuthServlet extends HttpServlet {
     
     @Inject
     private UserService userService;
+
+    @Inject
+    private ClinicService clinicService;
     
     // Usuarios hardcodeados para desarrollo (TEMPORAL)
     // Estos se usarán hasta que el sistema interno de gestión esté listo
@@ -49,6 +54,34 @@ public class AuthServlet extends HttpServlet {
         if (requestURI.endsWith("/login")) {
             handleLogin(request, response);
         }
+    }
+
+    private String resolveClinicId(String clinicName, String fallbackId) {
+        if (clinicService != null && clinicName != null) {
+            try {
+                return clinicService.getAllClinics().stream()
+                        .filter(c -> clinicName.equalsIgnoreCase(c.getName()))
+                        .map(Clinic::getId)
+                        .findFirst()
+                        .orElse(fallbackId);
+            } catch (Exception ex) {
+                logger.warn("No se pudo resolver la clínica '{}' desde la BD, usando fallback {}", clinicName, fallbackId, ex);
+            }
+        }
+        return fallbackId;
+    }
+
+    private String getClinicName(String clinicId, String fallbackName) {
+        if (clinicService != null && clinicId != null) {
+            try {
+                return clinicService.getClinicById(clinicId)
+                        .map(Clinic::getName)
+                        .orElse(fallbackName);
+            } catch (Exception ex) {
+                logger.warn("No se pudo obtener el nombre para la clínica {}, usando fallback {}", clinicId, fallbackName, ex);
+            }
+        }
+        return fallbackName;
     }
     
     @Override
@@ -115,32 +148,32 @@ public class AuthServlet extends HttpServlet {
             } else if (ADMIN_USER_CLINIC1.equals(username) && ADMIN_PASS_CLINIC1.equals(password)) {
                 loginExitoso = true;
                 role = "ADMIN_CLINIC";
-                clinicId = "clinic-00000000-0000-0000-0000-000000000004";
-                clinicName = "Clínica del Corazón";
+                clinicId = resolveClinicId("Clínica del Corazón", "clinic-00000000-0000-0000-0000-000000000004");
+                clinicName = getClinicName(clinicId, "Clínica del Corazón");
                 professionalId = null;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
 
             } else if (PROF_USER_CLINIC1.equals(username) && PROF_PASS_CLINIC1.equals(password)) {
                 loginExitoso = true;
                 role = "PROFESSIONAL";
-                clinicId = "clinic-00000000-0000-0000-0000-000000000004";
-                clinicName = "Clínica del Corazón";
+                clinicId = resolveClinicId("Clínica del Corazón", "clinic-00000000-0000-0000-0000-000000000004");
+                clinicName = getClinicName(clinicId, "Clínica del Corazón");
                 professionalId = 1L;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
 
             } else if (ADMIN_USER_CLINIC2.equals(username) && ADMIN_PASS_CLINIC2.equals(password)) {
                 loginExitoso = true;
                 role = "ADMIN_CLINIC";
-                clinicId = "clinic-00000000-0000-0000-0000-000000000005";
-                clinicName = "Centro Neurológico";
+                clinicId = resolveClinicId("Centro Neurológico", "clinic-00000000-0000-0000-0000-000000000005");
+                clinicName = getClinicName(clinicId, "Centro Neurológico");
                 professionalId = null;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
 
             } else if (PROF_USER_CLINIC2.equals(username) && PROF_PASS_CLINIC2.equals(password)) {
                 loginExitoso = true;
                 role = "PROFESSIONAL";
-                clinicId = "clinic-00000000-0000-0000-0000-000000000005";
-                clinicName = "Centro Neurológico";
+                clinicId = resolveClinicId("Centro Neurológico", "clinic-00000000-0000-0000-0000-000000000005");
+                clinicName = getClinicName(clinicId, "Centro Neurológico");
                 professionalId = 2L;
                 logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
                 
