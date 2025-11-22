@@ -4,24 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="fix: audit entry, accept request and jwt validation">
-      <change beforePath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/gradle.properties" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: add hcen docs to the clinic, pull the docs from other clinics">
       <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentListItemDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentListItemDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/META-INF/persistence.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/wildfly-datasource.cli" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/wildfly-datasource.cli" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/HcenDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/HcenDocumentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/repository/RndcRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/rndc/repository/RndcRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepositoryImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,13 +130,13 @@
     "Gradle.hcen [flywayInfo].executor": "Run",
     "Gradle.hcen [flywayMigrate].executor": "Run",
     "HTTP Request.generated-requests | #1.executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Run",
+    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "database.data.extractors.current.export.id": "SQL Inserts",
-    "database.data.extractors.current.id": "SQL Inserts",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "database.data.extractors.current.id": "Comma-separated (CSV)_id",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen/src/main/resources/db/migration",
@@ -411,8 +403,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.hcen [flywayInfo]" />
         <item itemvalue="Gradle.hcen [flywayMigrate]" />
+        <item itemvalue="Gradle.hcen [flywayInfo]" />
         <item itemvalue="HTTP Request.generated-requests | #1" />
         <item itemvalue="Gradle.hcen [build]" />
         <item itemvalue="Gradle.hcen [clean]" />
@@ -443,7 +435,7 @@
       <workItem from="1762299823812" duration="30746000" />
       <workItem from="1763003396511" duration="33974000" />
       <workItem from="1763416028699" duration="81659000" />
-      <workItem from="1763671489670" duration="18582000" />
+      <workItem from="1763671489670" duration="25205000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -797,7 +789,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763679871612</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="feat: add hcen docs to the clinic, pull the docs from other clinics">
+      <option name="closed" value="true" />
+      <created>1763824416406</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1763824416406</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -821,7 +821,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: add hcen flows for different actors" />
     <MESSAGE value="fix: duplicate dependency and database seeder" />
     <MESSAGE value="feat: implement hcen core services" />
     <MESSAGE value="feat: add admin hcen pages and sso configs" />
@@ -846,7 +845,8 @@
     <MESSAGE value="feat: remove column not null constraint and fix registration flows" />
     <MESSAGE value="fix: normalize ci when sending access request" />
     <MESSAGE value="fix: audit entry, accept request and jwt validation" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: audit entry, accept request and jwt validation" />
+    <MESSAGE value="feat: add hcen docs to the clinic, pull the docs from other clinics" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add hcen docs to the clinic, pull the docs from other clinics" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -908,18 +908,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>399</line>
+          <line>417</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
-          <line>373</line>
+          <line>383</line>
           <option name="timeStamp" value="45" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
-          <line>307</line>
-          <option name="timeStamp" value="52" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/api/rest/PolicyManagementResource.java</url>
@@ -952,29 +947,33 @@
           <option name="timeStamp" value="66" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
-          <line>294</line>
-          <option name="timeStamp" value="67" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/auth/filter/ClinicApiKeyAuthenticationFilter.java</url>
-          <line>73</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java</url>
-          <line>141</line>
-          <option name="timeStamp" value="73" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/api/rest/ClinicResource.java</url>
           <line>333</line>
           <option name="timeStamp" value="74" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
+          <line>393</line>
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessPolicyRepositoryImpl.java</url>
+          <line>83</line>
+          <option name="timeStamp" value="81" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />
           <option name="timeStamp" value="20" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/entity/MedicalSpecialty.java</url>
+          <line>104</line>
+          <properties class="uy.gub.hcen.policy.entity.MedicalSpecialty" method="fromCode">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="78" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

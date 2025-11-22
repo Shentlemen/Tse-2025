@@ -311,6 +311,7 @@ public class ClinicalHistoryResource {
      * <p>This endpoint performs the complete document retrieval flow:
      * <ol>
      *   <li>Validates patient authorization</li>
+     *   <li><b>Evaluates access policies if professional/clinic is requesting</b></li>
      *   <li>Retrieves document from peripheral node via PeripheralNodeClient</li>
      *   <li>Verifies document integrity (hash verification)</li>
      *   <li>For structured formats (JSON/FHIR/HL7): Parses content and returns as JSON</li>
@@ -324,15 +325,30 @@ public class ClinicalHistoryResource {
      *   <li>Binary (PDF): Returns raw bytes with Content-Disposition: inline</li>
      * </ul>
      *
-     * <p>Example:
+     * <p>Policy Evaluation (Professional/Clinic Access):
+     * <ul>
+     *   <li>When X-Clinic-Id header is present, access policies are evaluated</li>
+     *   <li>Requires 'specialty' query parameter (e.g., ?specialty=CAR)</li>
+     *   <li>Optional 'professionalId' query parameter for audit logging</li>
+     *   <li>Returns 403 Forbidden if access is denied or pending patient approval</li>
+     * </ul>
+     *
+     * <p>Example (Patient):
      * GET /api/clinical-history/documents/123/content?patientCi=12345678
+     *
+     * <p>Example (Professional/Clinic):
+     * GET /api/clinical-history/documents/123/content?patientCi=12345678&specialty=CAR&professionalId=dr-juan-garcia
+     * Headers: X-Clinic-Id: clinic-001, X-API-Key: abc123...
      *
      * @param documentId Document ID
      * @param patientCi Patient's CI (for authorization)
+     * @param specialty Professional specialty code (required for clinic/professional access, e.g., "CAR", "MG")
+     * @param professionalId Professional identifier (optional, for audit logging)
+     * @param securityContext Security context (injected, contains clinic ID if present)
      * @param request HTTP servlet request (for IP address and user agent extraction)
      * @return 200 OK with document content (JSON response or binary PDF)
-     *         400 Bad Request if patientCi is missing
-     *         403 Forbidden if access is denied
+     *         400 Bad Request if patientCi is missing or specialty missing for clinic requests
+     *         403 Forbidden if access is denied by policy evaluation
      *         404 Not Found if document doesn't exist
      *         503 Service Unavailable if peripheral node is down
      *         500 Internal Server Error for hash mismatches or system errors
@@ -343,14 +359,26 @@ public class ClinicalHistoryResource {
     public Response getDocumentContent(
             @PathParam("documentId") Long documentId,
             @QueryParam("patientCi") String patientCi,
+            @QueryParam("specialty") String specialty,
+            @QueryParam("professionalId") String professionalId,
+            @Context jakarta.ws.rs.core.SecurityContext securityContext,
             @Context HttpServletRequest request) {
 
-        LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/content - patientCi: {1}",
-                new Object[]{documentId, patientCi});
+        LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/content - patientCi: {1}, specialty: {2}, professionalId: {3}",
+                new Object[]{documentId, patientCi, specialty, professionalId});
 
         // Extract IP address and user agent for audit logging
         String ipAddress = extractIpAddress(request);
         String userAgent = extractUserAgent(request);
+
+        // Extract requesting clinic ID from security context (if present)
+        String requestingClinicId = null;
+        if (securityContext != null && securityContext.getUserPrincipal() != null) {
+            if (securityContext.isUserInRole("CLINIC")) {
+                requestingClinicId = securityContext.getUserPrincipal().getName();
+                LOGGER.log(Level.INFO, "Clinic request detected - clinicId: {0}", requestingClinicId);
+            }
+        }
 
         try {
             // Validate patientCi
@@ -358,6 +386,18 @@ public class ClinicalHistoryResource {
                 LOGGER.log(Level.WARNING, "Missing patientCi parameter");
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(ErrorResponse.validationError("Patient CI is required"))
+                        .build();
+            }
+
+            if(!patientCi.startsWith("uy-ci-")){
+                patientCi = "uy-ci-" + patientCi;
+            }
+
+            // Validate specialty parameter if this is a clinic request
+            if (requestingClinicId != null && (specialty == null || specialty.trim().isEmpty())) {
+                LOGGER.log(Level.WARNING, "Missing specialty parameter for clinic request - clinicId: {0}", requestingClinicId);
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.validationError("Specialty is required for professional/clinic document access"))
                         .build();
             }
 
@@ -372,7 +412,7 @@ public class ClinicalHistoryResource {
             if (documentOpt.isEmpty()) {
                 LOGGER.log(Level.WARNING, "Document not found: {0}", documentId);
                 auditService.logDocumentAccess(
-                        patientCi,
+                        professionalId != null ? professionalId : patientCi,
                         patientCi,
                         documentId,
                         null,
@@ -388,7 +428,14 @@ public class ClinicalHistoryResource {
             RndcDocument document = documentOpt.get();
 
             // Call service to retrieve document bytes from peripheral node
-            byte[] documentBytes = clinicalHistoryService.getDocumentContent(documentId, patientCi);
+            // Policy evaluation happens inside this method if requestingClinicId is provided
+            byte[] documentBytes = clinicalHistoryService.getDocumentContent(
+                    documentId,
+                    patientCi,
+                    requestingClinicId,
+                    specialty,
+                    professionalId
+            );
 
             // Determine content type from document type
             String contentType = determineContentType(document.getDocumentType());
@@ -446,13 +493,21 @@ public class ClinicalHistoryResource {
                     .header("Expires", "0")
                     .build();
 
+        } catch (ClinicalHistoryService.AccessDeniedException e) {
+            LOGGER.log(Level.WARNING, "Access denied by policy evaluation: {0}", e.getMessage());
+
+            // Access already logged in service layer, just return 403
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(ErrorResponse.forbidden(e.getMessage()))
+                    .build();
+
         } catch (ClinicalHistoryService.DocumentRetrievalException e) {
             LOGGER.log(Level.WARNING, "Document retrieval failed: {0}", e.getMessage());
 
             // Log failed access
             auditService.logAccessEvent(
-                    patientCi,
-                    "PATIENT",
+                    professionalId != null ? professionalId : patientCi,
+                    requestingClinicId != null ? "CLINIC" : "PATIENT",
                     "DOCUMENT",
                     documentId.toString(),
                     AuditLog.ActionOutcome.FAILURE,

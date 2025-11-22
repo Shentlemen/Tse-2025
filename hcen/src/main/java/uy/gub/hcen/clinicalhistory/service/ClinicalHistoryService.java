@@ -351,23 +351,33 @@ public class ClinicalHistoryService {
      * <p>This method performs the complete document retrieval flow:
      * <ol>
      *   <li>Validates document exists in RNDC and belongs to patient</li>
+     *   <li><b>Evaluates access policies if professional/clinic is requesting</b></li>
      *   <li>Looks up clinic configuration to get API key</li>
      *   <li>Calls peripheral node to retrieve actual document bytes</li>
      *   <li>Verifies document integrity using SHA-256 hash</li>
      *   <li>Returns document bytes for client download</li>
      * </ol>
      *
-     * <p>Note: For patients viewing their own documents, policy checks are skipped.
-     * Policy enforcement is applied when professionals access patient documents.
+     * <p>Policy Evaluation:
+     * <ul>
+     *   <li>Patient accessing own document: No policy check (always permitted)</li>
+     *   <li>Clinic/Professional accessing: Policy evaluated based on clinic + specialty</li>
+     *   <li>PERMIT: Document is retrieved and returned</li>
+     *   <li>PENDING or DENY: AccessDeniedException is thrown (403 Forbidden)</li>
+     * </ul>
      *
      * @param documentId Document ID
      * @param patientCi Patient's CI (for authorization)
+     * @param requestingClinicId Optional clinic ID (for policy evaluation, null if patient request)
+     * @param professionalSpecialty Optional specialty (for policy evaluation, null if patient request)
+     * @param professionalId Optional professional ID (for audit logging, null if patient request)
      * @return Document content as byte array, or null if unavailable/error
      * @throws DocumentRetrievalException if retrieval fails (peripheral node down, hash mismatch, etc.)
+     * @throws AccessDeniedException if policy evaluation denies access
      */
-    public byte[] getDocumentContent(Long documentId, String patientCi) {
-        LOGGER.log(Level.INFO, "Retrieving document content for document: {0}, patient: {1}",
-                new Object[]{documentId, patientCi});
+    public byte[] getDocumentContent(Long documentId, String patientCi, String requestingClinicId, String professionalSpecialty, String professionalId) {
+        LOGGER.log(Level.INFO, "Retrieving document content for document: {0}, patient: {1}, clinicId: {2}, specialty: {3}",
+                new Object[]{documentId, patientCi, requestingClinicId, professionalSpecialty});
 
         try {
             // Step 1: Get document metadata from RNDC
@@ -385,6 +395,14 @@ public class ClinicalHistoryService {
                 LOGGER.log(Level.WARNING, "Unauthorized content access attempt - document: {0}, requestor: {1}, owner: {2}",
                         new Object[]{documentId, patientCi, document.getPatientCi()});
                 throw new DocumentRetrievalException("Acceso no autorizado");
+            }
+
+            // Step 3: Evaluate access policies if this is a professional/clinic request
+            if (requestingClinicId != null && !requestingClinicId.trim().isEmpty()) {
+                LOGGER.log(Level.INFO, "Professional/clinic request detected - evaluating access policies");
+                evaluateAccessPolicies(document, requestingClinicId, professionalSpecialty, professionalId);
+            } else {
+                LOGGER.log(Level.INFO, "Patient request - skipping policy evaluation");
             }
 
             // Step 3: Validate document has locator URL
@@ -651,6 +669,107 @@ public class ClinicalHistoryService {
     }
 
     /**
+     * Evaluates access policies for professional/clinic document access
+     *
+     * <p>This method checks if the requesting clinic + specialty combination
+     * has permission to access the document based on patient-defined access policies.
+     *
+     * @param document Document being accessed
+     * @param clinicId Requesting clinic ID
+     * @param specialtyCode Professional specialty code (e.g., "CAR", "MG")
+     * @param professionalId Professional identifier (for audit logging, may be null)
+     * @throws AccessDeniedException if access is denied or pending
+     */
+    private void evaluateAccessPolicies(RndcDocument document, String clinicId, String specialtyCode, String professionalId) {
+        try {
+            // Validate specialty is provided
+            if (specialtyCode == null || specialtyCode.trim().isEmpty()) {
+                LOGGER.log(Level.WARNING, "Missing specialty for policy evaluation - clinic: {0}, document: {1}",
+                        new Object[]{clinicId, document.getId()});
+                throw new AccessDeniedException("Specialty is required for document access");
+            }
+
+            // Convert specialty code to enum
+            uy.gub.hcen.policy.entity.MedicalSpecialty specialty;
+            try {
+                specialty = uy.gub.hcen.policy.entity.MedicalSpecialty.fromCode(specialtyCode.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(Level.WARNING, "Invalid specialty code: {0}", specialtyCode);
+                throw new AccessDeniedException("Invalid specialty code: " + specialtyCode);
+            }
+
+            // Build AccessRequest for policy evaluation
+            // Use professionalId if provided, otherwise use clinicId for audit trail
+            String actorId = (professionalId != null && !professionalId.trim().isEmpty())
+                    ? professionalId
+                    : clinicId;
+
+            uy.gub.hcen.service.policy.dto.AccessRequest accessRequest =
+                    uy.gub.hcen.service.policy.dto.AccessRequest.builder()
+                            .professionalId(actorId) // For audit logging
+                            .addSpecialty(specialty.name())
+                            .clinicId(clinicId)
+                            .patientCi(document.getPatientCi())
+                            .documentId(document.getId())
+                            .documentType(document.getDocumentType())
+                            .requestTime(java.time.LocalDateTime.now())
+                            .build();
+
+            LOGGER.log(Level.INFO, "Evaluating access policy - patient: {0}, clinic: {1}, specialty: {2}, docType: {3}",
+                    new Object[]{document.getPatientCi(), clinicId, specialty.getDisplayName(), document.getDocumentType()});
+
+            // Evaluate policy using PolicyEngine
+            uy.gub.hcen.service.policy.dto.PolicyEvaluationResult result =
+                    policyEngine.evaluateAccess(accessRequest);
+
+            LOGGER.log(Level.INFO, "Policy evaluation result: {0} - {1}",
+                    new Object[]{result.getDecision(), result.getReason()});
+
+            // Handle decision
+            if (result.isPermitted()) {
+                LOGGER.log(Level.INFO, "Access GRANTED for clinic {0} with specialty {1} to document {2}",
+                        new Object[]{clinicId, specialty.getDisplayName(), document.getId()});
+                // Access granted - continue with document retrieval
+            } else {
+                // PENDING or DENY - both treated as forbidden
+                LOGGER.log(Level.WARNING, "Access DENIED for clinic {0} with specialty {1} to document {2} - reason: {3}",
+                        new Object[]{clinicId, specialty.getDisplayName(), document.getId(), result.getReason()});
+
+                // Log denial in audit system
+                java.util.Map<String, Object> auditDetails = new java.util.HashMap<>();
+                auditDetails.put("reason", result.getReason());
+                auditDetails.put("clinicId", clinicId);
+                auditDetails.put("specialty", specialty.getDisplayName());
+                auditDetails.put("documentType", document.getDocumentType().name());
+
+                auditService.logAccessEvent(
+                        actorId, // Use professionalId if available, otherwise clinicId
+                        "CLINIC",
+                        "DOCUMENT",
+                        document.getId().toString(),
+                        AuditLog.ActionOutcome.DENIED,
+                        null,
+                        null,
+                        auditDetails
+                );
+
+                throw new AccessDeniedException(
+                        "Access denied: " + result.getReason() +
+                                ". Patient has not granted access to this document for your clinic/specialty."
+                );
+            }
+
+        } catch (AccessDeniedException e) {
+            // Re-throw access denied exceptions
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error evaluating access policies", e);
+            // On policy evaluation error, deny access by default (fail-safe)
+            throw new AccessDeniedException("Unable to evaluate access policies: " + e.getMessage());
+        }
+    }
+
+    /**
      * Custom exception for document retrieval errors
      */
     public static class DocumentRetrievalException extends RuntimeException {
@@ -660,6 +779,15 @@ public class ClinicalHistoryService {
 
         public DocumentRetrievalException(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    /**
+     * Custom exception for access denied (policy evaluation failure)
+     */
+    public static class AccessDeniedException extends RuntimeException {
+        public AccessDeniedException(String message) {
+            super(message);
         }
     }
 

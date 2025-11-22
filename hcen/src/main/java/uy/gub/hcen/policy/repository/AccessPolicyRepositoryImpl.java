@@ -75,7 +75,7 @@ public class AccessPolicyRepositoryImpl implements AccessPolicyRepository {
             LocalDateTime now = LocalDateTime.now();
             TypedQuery<AccessPolicy> query = entityManager.createQuery(
                     "SELECT p FROM AccessPolicy p WHERE p.patientCi = :patientCi " +
-                    "AND (p.status = :statusGranted OR p.status = :statusRevoked) " +
+                    "AND p.status = :statusGranted " +
                     "AND (p.validFrom IS NULL OR p.validFrom <= :now) " +
                     "AND (p.validUntil IS NULL OR p.validUntil >= :now) " +
                     "ORDER BY p.priority DESC, p.createdAt DESC",
@@ -83,12 +83,15 @@ public class AccessPolicyRepositoryImpl implements AccessPolicyRepository {
             );
             query.setParameter("patientCi", patientCi);
             query.setParameter("statusGranted", PolicyStatus.GRANTED);
-            query.setParameter("statusRevoked", PolicyStatus.REVOKED);
             query.setParameter("now", now);
 
-            return query.getResultList();
+            LOGGER.log(Level.INFO, "Querying policies for patientCi: {0}", patientCi);
+            List<AccessPolicy> results = query.getResultList();
+            LOGGER.log(Level.INFO, "Found {0} policies for patientCi: {1}", new Object[]{results.size(), patientCi});
+
+            return results;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error finding policies by patient CI", e);
+            LOGGER.log(Level.SEVERE, "Error finding policies by patient CI: " + patientCi, e);
             return new ArrayList<>();
         }
     }

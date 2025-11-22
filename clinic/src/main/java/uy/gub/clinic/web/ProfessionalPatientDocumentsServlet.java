@@ -133,7 +133,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             String remoteDocumentIdStr = request.getParameter("remoteDocumentId");
             
             if ("downloadRemote".equals(action) && remoteDocumentIdStr != null) {
-                handleRemoteDocumentDownload(response, clinicEntity, patient, remoteDocumentIdStr);
+                handleRemoteDocumentDownload(request, response, clinicEntity, patient, remoteDocumentIdStr);
                 return;
             }
 
@@ -300,10 +300,14 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             request.setAttribute("selectedRemoteDocument", detailOpt.get());
             request.setAttribute("viewRemoteDocument", true);
 
+            // Get professional's specialty name
+            String specialtyName = getProfessionalSpecialtyName(request);
+
             Optional<RemoteDocumentContent> contentOpt = hcenDocumentService.fetchDocumentContent(
                     clinic,
                     patient.getDocumentNumber(),
-                    documentId
+                    documentId,
+                    specialtyName
             );
 
             if (contentOpt.isPresent()) {
@@ -326,7 +330,8 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         }
     }
 
-    private void handleRemoteDocumentDownload(HttpServletResponse response,
+    private void handleRemoteDocumentDownload(HttpServletRequest request,
+                                              HttpServletResponse response,
                                               Clinic clinic,
                                               Patient patient,
                                               String remoteDocumentIdStr) throws ServletException {
@@ -336,10 +341,15 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
 
         try {
             Long documentId = Long.parseLong(remoteDocumentIdStr);
+
+            // Get professional's specialty name
+            String specialtyName = getProfessionalSpecialtyName(request);
+
             Optional<RemoteDocumentContent> contentOpt = hcenDocumentService.fetchDocumentContent(
                     clinic,
                     patient.getDocumentNumber(),
-                    documentId
+                    documentId,
+                    specialtyName
             );
 
             if (contentOpt.isEmpty()) {
@@ -868,6 +878,38 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         // Redirigir de vuelta a la página de documentos del paciente
         String patientIdStr = request.getParameter("patientId");
         response.sendRedirect(request.getContextPath() + "/professional/patient-documents?patientId=" + patientIdStr);
+    }
+
+    /**
+     * Helper method to get the specialty code of the logged-in professional.
+     * Returns null if the professional is not found or has no specialty.
+     */
+    private String getProfessionalSpecialtyName(HttpServletRequest request) {
+        try {
+            Long professionalId = (Long) request.getSession().getAttribute("professionalId");
+            if (professionalId == null) {
+                logger.warn("No professional ID found in session");
+                return null;
+            }
+
+            Optional<Professional> professionalOpt = professionalService.getProfessionalById(professionalId);
+            if (professionalOpt.isEmpty()) {
+                logger.warn("Professional with ID {} not found", professionalId);
+                return null;
+            }
+
+            Professional professional = professionalOpt.get();
+            Specialty specialty = professional.getSpecialty();
+            if (specialty == null) {
+                logger.debug("Professional {} has no specialty assigned", professionalId);
+                return null;
+            }
+
+            return specialty.getCode();
+        } catch (Exception ex) {
+            logger.error("Error retrieving professional's specialty code", ex);
+            return null;
+        }
     }
 }
 

@@ -111,12 +111,18 @@ public class HcenClinicalHistoryClient {
                                                     String clinicId,
                                                     String apiKey,
                                                     Long documentId,
-                                                    String patientCi) {
+                                                    String patientCi,
+                                                    String specialtyName) {
         String endpoint = buildBaseUrl(baseUrl) + "/clinical-history/documents/" + documentId + "/content";
 
         try {
         WebTarget target = httpClient.target(endpoint)
                 .queryParam("patientCi", patientCi);
+
+        // Add specialty parameter if provided
+        if (specialtyName != null && !specialtyName.isBlank()) {
+            target = target.queryParam("specialty", specialtyName);
+        }
 
         Response response = prepareAuthorizedRequest(target, clinicId, apiKey)
                 .accept(MediaType.WILDCARD_TYPE)

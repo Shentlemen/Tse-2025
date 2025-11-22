@@ -69,7 +69,8 @@ public class HcenDocumentService {
 
     public Optional<RemoteDocumentContent> fetchDocumentContent(Clinic clinic,
                                                                 String patientCi,
-                                                                Long documentId) {
+                                                                Long documentId,
+                                                                String specialtyName) {
         if (!isConfigured(clinic) || patientCi == null || patientCi.isBlank() || documentId == null) {
             return Optional.empty();
         }
@@ -79,7 +80,8 @@ public class HcenDocumentService {
                 clinic.getId(),
                 clinic.getApiKey(),
                 documentId,
-                patientCi
+                patientCi,
+                specialtyName
         );
 
         if (responseOpt.isEmpty()) {
