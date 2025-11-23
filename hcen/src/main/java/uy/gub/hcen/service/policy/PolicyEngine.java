@@ -22,14 +22,16 @@ import java.util.stream.Collectors;
  * access control policies to determine whether healthcare professionals can access
  * clinical documents.
  *
- * Simplified Evaluation Logic (v2.0):
- * - Check if professional's clinic+specialty matches any GRANTED policy
- * - If matching policy exists -> PERMIT
- * - If no matching policy -> PENDING (requires patient approval)
+ * Evaluation Logic (v2.1):
+ * 1. Check if professional's clinic+specialty matches any GRANTED policy
+ *    - If matching policy exists -> PERMIT
+ * 2. Check if patient has approved an access request for this professional+document
+ *    - If approved request exists (not expired) -> PERMIT
+ * 3. Otherwise -> PENDING (requires patient approval)
  *
  * @author TSE 2025 Group 9
- * @version 2.0
- * @since 2025-11-18
+ * @version 2.1
+ * @since 2025-11-23
  */
 @Stateless
 public class PolicyEngine {
@@ -41,6 +43,9 @@ public class PolicyEngine {
 
     @Inject
     private PolicyCacheService policyCacheService;
+
+    @Inject
+    private uy.gub.hcen.policy.repository.AccessRequestRepository accessRequestRepository;
 
     /**
      * Evaluates access policies to determine if a professional can access a document.
@@ -146,8 +151,52 @@ public class PolicyEngine {
                     .build();
         }
 
-        // No matching policy found - PENDING
-        LOGGER.log(Level.INFO, "No matching policy for professional {0} (clinic: {1}, specialties: {2}), returning PENDING",
+        // No matching policy found - check for approved access requests by specialty
+        // Patients approve access for ANY professional with a specific specialty,
+        // not just a specific professional
+        LOGGER.log(Level.FINE, "No matching policy found, checking for approved access requests by specialty");
+
+        Optional<uy.gub.hcen.policy.entity.AccessRequest> approvedRequest = Optional.empty();
+
+        // Check each specialty the professional has
+        for (String specialty : specialties) {
+            MedicalSpecialty medicalSpecialty = MedicalSpecialty.fromName(specialty);
+            if (medicalSpecialty != null) {
+                // Use specialty CODE for lookup (e.g., "CAR", "DER")
+                String specialtyCode = medicalSpecialty.getCode();
+
+                approvedRequest = accessRequestRepository.findApprovedRequestBySpecialty(
+                        specialtyCode,
+                        clinicId,
+                        patientCi,
+                        request.getDocumentId()
+                );
+
+                if (approvedRequest.isPresent()) {
+                    LOGGER.log(Level.INFO, "Found approved request #{0} for specialty {1} ({2}) - granting access",
+                            new Object[]{approvedRequest.get().getId(), specialtyCode, medicalSpecialty.getDisplayName()});
+                    break; // Found an approval, stop searching
+                }
+            }
+        }
+
+        if (approvedRequest.isPresent()) {
+            // Access granted via approved request
+            uy.gub.hcen.policy.entity.AccessRequest accessRequest = approvedRequest.get();
+            LOGGER.log(Level.INFO, "Access granted via approved request #{0} for specialty {1} at clinic {2} to patient {3}",
+                    new Object[]{accessRequest.getId(), accessRequest.getSpecialty(), clinicId, patientCi});
+
+            return PolicyEvaluationResult.builder()
+                    .decision(PolicyDecision.PERMIT)
+                    .reason("Access granted via approved request #" + accessRequest.getId() +
+                            " for specialty " + accessRequest.getSpecialty() +
+                            " (approved on " + accessRequest.getRespondedAt() + ")")
+                    .evaluatedPolicies(allPolicies.stream().map(AccessPolicy::getId).collect(Collectors.toList()))
+                    .build();
+        }
+
+        // No matching policy and no approved request - PENDING
+        LOGGER.log(Level.INFO, "No matching policy or approved request for professional {0} (clinic: {1}, specialties: {2}), returning PENDING",
                 new Object[]{request.getProfessionalId(), clinicId, specialties});
 
         return PolicyEvaluationResult.builder()

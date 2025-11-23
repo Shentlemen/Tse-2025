@@ -429,11 +429,34 @@ public class AccessRequestService {
                 }
             }
 
-            // 5. Create new AccessRequest entity
+            // 5. Validate and normalize specialty to CODE format
+            String specialtyCode = requestDTO.getSpecialty();
+            if (specialtyCode != null && !specialtyCode.isEmpty()) {
+                // Try to parse as MedicalSpecialty to validate and get the code
+                uy.gub.hcen.policy.entity.MedicalSpecialty medicalSpecialty =
+                    uy.gub.hcen.policy.entity.MedicalSpecialty.fromCode(specialtyCode);
+
+                // If not found by code, try by name (in case full name was sent)
+                if (medicalSpecialty == null) {
+                    medicalSpecialty = uy.gub.hcen.policy.entity.MedicalSpecialty.fromName(specialtyCode);
+                }
+
+                if (medicalSpecialty != null) {
+                    // Use the validated CODE (e.g., "CAR", "DER")
+                    specialtyCode = medicalSpecialty.getCode();
+                    LOGGER.log(Level.INFO, "Normalized specialty to code: {0} ({1})",
+                        new Object[]{specialtyCode, medicalSpecialty.getDisplayName()});
+                } else {
+                    LOGGER.log(Level.WARNING, "Invalid specialty: {0}, storing as-is",
+                        specialtyCode);
+                }
+            }
+
+            // 6. Create new AccessRequest entity
             AccessRequest newRequest = new AccessRequest(
                 requestDTO.getProfessionalId(),
                 requestDTO.getProfessionalName(),
-                requestDTO.getSpecialty(),
+                specialtyCode,  // Use normalized specialty code
                 clinicId,
                 clinicName,
                 requestDTO.getPatientCi(),
@@ -443,10 +466,10 @@ public class AccessRequestService {
                 urgency
             );
 
-            // 6. Save to database
+            // 7. Save to database
             AccessRequest savedRequest = accessRequestRepository.save(newRequest);
 
-            // 7. Log creation in audit system
+            // 8. Log creation in audit system
             auditService.logAccessEvent(
                 requestDTO.getProfessionalId(),
                 "PROFESSIONAL",
@@ -467,7 +490,7 @@ public class AccessRequestService {
             LOGGER.log(Level.INFO, "Access request created successfully: {0}",
                 savedRequest.getId());
 
-            // 8. Return success response
+            // 9. Return success response
             return AccessRequestCreationResponseDTO.fromEntity(savedRequest, true);
 
         } catch (IllegalArgumentException e) {

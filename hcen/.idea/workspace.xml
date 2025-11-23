@@ -5,19 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: evaluate access using policies">
-      <change afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalDocumentAccessDenied.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentContentResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/dto/hcen/HcenDocumentContentResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/HcenDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/HcenDocumentService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -441,6 +436,7 @@
       <workItem from="1763416028699" duration="81659000" />
       <workItem from="1763671489670" duration="26599000" />
       <workItem from="1763862461244" duration="4080000" />
+      <workItem from="1763906630660" duration="3936000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -956,8 +952,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java</url>
-          <line>73</line>
+          <line>78</line>
           <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java</url>
+          <line>160</line>
+          <option name="timeStamp" value="89" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java</url>
+          <line>283</line>
+          <option name="timeStamp" value="91" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

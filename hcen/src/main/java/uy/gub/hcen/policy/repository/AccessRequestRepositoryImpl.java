@@ -278,4 +278,64 @@ public class AccessRequestRepositoryImpl implements AccessRequestRepository {
             return Optional.empty();
         }
     }
+
+    @Override
+    public Optional<AccessRequest> findApprovedRequestBySpecialty(String specialty, String clinicId, String patientCi, Long documentId) {
+        if (specialty == null || clinicId == null || patientCi == null) {
+            return Optional.empty();
+        }
+
+        try {
+            LocalDateTime now = LocalDateTime.now();
+
+            // Build query to find APPROVED, non-expired requests by SPECIALTY (not professionalId)
+            // This allows ANY professional with the matching specialty to access once approved
+            // Handle both specific document requests AND general access requests (documentId IS NULL)
+            String jpql = "SELECT ar FROM AccessRequest ar " +
+                          "WHERE ar.specialty = :specialty " +
+                          "AND ar.clinicId = :clinicId " +
+                          "AND ar.patientCi = :patientCi " +
+                          "AND ar.status = :status " +
+                          "AND ar.respondedAt IS NOT NULL " +
+                          "AND ar.expiresAt > :now " +
+                          "AND (";
+
+            // Match either the specific document OR general access (documentId IS NULL)
+            if (documentId != null) {
+                jpql += "ar.documentId = :documentId OR ar.documentId IS NULL";
+            } else {
+                jpql += "ar.documentId IS NULL";
+            }
+
+            jpql += ") ORDER BY ar.respondedAt DESC";
+
+            TypedQuery<AccessRequest> query = entityManager.createQuery(jpql, AccessRequest.class)
+                .setParameter("specialty", specialty)
+                .setParameter("clinicId", clinicId)
+                .setParameter("patientCi", patientCi)
+                .setParameter("status", RequestStatus.APPROVED)
+                .setParameter("now", now);
+
+            if (documentId != null) {
+                query.setParameter("documentId", documentId);
+            }
+
+            List<AccessRequest> results = query.getResultList();
+
+            if (results.isEmpty()) {
+                return Optional.empty();
+            }
+
+            // Return the most recent approved request
+            AccessRequest approvedRequest = results.get(0);
+            LOGGER.log(Level.INFO, "Found approved access request #{0} for specialty {1} at clinic {2} to patient {3}",
+                    new Object[]{approvedRequest.getId(), specialty, clinicId, patientCi});
+
+            return Optional.of(approvedRequest);
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error finding approved access request by specialty", e);
+            return Optional.empty();
+        }
+    }
 }
