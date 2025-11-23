@@ -373,7 +373,7 @@ public class ClinicalHistoryService {
      * @param professionalId Optional professional ID (for audit logging, null if patient request)
      * @return Document content as byte array, or null if unavailable/error
      * @throws DocumentRetrievalException if retrieval fails (peripheral node down, hash mismatch, etc.)
-     * @throws AccessDeniedException if policy evaluation denies access
+     * @throws ClinicalDocumentAccessDenied if policy evaluation denies access
      */
     public byte[] getDocumentContent(Long documentId, String patientCi, String requestingClinicId, String professionalSpecialty, String professionalId) {
         LOGGER.log(Level.INFO, "Retrieving document content for document: {0}, patient: {1}, clinicId: {2}, specialty: {3}",
@@ -447,6 +447,10 @@ public class ClinicalHistoryService {
 
             return documentBytes;
 
+        } catch (ClinicalDocumentAccessDenied e) {
+            // Re-throw policy access denial exceptions (403 Forbidden)
+            LOGGER.log(Level.WARNING, "Access denied by policy: {0}", e.getMessage());
+            throw e;
         } catch (DocumentRetrievalException e) {
             // Re-throw business logic exceptions
             throw e;
@@ -678,7 +682,7 @@ public class ClinicalHistoryService {
      * @param clinicId Requesting clinic ID
      * @param specialtyCode Professional specialty code (e.g., "CAR", "MG")
      * @param professionalId Professional identifier (for audit logging, may be null)
-     * @throws AccessDeniedException if access is denied or pending
+     * @throws ClinicalDocumentAccessDenied if access is denied or pending
      */
     private void evaluateAccessPolicies(RndcDocument document, String clinicId, String specialtyCode, String professionalId) {
         try {
@@ -686,7 +690,7 @@ public class ClinicalHistoryService {
             if (specialtyCode == null || specialtyCode.trim().isEmpty()) {
                 LOGGER.log(Level.WARNING, "Missing specialty for policy evaluation - clinic: {0}, document: {1}",
                         new Object[]{clinicId, document.getId()});
-                throw new AccessDeniedException("Specialty is required for document access");
+                throw new ClinicalDocumentAccessDenied("Specialty is required for document access");
             }
 
             // Convert specialty code to enum
@@ -695,7 +699,7 @@ public class ClinicalHistoryService {
                 specialty = uy.gub.hcen.policy.entity.MedicalSpecialty.fromCode(specialtyCode.toUpperCase());
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.WARNING, "Invalid specialty code: {0}", specialtyCode);
-                throw new AccessDeniedException("Invalid specialty code: " + specialtyCode);
+                throw new ClinicalDocumentAccessDenied("Invalid specialty code: " + specialtyCode);
             }
 
             // Build AccessRequest for policy evaluation
@@ -753,19 +757,19 @@ public class ClinicalHistoryService {
                         auditDetails
                 );
 
-                throw new AccessDeniedException(
+                throw new ClinicalDocumentAccessDenied(
                         "Access denied: " + result.getReason() +
                                 ". Patient has not granted access to this document for your clinic/specialty."
                 );
             }
 
-        } catch (AccessDeniedException e) {
+        } catch (ClinicalDocumentAccessDenied e) {
             // Re-throw access denied exceptions
             throw e;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error evaluating access policies", e);
             // On policy evaluation error, deny access by default (fail-safe)
-            throw new AccessDeniedException("Unable to evaluate access policies: " + e.getMessage());
+            throw new ClinicalDocumentAccessDenied("Unable to evaluate access policies: " + e.getMessage());
         }
     }
 
@@ -782,14 +786,7 @@ public class ClinicalHistoryService {
         }
     }
 
-    /**
-     * Custom exception for access denied (policy evaluation failure)
-     */
-    public static class AccessDeniedException extends RuntimeException {
-        public AccessDeniedException(String message) {
-            super(message);
-        }
-    }
+
 
 
     // =========================================================================

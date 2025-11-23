@@ -127,6 +127,21 @@ public class HcenClinicalHistoryClient {
         Response response = prepareAuthorizedRequest(target, clinicId, apiKey)
                 .accept(MediaType.WILDCARD_TYPE)
                 .get();
+
+            // Check for 403 Forbidden (Access Denied)
+            int statusCode = response.getStatus();
+            logger.debug("HCEN document content response status: {}", statusCode);
+
+            if (statusCode == Response.Status.FORBIDDEN.getStatusCode()) {
+                logger.info("Access denied (403) for document {} - patient CI: {}", documentId, patientCi);
+                response.close();
+                throw new uy.gub.clinic.exception.AccessDeniedException(
+                    "Acceso denegado al documento. Debe solicitar acceso para visualizarlo.",
+                    documentId,
+                    patientCi
+                );
+            }
+
             return Optional.of(response);
         } catch (ProcessingException ex) {
             logger.error("Error calling HCEN document content endpoint", ex);

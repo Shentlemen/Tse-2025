@@ -1,10 +1,12 @@
 package uy.gub.clinic.integration.dto.hcen;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Representa la respuesta del endpoint /clinical-history/documents/{id}/content de HCEN.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HcenDocumentContentResponse {
 
     private Long documentId;

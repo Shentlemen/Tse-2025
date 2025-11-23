@@ -64,11 +64,11 @@ public class PolicyEngine {
 
         try {
             // Step 1: Check cache
-            PolicyEvaluationResult cachedResult = checkCache(request);
-            if (cachedResult != null) {
-                LOGGER.log(Level.INFO, "Cache hit for policy decision: {0}", cachedResult.getDecision());
-                return cachedResult;
-            }
+//            PolicyEvaluationResult cachedResult = checkCache(request);
+//            if (cachedResult != null) {
+//                LOGGER.log(Level.INFO, "Cache hit for policy decision: {0}", cachedResult.getDecision());
+//                return cachedResult;
+//            }
 
             // Step 2: Evaluate policies based on clinic and specialty
             PolicyEvaluationResult result = evaluatePolicies(request);

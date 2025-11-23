@@ -75,16 +75,26 @@ public class HcenDocumentService {
             return Optional.empty();
         }
 
-        Optional<Response> responseOpt = clinicalHistoryClient.getDocumentContentRaw(
-                clinic.getHcenEndpoint(),
-                clinic.getId(),
-                clinic.getApiKey(),
-                documentId,
-                patientCi,
-                specialtyName
-        );
+        Optional<Response> responseOpt = null;
 
-        if (responseOpt.isEmpty()) {
+        try {
+            responseOpt = clinicalHistoryClient.getDocumentContentRaw(
+                    clinic.getHcenEndpoint(),
+                    clinic.getId(),
+                    clinic.getApiKey(),
+                    documentId,
+                    patientCi,
+                    specialtyName
+            );
+        } catch (uy.gub.clinic.exception.AccessDeniedException ex) {
+            // Re-throw AccessDeniedException so it can be handled by the servlet
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Error processing HCEN document content", ex);
+            throw  ex;
+        }
+
+        if (responseOpt == null || responseOpt.isEmpty()) {
             return Optional.empty();
         }
 
@@ -107,6 +117,9 @@ public class HcenDocumentService {
                 String resolvedType = mediaType != null ? mediaType.toString() : MediaType.APPLICATION_OCTET_STREAM;
                 return Optional.of(RemoteDocumentContent.binary(dataOpt.get(), resolvedType, filename));
             }
+        } catch (uy.gub.clinic.exception.AccessDeniedException ex) {
+            // Re-throw AccessDeniedException so it can be handled by the servlet
+            throw ex;
         } catch (Exception ex) {
             logger.error("Error processing HCEN document content", ex);
         }

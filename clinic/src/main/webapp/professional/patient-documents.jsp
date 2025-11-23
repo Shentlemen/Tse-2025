@@ -397,13 +397,9 @@
                                                         <c:choose>
                                                             <c:when test="${remoteDoc.hasContent}">
                                                                 <div class="btn-group w-100" role="group">
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100"
                                                                             onclick="viewExternalDocument(${remoteDoc.id})">
                                                                         <i class="fas fa-eye me-1"></i>Ver
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                                            onclick="downloadExternalDocument(${remoteDoc.id})">
-                                                                        <i class="fas fa-download me-1"></i>Descargar
                                                                     </button>
                                                                 </div>
                                                             </c:when>
@@ -887,6 +883,20 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Mensaje de Acceso Denegado -->
+                    <c:if test="${not empty accessDeniedError}">
+                        <div class="alert alert-warning fade show" role="alert">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-grow-1">
+                                    <i class="fas fa-lock me-2"></i><strong>Acceso Denegado:</strong> ${accessDeniedError}
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="requestAccessFromModal(${deniedDocumentId})" data-bs-dismiss="modal">
+                                <i class="fas fa-paper-plane me-1"></i>Solicitar Acceso a este Documento
+                            </button>
+                        </div>
+                    </c:if>
+
                     <c:if test="${not empty selectedRemoteDocument}">
                         <c:set var="remoteDetail" value="${selectedRemoteDocument}"/>
                         <div class="card mb-3 border-secondary">
@@ -1394,6 +1404,12 @@
 
             const modal = new bootstrap.Modal(document.getElementById('requestAccessModal'));
             modal.show();
+        }
+
+        function requestAccessFromModal(documentId) {
+            // This function is called from the access denied alert in the view document modal
+            // It opens the access request modal with the document ID pre-filled
+            openRequestAccessModal(documentId);
         }
 
         function clearDocumentSelection() {

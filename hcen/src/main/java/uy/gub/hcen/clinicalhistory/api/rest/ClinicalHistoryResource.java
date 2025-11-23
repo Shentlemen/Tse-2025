@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import uy.gub.hcen.api.dto.ErrorResponse;
+import uy.gub.hcen.clinicalhistory.service.ClinicalDocumentAccessDenied;
 import uy.gub.hcen.audit.entity.AuditLog;
 import uy.gub.hcen.clinicalhistory.dto.*;
 import uy.gub.hcen.clinicalhistory.service.ClinicalHistoryService;
@@ -493,7 +494,74 @@ public class ClinicalHistoryResource {
                     .header("Expires", "0")
                     .build();
 
-        } catch (ClinicalHistoryService.AccessDeniedException e) {
+        } catch (jakarta.ejb.EJBException ejbEx) {
+            // EJB wraps unchecked exceptions - unwrap to get the actual cause
+            Throwable cause = ejbEx.getCause();
+
+            if (cause instanceof ClinicalDocumentAccessDenied) {
+                LOGGER.log(Level.WARNING, "Access denied by policy evaluation: {0}", cause.getMessage());
+                // Access already logged in service layer, just return 403
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(ErrorResponse.forbidden(cause.getMessage()))
+                        .build();
+            } else if (cause instanceof ClinicalHistoryService.DocumentRetrievalException) {
+                ClinicalHistoryService.DocumentRetrievalException docEx =
+                    (ClinicalHistoryService.DocumentRetrievalException) cause;
+
+                LOGGER.log(Level.WARNING, "Document retrieval failed: {0}", docEx.getMessage());
+
+                // Log failed access
+                auditService.logAccessEvent(
+                        professionalId != null ? professionalId : patientCi,
+                        requestingClinicId != null ? "CLINIC" : "PATIENT",
+                        "DOCUMENT",
+                        documentId.toString(),
+                        AuditLog.ActionOutcome.FAILURE,
+                        ipAddress,
+                        userAgent,
+                        null
+                );
+
+                // Map business exceptions to appropriate HTTP status codes
+                if (docEx.getMessage().contains("no autorizado")) {
+                    return Response.status(Response.Status.FORBIDDEN)
+                            .entity(ErrorResponse.forbidden("Access denied to document " + documentId))
+                            .build();
+                } else if (docEx.getMessage().contains("no encontrado")) {
+                    return Response.status(Response.Status.NOT_FOUND)
+                            .entity(ErrorResponse.notFound("Document", documentId.toString()))
+                            .build();
+                } else if (docEx.getMessage().contains("nodo periférico")) {
+                    return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                            .entity(ErrorResponse.internalServerError("Peripheral node unavailable: " + docEx.getMessage()))
+                            .build();
+                } else {
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(ErrorResponse.internalServerError("Document retrieval failed: " + docEx.getMessage()))
+                            .build();
+                }
+            } else {
+                // Unknown wrapped exception
+                LOGGER.log(Level.SEVERE, "Unexpected EJB exception retrieving document: " + documentId, ejbEx);
+
+                auditService.logAccessEvent(
+                        professionalId != null ? professionalId : patientCi,
+                        requestingClinicId != null ? "CLINIC" : "PATIENT",
+                        "DOCUMENT",
+                        documentId.toString(),
+                        AuditLog.ActionOutcome.FAILURE,
+                        ipAddress,
+                        userAgent,
+                        null
+                );
+
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(ErrorResponse.internalServerError("Unexpected error: " +
+                            (cause != null ? cause.getMessage() : ejbEx.getMessage())))
+                        .build();
+            }
+
+        } catch (ClinicalDocumentAccessDenied e) {
             LOGGER.log(Level.WARNING, "Access denied by policy evaluation: {0}", e.getMessage());
 
             // Access already logged in service layer, just return 403

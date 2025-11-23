@@ -322,11 +322,21 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                     request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
                 }
             }
-        } catch (NumberFormatException ex) {
-            request.setAttribute("error", "Identificador de documento externo inválido.");
         } catch (Exception ex) {
-            logger.error("Error al preparar la vista de documento externo", ex);
-            request.setAttribute("error", "Ocurrió un error al consultar el documento en HCEN.");
+            // Check if the exception is or wraps an AccessDeniedException
+            uy.gub.clinic.exception.AccessDeniedException accessDenied = extractAccessDeniedException(ex);
+            if (accessDenied != null) {
+                logger.info("Access denied for document {} - patient CI: {}", accessDenied.getDocumentId(), accessDenied.getPatientCi());
+                request.setAttribute("accessDeniedError", accessDenied.getMessage());
+                request.setAttribute("deniedDocumentId", accessDenied.getDocumentId());
+                // Keep viewRemoteDocument = true so the modal shows with the error message
+                // User can manually request access from the modal
+            } else if (ex instanceof NumberFormatException) {
+                request.setAttribute("error", "Identificador de documento externo inválido.");
+            } else {
+                logger.error("Error al preparar la vista de documento externo", ex);
+                request.setAttribute("error", "Ocurrió un error al consultar el documento en HCEN.");
+            }
         }
     }
 
@@ -334,7 +344,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                                               HttpServletResponse response,
                                               Clinic clinic,
                                               Patient patient,
-                                              String remoteDocumentIdStr) throws ServletException {
+                                              String remoteDocumentIdStr) throws ServletException, IOException {
         if (patient.getDocumentNumber() == null || patient.getDocumentNumber().isBlank()) {
             throw new ServletException("El paciente no tiene cédula registrada para consultar HCEN.");
         }
@@ -379,11 +389,18 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_NO_CONTENT, "El documento no tiene contenido disponible.");
             }
-        } catch (NumberFormatException ex) {
-            throw new ServletException("Identificador de documento externo inválido.", ex);
         } catch (Exception ex) {
-            logger.error("Error al descargar documento externo desde HCEN", ex);
-            throw new ServletException("No se pudo descargar el documento solicitado.", ex);
+            // Check if the exception is or wraps an AccessDeniedException
+            uy.gub.clinic.exception.AccessDeniedException accessDenied = extractAccessDeniedException(ex);
+            if (accessDenied != null) {
+                logger.info("Access denied for document download {} - patient CI: {}", accessDenied.getDocumentId(), accessDenied.getPatientCi());
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, accessDenied.getMessage());
+            } else if (ex instanceof NumberFormatException) {
+                throw new ServletException("Identificador de documento externo inválido.", ex);
+            } else {
+                logger.error("Error al descargar documento externo desde HCEN", ex);
+                throw new ServletException("No se pudo descargar el documento solicitado.", ex);
+            }
         }
     }
     
@@ -910,6 +927,34 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             logger.error("Error retrieving professional's specialty code", ex);
             return null;
         }
+    }
+
+    /**
+     * Extracts AccessDeniedException from an exception chain.
+     * This is needed because EJB container wraps exceptions in EJBTransactionRolledbackException.
+     * @param ex The exception to unwrap
+     * @return The AccessDeniedException if found, null otherwise
+     */
+    private uy.gub.clinic.exception.AccessDeniedException extractAccessDeniedException(Throwable ex) {
+        if (ex == null) {
+            return null;
+        }
+
+        // Check if the exception itself is AccessDeniedException
+        if (ex instanceof uy.gub.clinic.exception.AccessDeniedException) {
+            return (uy.gub.clinic.exception.AccessDeniedException) ex;
+        }
+
+        // Walk through the cause chain to find AccessDeniedException
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause instanceof uy.gub.clinic.exception.AccessDeniedException) {
+                return (uy.gub.clinic.exception.AccessDeniedException) cause;
+            }
+            cause = cause.getCause();
+        }
+
+        return null;
     }
 }
 
