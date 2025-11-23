@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: evaluate access using policies and approved accesss requests">
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/DocumentResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/DocumentResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V001__initial_migration.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V001__initial_migration.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" afterDir="false" />
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: use the fhir endpoint to pull the clinical documents from hcen">
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -438,7 +431,7 @@
       <workItem from="1763416028699" duration="81659000" />
       <workItem from="1763671489670" duration="26599000" />
       <workItem from="1763862461244" duration="4080000" />
-      <workItem from="1763906630660" duration="9188000" />
+      <workItem from="1763906630660" duration="10931000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -816,7 +809,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763910840037</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="feat: use the fhir endpoint to pull the clinical documents from hcen">
+      <option name="closed" value="true" />
+      <created>1763935085562</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1763935085562</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -840,7 +841,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: add admin hcen pages and sso configs" />
     <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
     <MESSAGE value="feat: add peripheral node client and pdi client integration" />
     <MESSAGE value="feat: polish sso gub.uy response, implement admin UI" />
@@ -865,7 +865,8 @@
     <MESSAGE value="feat: add hcen docs to the clinic, pull the docs from other clinics" />
     <MESSAGE value="feat: evaluate access using policies" />
     <MESSAGE value="feat: evaluate access using policies and approved accesss requests" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: evaluate access using policies and approved accesss requests" />
+    <MESSAGE value="feat: use the fhir endpoint to pull the clinical documents from hcen" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: use the fhir endpoint to pull the clinical documents from hcen" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -911,11 +912,6 @@
           <option name="timeStamp" value="34" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/inus/InusService.java</url>
-          <line>657</line>
-          <option name="timeStamp" value="37" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/messaging/validator/MessageValidator.java</url>
           <line>323</line>
           <option name="timeStamp" value="41" />
@@ -946,11 +942,6 @@
           <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/audit/AuditService.java</url>
-          <line>411</line>
-          <option name="timeStamp" value="64" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java</url>
           <line>244</line>
           <option name="timeStamp" value="66" />
@@ -959,11 +950,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/api/rest/ClinicResource.java</url>
           <line>333</line>
           <option name="timeStamp" value="74" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java</url>
-          <line>78</line>
-          <option name="timeStamp" value="87" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java</url>
@@ -976,14 +962,24 @@
           <option name="timeStamp" value="92" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
-          <line>322</line>
-          <option name="timeStamp" value="93" />
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java</url>
+          <line>546</line>
+          <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java</url>
-          <line>879</line>
-          <option name="timeStamp" value="94" />
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java</url>
+          <line>81</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java</url>
+          <line>455</line>
+          <option name="timeStamp" value="98" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java</url>
+          <line>433</line>
+          <option name="timeStamp" value="99" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

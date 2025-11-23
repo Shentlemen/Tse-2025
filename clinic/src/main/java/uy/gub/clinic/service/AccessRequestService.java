@@ -100,7 +100,7 @@ public class AccessRequestService {
                     hcenRequest.setProfessionalId("professional-" + professional.getId());
                     hcenRequest.setProfessionalName(professional.getFullName());
                     hcenRequest.setSpecialty(professional.getSpecialty() != null ? 
-                        professional.getSpecialty().getName() : null);
+                        professional.getSpecialty().getCode() : null);
                     hcenRequest.setPatientCi(patientCI);
                     hcenRequest.setDocumentId(documentId);
                     hcenRequest.setRequestReason(requestReason);
