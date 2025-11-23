@@ -4,15 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: evaluate access using policies">
+    <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: evaluate access using policies and approved accesss requests">
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/integration/HcenClinicalHistoryClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/ProfessionalPatientDocumentsServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/DocumentResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/DocumentResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V001__initial_migration.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/resources/db/migration/V001__initial_migration.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/service/AccessRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/policy/PolicyEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" beforeDir="false" afterPath="$PROJECT_DIR$/../prestador_de_salud/prestador/target/prestador.war" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/service/ClinicalHistoryService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -436,7 +438,7 @@
       <workItem from="1763416028699" duration="81659000" />
       <workItem from="1763671489670" duration="26599000" />
       <workItem from="1763862461244" duration="4080000" />
-      <workItem from="1763906630660" duration="3936000" />
+      <workItem from="1763906630660" duration="9188000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -806,7 +808,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763839275858</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="feat: evaluate access using policies and approved accesss requests">
+      <option name="closed" value="true" />
+      <created>1763910840037</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1763910840037</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -830,7 +840,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: implement hcen core services" />
     <MESSAGE value="feat: add admin hcen pages and sso configs" />
     <MESSAGE value="feat: add admin hcen clinic management and peripheral nodes client" />
     <MESSAGE value="feat: add peripheral node client and pdi client integration" />
@@ -855,7 +864,8 @@
     <MESSAGE value="fix: audit entry, accept request and jwt validation" />
     <MESSAGE value="feat: add hcen docs to the clinic, pull the docs from other clinics" />
     <MESSAGE value="feat: evaluate access using policies" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: evaluate access using policies" />
+    <MESSAGE value="feat: evaluate access using policies and approved accesss requests" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: evaluate access using policies and approved accesss requests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -961,9 +971,19 @@
           <option name="timeStamp" value="89" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/policy/repository/AccessRequestRepositoryImpl.java</url>
-          <line>283</line>
-          <option name="timeStamp" value="91" />
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
+          <line>552</line>
+          <option name="timeStamp" value="92" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/peripheral/PeripheralNodeClient.java</url>
+          <line>322</line>
+          <option name="timeStamp" value="93" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/clinicalhistory/api/rest/ClinicalHistoryResource.java</url>
+          <line>879</line>
+          <option name="timeStamp" value="94" />
         </line-breakpoint>
         <breakpoint enabled="true" type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />

@@ -6,10 +6,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.hl7.fhir.r4.model.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.ClinicalDocument;
 import uy.gub.clinic.service.ClinicalDocumentService;
+import uy.gub.clinic.service.FhirMappingService;
 
 import java.util.Optional;
 
@@ -31,7 +33,10 @@ public class DocumentResource {
     
     @Inject
     private ClinicalDocumentService documentService;
-    
+
+    @Inject
+    private FhirMappingService fhirMappingService;
+
     public DocumentResource() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
@@ -79,6 +84,57 @@ public class DocumentResource {
         }
     }
     
+    /**
+     * Obtiene un documento clínico en formato FHIR
+     * Este endpoint es usado por HCEN y otras clínicas para descargar documentos
+     * en formato FHIR estándar (HL7 FHIR R4)
+     *
+     * @param id ID del documento
+     * @return Documento clínico en formato FHIR Bundle JSON
+     */
+    @GET
+    @Path("/{id}/fhir")
+    public Response getDocumentFhir(@PathParam("id") Long id) {
+        try {
+            logger.info("Retrieving FHIR document - ID: {}", id);
+
+            Optional<ClinicalDocument> docOpt = documentService.findById(id);
+
+            if (docOpt.isEmpty()) {
+                logger.warn("Document not found - ID: {}", id);
+                return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"Document not found\"}")
+                    .build();
+            }
+
+            ClinicalDocument document = docOpt.get();
+
+            // Convertir documento a Bundle FHIR
+            Bundle fhirBundle = fhirMappingService.convertDocumentToFhirBundle(document);
+
+            // Agregar el recurso Patient al Bundle
+            org.hl7.fhir.r4.model.Patient fhirPatient = fhirMappingService.convertToFhirPatient(document.getPatient());
+            fhirBundle.getEntry().add(0, new Bundle.BundleEntryComponent()
+                .setResource(fhirPatient)
+                .setFullUrl("Patient/" + fhirPatient.getId()));
+
+            // Serializar a JSON
+            String jsonResponse = fhirMappingService.bundleToJson(fhirBundle);
+
+            logger.info("FHIR document retrieved successfully - ID: {}", id);
+
+            return Response.ok(jsonResponse)
+                .header("Content-Type", "application/fhir+json")
+                .build();
+
+        } catch (Exception e) {
+            logger.error("Error retrieving FHIR document - ID: {}", id, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("{\"error\": \"Error retrieving FHIR document: " + e.getMessage() + "\"}")
+                .build();
+        }
+    }
+
     /**
      * Construye el JSON del documento para respuesta
      */

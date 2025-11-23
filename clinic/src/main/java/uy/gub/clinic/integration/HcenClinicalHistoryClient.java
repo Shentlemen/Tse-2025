@@ -113,20 +113,20 @@ public class HcenClinicalHistoryClient {
                                                     Long documentId,
                                                     String patientCi,
                                                     String specialtyName) {
-        String endpoint = buildBaseUrl(baseUrl) + "/clinical-history/documents/" + documentId + "/content";
+        String endpoint = buildBaseUrl(baseUrl) + "/clinical-history/documents/" + documentId + "/fhir";
 
         try {
-        WebTarget target = httpClient.target(endpoint)
-                .queryParam("patientCi", patientCi);
+            WebTarget target = httpClient.target(endpoint)
+                    .queryParam("patientCi", patientCi);
 
-        // Add specialty parameter if provided
-        if (specialtyName != null && !specialtyName.isBlank()) {
-            target = target.queryParam("specialty", specialtyName);
-        }
+            // Add specialty parameter if provided
+            if (specialtyName != null && !specialtyName.isBlank()) {
+                target = target.queryParam("specialty", specialtyName);
+            }
 
-        Response response = prepareAuthorizedRequest(target, clinicId, apiKey)
-                .accept(MediaType.WILDCARD_TYPE)
-                .get();
+            Response response = prepareAuthorizedRequest(target, clinicId, apiKey)
+                    .accept(MediaType.WILDCARD_TYPE)
+                    .get();
 
             // Check for 403 Forbidden (Access Denied)
             int statusCode = response.getStatus();
@@ -136,9 +136,9 @@ public class HcenClinicalHistoryClient {
                 logger.info("Access denied (403) for document {} - patient CI: {}", documentId, patientCi);
                 response.close();
                 throw new uy.gub.clinic.exception.AccessDeniedException(
-                    "Acceso denegado al documento. Debe solicitar acceso para visualizarlo.",
-                    documentId,
-                    patientCi
+                        "Acceso denegado al documento. Debe solicitar acceso para visualizarlo.",
+                        documentId,
+                        patientCi
                 );
             }
 
@@ -158,9 +158,29 @@ public class HcenClinicalHistoryClient {
         if (mediaType != null && mediaType.toString().contains("json")) {
             try {
                 String json = response.readEntity(String.class);
-                HcenDocumentContentResponse content =
-                        objectMapper.readValue(json, HcenDocumentContentResponse.class);
-                return Optional.of(content);
+
+                // Check if this is a FHIR document (application/fhir+json or similar)
+                if (mediaType.toString().toLowerCase().contains("fhir")) {
+                    // For FHIR documents, parse the entire JSON as a JsonNode
+                    // and store it in the content field to preserve all FHIR structure
+                    logger.info("Parsing FHIR document response");
+                    com.fasterxml.jackson.databind.JsonNode fhirJson = objectMapper.readTree(json);
+
+                    HcenDocumentContentResponse content = new HcenDocumentContentResponse();
+                    content.setContent(fhirJson);
+                    content.setContentType(mediaType.toString());
+                    content.setAvailable(true);
+
+                    logger.debug("Successfully parsed FHIR document with resourceType: {}",
+                                fhirJson.has("resourceType") ? fhirJson.get("resourceType").asText() : "unknown");
+
+                    return Optional.of(content);
+                } else {
+                    // For non-FHIR JSON, try to deserialize into the DTO structure
+                    HcenDocumentContentResponse content =
+                            objectMapper.readValue(json, HcenDocumentContentResponse.class);
+                    return Optional.of(content);
+                }
             } catch (Exception ex) {
                 logger.error("Error parsing HCEN document content JSON", ex);
             }

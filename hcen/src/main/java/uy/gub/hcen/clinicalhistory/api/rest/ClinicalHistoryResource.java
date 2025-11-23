@@ -808,10 +808,17 @@ public class ClinicalHistoryResource {
      *   <li>Observation - Individual observations (vital signs, allergies)</li>
      * </ul>
      *
+     * <p>Supports both patient self-access and professional access with policy evaluation:
+     * <ul>
+     *   <li><strong>Patient Access:</strong> Only patientCi required, no policy evaluation</li>
+     *   <li><strong>Professional Access:</strong> Requires specialty parameter, evaluates access policies and approved access requests</li>
+     * </ul>
+     *
      * <p>Flow:
      * <ol>
      *   <li>Authenticates patient from SecurityContext (or query param in development)</li>
      *   <li>Retrieves document metadata from RNDC (verifies patient authorization)</li>
+     *   <li>If professional access: Evaluates access policies (including approved access requests)</li>
      *   <li>Calls peripheral node at documentLocator URL with Accept: application/fhir+json</li>
      *   <li>Returns FHIR JSON directly to frontend (no transformation)</li>
      *   <li>Logs access in audit system</li>
@@ -836,15 +843,21 @@ public class ClinicalHistoryResource {
      * }
      * </pre>
      *
-     * <p>Example:
-     * GET /api/clinical-history/documents/123/fhir?patientCi=12345678
+     * <p>Examples:
+     * <ul>
+     *   <li>Patient Access: GET /api/clinical-history/documents/123/fhir?patientCi=12345678</li>
+     *   <li>Professional Access: GET /api/clinical-history/documents/123/fhir?patientCi=12345678&specialty=CAR&professionalId=prof001</li>
+     * </ul>
      *
      * @param documentId Document ID from RNDC
      * @param patientCi Patient's CI (for authorization, in development - use JWT in production)
+     * @param specialty Professional's specialty (required for clinic/professional requests)
+     * @param professionalId Professional's ID (optional for clinic/professional requests)
+     * @param securityContext Security context containing clinic principal (if clinic request)
      * @param request HTTP servlet request (for IP address and user agent extraction)
      * @return 200 OK with FHIR JSON document (Content-Type: application/fhir+json)
-     *         400 Bad Request if patientCi is missing
-     *         403 Forbidden if patient doesn't own the document
+     *         400 Bad Request if patientCi is missing or specialty is missing for clinic requests
+     *         403 Forbidden if patient doesn't own the document or policy denies access
      *         404 Not Found if document doesn't exist
      *         502 Bad Gateway if peripheral node is unreachable
      *         500 Internal Server Error for other failures
@@ -855,14 +868,26 @@ public class ClinicalHistoryResource {
     public Response getFhirDocument(
             @PathParam("documentId") Long documentId,
             @QueryParam("patientCi") String patientCi,
+            @QueryParam("specialty") String specialty,
+            @QueryParam("professionalId") String professionalId,
+            @Context jakarta.ws.rs.core.SecurityContext securityContext,
             @Context HttpServletRequest request) {
 
-        LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/fhir - patientCi: {1}",
-                new Object[]{documentId, patientCi});
+        LOGGER.log(Level.INFO, "GET /api/clinical-history/documents/{0}/fhir - patientCi: {1}, specialty: {2}, professionalId: {3}",
+                new Object[]{documentId, patientCi, specialty, professionalId});
 
         // Extract IP address and user agent for audit logging
         String ipAddress = extractIpAddress(request);
         String userAgent = extractUserAgent(request);
+
+        // Extract requesting clinic ID from security context (if present)
+        String requestingClinicId = null;
+        if (securityContext != null && securityContext.getUserPrincipal() != null) {
+            if (securityContext.isUserInRole("CLINIC")) {
+                requestingClinicId = securityContext.getUserPrincipal().getName();
+                LOGGER.log(Level.INFO, "Clinic request detected - clinicId: {0}", requestingClinicId);
+            }
+        }
 
         try {
             // Validate patientCi
@@ -873,6 +898,18 @@ public class ClinicalHistoryResource {
                         .build();
             }
 
+            if(!patientCi.startsWith("uy-ci-")){
+                patientCi = "uy-ci-" + patientCi;
+            }
+
+            // Validate specialty parameter if this is a clinic request
+            if (requestingClinicId != null && (specialty == null || specialty.trim().isEmpty())) {
+                LOGGER.log(Level.WARNING, "Missing specialty parameter for clinic request - clinicId: {0}", requestingClinicId);
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.validationError("Specialty is required for professional/clinic FHIR document access"))
+                        .build();
+            }
+
             // TODO: Extract patientCi from JWT SecurityContext instead of query param
             // For now, accept it as query param for development
             // In production:
@@ -880,7 +917,14 @@ public class ClinicalHistoryResource {
             // String patientCi = securityContext.getUserPrincipal().getName();
 
             // Call service to retrieve FHIR document
-            String fhirJson = clinicalHistoryService.getFhirDocument(documentId, patientCi);
+            // Policy evaluation happens inside this method if requestingClinicId is provided
+            String fhirJson = clinicalHistoryService.getFhirDocument(
+                    documentId,
+                    patientCi,
+                    requestingClinicId,
+                    specialty,
+                    professionalId
+            );
 
             LOGGER.log(Level.INFO, "Returning FHIR document: {0} ({1} characters)",
                     new Object[]{documentId, fhirJson.length()});
@@ -893,13 +937,83 @@ public class ClinicalHistoryResource {
                     .header("Expires", "0")
                     .build();
 
+        } catch (jakarta.ejb.EJBException ejbEx) {
+            // EJB wraps unchecked exceptions - unwrap to get the actual cause
+            Throwable cause = ejbEx.getCause();
+
+            if (cause instanceof ClinicalDocumentAccessDenied) {
+                LOGGER.log(Level.WARNING, "FHIR document access denied by policy evaluation: {0}", cause.getMessage());
+                // Access already logged in service layer, just return 403
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(ErrorResponse.forbidden(cause.getMessage()))
+                        .build();
+            } else if (cause instanceof ClinicalHistoryService.DocumentRetrievalException) {
+                ClinicalHistoryService.DocumentRetrievalException docEx =
+                    (ClinicalHistoryService.DocumentRetrievalException) cause;
+
+                LOGGER.log(Level.WARNING, "FHIR document retrieval failed: {0}", docEx.getMessage());
+
+                // Log failed access
+                auditService.logAccessEvent(
+                        professionalId != null ? professionalId : patientCi,
+                        requestingClinicId != null ? "CLINIC" : "PATIENT",
+                        "DOCUMENT",
+                        documentId.toString(),
+                        AuditLog.ActionOutcome.FAILURE,
+                        ipAddress,
+                        userAgent,
+                        null
+                );
+
+                // Map business exceptions to appropriate HTTP status codes
+                if (docEx.getMessage().contains("no autorizado")) {
+                    return Response.status(Response.Status.FORBIDDEN)
+                            .entity(ErrorResponse.forbidden("Access denied to document " + documentId))
+                            .build();
+                } else if (docEx.getMessage().contains("no encontrado")) {
+                    return Response.status(Response.Status.NOT_FOUND)
+                            .entity(ErrorResponse.notFound("Document", documentId.toString()))
+                            .build();
+                } else if (docEx.getMessage().contains("nodo periférico")) {
+                    return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                            .entity(ErrorResponse.internalServerError("Peripheral node unavailable: " + docEx.getMessage()))
+                            .build();
+                } else if (docEx.getMessage().contains("Formato de documento inválido")) {
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(ErrorResponse.internalServerError("Invalid document format: " + docEx.getMessage()))
+                            .build();
+                } else {
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(ErrorResponse.internalServerError("Document retrieval failed: " + docEx.getMessage()))
+                            .build();
+                }
+            } else {
+                // Unknown wrapped exception
+                LOGGER.log(Level.SEVERE, "Unexpected EJB exception retrieving FHIR document: " + documentId, ejbEx);
+
+                auditService.logAccessEvent(
+                        professionalId != null ? professionalId : patientCi,
+                        requestingClinicId != null ? "CLINIC" : "PATIENT",
+                        "DOCUMENT",
+                        documentId.toString(),
+                        AuditLog.ActionOutcome.FAILURE,
+                        ipAddress,
+                        userAgent,
+                        null
+                );
+
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .entity(ErrorResponse.internalServerError("Unexpected error: " + ejbEx.getMessage()))
+                        .build();
+            }
+
         } catch (ClinicalHistoryService.DocumentRetrievalException e) {
             LOGGER.log(Level.WARNING, "FHIR document retrieval failed: {0}", e.getMessage());
 
             // Log failed access attempt
             auditService.logAccessEvent(
-                    patientCi,
-                    "PATIENT",
+                    professionalId != null ? professionalId : patientCi,
+                    requestingClinicId != null ? "CLINIC" : "PATIENT",
                     "DOCUMENT",
                     documentId.toString(),
                     AuditLog.ActionOutcome.FAILURE,
@@ -936,8 +1050,8 @@ public class ClinicalHistoryResource {
 
             // Log failed access attempt
             auditService.logAccessEvent(
-                    patientCi,
-                    "PATIENT",
+                    professionalId != null ? professionalId : patientCi,
+                    requestingClinicId != null ? "CLINIC" : "PATIENT",
                     "DOCUMENT",
                     documentId.toString(),
                     AuditLog.ActionOutcome.FAILURE,

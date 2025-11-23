@@ -318,8 +318,39 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                     request.setAttribute("remoteDocumentBinaryId", documentId);
                     request.setAttribute("remoteDocumentBinaryContentType", content.getContentType());
                 } else if (content.getInlineContent() != null) {
-                    request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
-                    request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                    // Check if content is FHIR JSON
+                    if (isFhirContentType(content.getContentType())) {
+                        // Parse and validate the FHIR JSON
+                        try {
+                            com.fasterxml.jackson.databind.JsonNode fhirBundle = objectMapper.readTree(content.getInlineContent());
+
+                            // Validate it's a FHIR Bundle
+                            if (fhirBundle.has("resourceType") && "Bundle".equals(fhirBundle.get("resourceType").asText())) {
+                                logger.info("Successfully parsed FHIR Bundle for document {}", documentId);
+
+                                // Set the parsed FHIR content for the JSP
+                                // The JSP expects this to be output without escapeXml so it becomes a JavaScript object
+                                request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
+                                request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                                request.setAttribute("isFhirDocument", true);
+                            } else {
+                                logger.warn("Document content is not a FHIR Bundle: resourceType={}",
+                                    fhirBundle.has("resourceType") ? fhirBundle.get("resourceType").asText() : "missing");
+                                request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
+                                request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                            }
+                        } catch (Exception parseEx) {
+                            logger.error("Error parsing FHIR JSON for document {}", documentId, parseEx);
+                            // Fall back to showing raw content
+                            request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
+                            request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                            request.setAttribute("fhirParseError", "Error al analizar el documento FHIR: " + parseEx.getMessage());
+                        }
+                    } else {
+                        // Non-FHIR inline content (plain text, generic JSON, etc.)
+                        request.setAttribute("remoteDocumentInlineContent", content.getInlineContent());
+                        request.setAttribute("remoteDocumentInlineContentType", content.getContentType());
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -338,6 +369,18 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
                 request.setAttribute("error", "Ocurrió un error al consultar el documento en HCEN.");
             }
         }
+    }
+
+    /**
+     * Checks if the content type indicates FHIR JSON format.
+     */
+    private boolean isFhirContentType(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        String normalized = contentType.toLowerCase();
+        return normalized.contains("application/fhir+json") ||
+               normalized.contains("application/json+fhir");
     }
 
     private void handleRemoteDocumentDownload(HttpServletRequest request,

@@ -944,25 +944,291 @@
                         </div>
 
                         <c:if test="${not empty remoteDocumentInlineContent}">
-                            <div class="card mb-3 border-secondary">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Contenido</h6>
+                            <!-- FHIR Document Display -->
+                            <div id="fhirDocumentContainer">
+                                <!-- Main FHIR Content -->
+                                <div class="card mb-3 border-primary">
+                                    <div class="card-body" id="fhirMainContent">
+                                        <p class="text-center text-muted">Cargando documento FHIR...</p>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <pre class="bg-light p-3 rounded" style="white-space: pre-wrap;"><c:out value="${remoteDocumentInlineContent}"/></pre>
-                                </div>
-                            </div>
-                        </c:if>
 
-                        <c:if test="${remoteDocumentHasBinaryContent}">
-                            <div class="alert alert-info" role="alert">
-                                Este documento está disponible en formato <strong>${remoteDocumentBinaryContentType}</strong>.
-                                Puede descargarlo para visualizarlo:
-                                <a class="btn btn-sm btn-outline-secondary ms-2"
-                                   href="<c:url value='/professional/patient-documents'/>?patientId=${patient.id}&action=downloadRemote&remoteDocumentId=${remoteDocumentBinaryId}">
-                                    <i class="fas fa-download me-1"></i>Descargar desde HCEN
-                                </a>
+                                <!-- Raw FHIR JSON (collapsible) -->
+                                <div class="card mb-3 border-secondary">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#rawFhirJson">
+                                                <i class="fas fa-code me-2"></i>Ver JSON FHIR completo
+                                                <i class="fas fa-chevron-down float-end"></i>
+                                            </a>
+                                        </h6>
+                                    </div>
+                                    <div class="collapse" id="rawFhirJson">
+                                        <div class="card-body">
+                                            <pre class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;"><c:out value="${remoteDocumentInlineContent}"/></pre>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <style>
+                                .fhir-document {
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                }
+                                .fhir-header {
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    color: white;
+                                    padding: 20px;
+                                    border-radius: 8px;
+                                    margin-bottom: 20px;
+                                }
+                                .fhir-header h4 {
+                                    margin: 0 0 10px 0;
+                                    font-weight: 600;
+                                }
+                                .fhir-sections {
+                                    margin-top: 20px;
+                                }
+                                .fhir-section {
+                                    background: #f8f9fa;
+                                    border-left: 4px solid #667eea;
+                                    padding: 15px;
+                                    margin-bottom: 15px;
+                                    border-radius: 4px;
+                                }
+                                .fhir-section h5 {
+                                    color: #667eea;
+                                    margin: 0 0 10px 0;
+                                    font-weight: 600;
+                                    font-size: 1.1rem;
+                                }
+                                .fhir-narrative {
+                                    line-height: 1.6;
+                                    color: #333;
+                                }
+                                .fhir-narrative div {
+                                    margin: 0;
+                                }
+                            </style>
+
+                            <script>
+                            // Parse and display FHIR Document
+                            (function() {
+                                try {
+                                    var fhirDoc = <c:out value="${remoteDocumentInlineContent}" escapeXml="false"/>;
+
+                                    if (!fhirDoc) {
+                                        showError('No se pudo cargar el documento FHIR.');
+                                        return;
+                                    }
+
+                                    // Validate FHIR format
+                                    if (!fhirDoc.resourceType) {
+                                        throw new Error('Formato FHIR inválido: falta resourceType');
+                                    }
+
+                                    displayFhirDocument(fhirDoc);
+
+                                } catch(error) {
+                                    console.error('Error parsing FHIR JSON:', error);
+                                    document.getElementById('fhirMainContent').innerHTML =
+                                        '<p class="text-danger">Error al cargar el documento FHIR: ' +
+                                        escapeHtml(error.message) + '</p>';
+                                }
+
+                                /**
+                                 * Display FHIR document in modal
+                                 */
+                                function displayFhirDocument(fhirDoc) {
+                                    var content = '';
+
+                                    if (fhirDoc.resourceType === 'Bundle' && fhirDoc.type === 'document') {
+                                        // Parse FHIR Bundle - look for Composition
+                                        var composition = null;
+                                        if (fhirDoc.entry) {
+                                            for (var i = 0; i < fhirDoc.entry.length; i++) {
+                                                if (fhirDoc.entry[i].resource &&
+                                                    fhirDoc.entry[i].resource.resourceType === 'Composition') {
+                                                    composition = fhirDoc.entry[i].resource;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (composition) {
+                                            content = renderComposition(composition);
+                                        } else {
+                                            content = '<p class="text-muted">No se pudo extraer el contenido del documento FHIR.</p>';
+                                        }
+
+                                    } else if (fhirDoc.resourceType === 'DocumentReference') {
+                                        // Parse DocumentReference
+                                        content = renderDocumentReference(fhirDoc);
+
+                                    } else {
+                                        content = '<p class="text-muted">Formato FHIR no reconocido.</p>';
+                                    }
+
+                                    // Display in container
+                                    document.getElementById('fhirMainContent').innerHTML = content;
+                                }
+
+                                /**
+                                 * Render FHIR Composition
+                                 */
+                                function renderComposition(composition) {
+                                    var html = '<div class="fhir-document"><div class="fhir-header">';
+
+                                    html += '<h4>' + escapeHtml(composition.title || 'Documento Clínico') + '</h4>';
+
+                                    if (composition.date) {
+                                        html += '<p style="margin-bottom: 5px;">📅 ' + formatFhirDate(composition.date) + '</p>';
+                                    }
+
+                                    if (composition.author && composition.author.length > 0) {
+                                        var authors = composition.author.map(function(a) {
+                                            return escapeHtml(a.display || a.reference || '');
+                                        }).join(', ');
+                                        html += '<p style="font-size: 14px; margin-bottom: 5px;"><strong>Autor:</strong> ' +
+                                                authors + '</p>';
+                                    }
+
+                                    if (composition.subject) {
+                                        html += '<p style="font-size: 14px;"><strong>Paciente:</strong> ' +
+                                                escapeHtml(composition.subject.display || composition.subject.reference || '') + '</p>';
+                                    }
+
+                                    html += '</div><hr style="border: 1px solid #e0e6ed; margin: 20px 0;">';
+
+                                    // Render sections
+                                    if (composition.section && composition.section.length > 0) {
+                                        html += '<div class="fhir-sections">';
+                                        for (var i = 0; i < composition.section.length; i++) {
+                                            html += renderSection(composition.section[i], 0);
+                                        }
+                                        html += '</div>';
+                                    } else {
+                                        html += '<p class="text-muted">No se encontró contenido en las secciones del documento.</p>';
+                                    }
+
+                                    html += '</div>';
+                                    return html;
+                                }
+
+                                /**
+                                 * Render FHIR section
+                                 */
+                                function renderSection(section, level) {
+                                    var marginLeft = level * 10;
+                                    var html = '<div class="fhir-section" style="margin-left: ' + marginLeft + 'px;">';
+
+                                    html += '<h5>' + escapeHtml(section.title || 'Sección') + '</h5>';
+
+                                    if (section.text && section.text.div) {
+                                        // FHIR narrative (HTML content) - display as is (already sanitized by FHIR)
+                                        html += '<div class="fhir-narrative">' + section.text.div + '</div>';
+                                    } else if (section.code && section.code.text) {
+                                        html += '<p>' + escapeHtml(section.code.text) + '</p>';
+                                    } else {
+                                        html += '<p style="color: #7f8c8d; font-style: italic;">Sin contenido disponible</p>';
+                                    }
+
+                                    // Render nested sections
+                                    if (section.section && section.section.length > 0) {
+                                        for (var i = 0; i < section.section.length; i++) {
+                                            html += renderSection(section.section[i], level + 1);
+                                        }
+                                    }
+
+                                    html += '</div>';
+                                    return html;
+                                }
+
+                                /**
+                                 * Render FHIR DocumentReference
+                                 */
+                                function renderDocumentReference(docRef) {
+                                    var html = '<div class="fhir-document"><div class="fhir-header">';
+
+                                    var title = 'Documento Clínico';
+                                    if (docRef.type && docRef.type.coding && docRef.type.coding[0]) {
+                                        title = docRef.type.coding[0].display || title;
+                                    }
+                                    html += '<h4>' + escapeHtml(title) + '</h4>';
+
+                                    if (docRef.date) {
+                                        html += '<p style="margin-bottom: 5px;">📅 ' + formatFhirDate(docRef.date) + '</p>';
+                                    }
+
+                                    if (docRef.author && docRef.author.length > 0) {
+                                        var authors = docRef.author.map(function(a) {
+                                            return escapeHtml(a.display || a.reference || '');
+                                        }).join(', ');
+                                        html += '<p style="font-size: 14px; margin-bottom: 5px;"><strong>Autor:</strong> ' +
+                                                authors + '</p>';
+                                    }
+
+                                    if (docRef.subject) {
+                                        html += '<p style="font-size: 14px; margin-bottom: 5px;"><strong>Paciente:</strong> ' +
+                                                escapeHtml(docRef.subject.display || docRef.subject.reference || '') + '</p>';
+                                    }
+
+                                    if (docRef.custodian) {
+                                        html += '<p style="font-size: 14px;"><strong>Institución:</strong> ' +
+                                                escapeHtml(docRef.custodian.display || docRef.custodian.reference || '') + '</p>';
+                                    }
+
+                                    html += '</div><hr style="border: 1px solid #e0e6ed; margin: 20px 0;">';
+
+                                    if (docRef.description) {
+                                        html += '<p style="margin-bottom: 15px;"><strong>Descripción:</strong> ' +
+                                                escapeHtml(docRef.description) + '</p>';
+                                    }
+
+                                    if (docRef.status) {
+                                        html += '<p style="margin-bottom: 15px;"><strong>Estado:</strong> ' +
+                                                escapeHtml(docRef.status) + '</p>';
+                                    }
+
+                                    html += '</div>';
+                                    return html;
+                                }
+
+                                /**
+                                 * Format FHIR date for display
+                                 */
+                                function formatFhirDate(dateString) {
+                                    if (!dateString) return 'N/A';
+                                    try {
+                                        var date = new Date(dateString);
+                                        return date.toLocaleDateString('es-UY', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        });
+                                    } catch (e) {
+                                        return dateString;
+                                    }
+                                }
+
+                                /**
+                                 * Escape HTML to prevent XSS
+                                 */
+                                function escapeHtml(text) {
+                                    if (!text) return '';
+                                    var div = document.createElement('div');
+                                    div.textContent = text;
+                                    return div.innerHTML;
+                                }
+
+                                function showError(message) {
+                                    document.getElementById('fhirMainContent').innerHTML =
+                                        '<p class="text-danger">' + escapeHtml(message) + '</p>';
+                                }
+                            })();
+                            </script>
                         </c:if>
                     </c:if>
                 </div>
