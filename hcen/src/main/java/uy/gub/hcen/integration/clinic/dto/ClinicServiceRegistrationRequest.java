@@ -88,6 +88,14 @@ public class ClinicServiceRegistrationRequest {
     @JsonProperty("api_key")
     private String apiKey;
 
+    /**
+     * Admin password for clinic user creation (transient - not stored in HCEN central)
+     * This password is generated during clinic registration and sent to the clinic service
+     * for creating the initial admin account. The clinic service must hash and store it securely.
+     */
+    @JsonProperty("password")
+    private String password;
+
     // ================================================================
     // Constructors
     // ================================================================
@@ -110,10 +118,13 @@ public class ClinicServiceRegistrationRequest {
      * @param email        Contact email
      * @param hcenEndpoint HCEN central API URL
      * @param active       Active status
+     * @param apiKey       API key for clinic authentication
+     * @param password     Admin password for clinic user creation
      */
     public ClinicServiceRegistrationRequest(String code, String name, String description,
                                             String address, String phone, String email,
-                                            String hcenEndpoint, Boolean active, String apiKey) {
+                                            String hcenEndpoint, Boolean active, String apiKey,
+                                            String password) {
         this.code = code;
         this.name = name;
         this.description = description;
@@ -123,6 +134,7 @@ public class ClinicServiceRegistrationRequest {
         this.hcenEndpoint = hcenEndpoint;
         this.active = active != null ? active : true;
         this.apiKey = apiKey;
+        this.password = password;
     }
 
     // ================================================================
@@ -201,6 +213,13 @@ public class ClinicServiceRegistrationRequest {
         this.apiKey = apiKey;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     // ================================================================
     // Object Methods

@@ -113,10 +113,13 @@ public class ClinicServiceClient {
      * <p>
      * This method performs the following:
      * 1. Validates clinic service URL is configured
-     * 2. Serializes registration request to JSON
+     * 2. Serializes registration request to JSON (including admin password)
      * 3. POSTs to {clinicServiceUrl}/api/clinics
      * 4. Retries on network failures (3 attempts with exponential backoff)
      * 5. Returns true if clinic service confirms (HTTP 201)
+     * <p>
+     * Security Note: The admin password is included in the request and should be transmitted
+     * over HTTPS. The clinic service is responsible for hashing and storing it securely.
      * <p>
      * Example clinic service response:
      * <pre>
@@ -129,7 +132,7 @@ public class ClinicServiceClient {
      * }
      * </pre>
      *
-     * @param request Clinic registration request
+     * @param request Clinic registration request (includes admin password)
      * @return true if clinic service confirms registration (HTTP 201), false otherwise
      * @throws ClinicServiceException if request fails after retries or clinic service returns error
      */

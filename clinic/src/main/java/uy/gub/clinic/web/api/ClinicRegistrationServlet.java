@@ -110,6 +110,18 @@ public class ClinicRegistrationServlet extends HttpServlet {
                 return;
             }
 
+            if (registrationRequest.getPassword() == null || registrationRequest.getPassword().trim().isEmpty()) {
+                logger.warn("Clinic registration failed - missing admin password");
+                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Admin password is required");
+                return;
+            }
+
+            if (!PasswordUtil.isValidPassword(registrationRequest.getPassword())) {
+                logger.warn("Clinic registration failed - invalid password (minimum 6 characters required)");
+                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Password must be at least 6 characters");
+                return;
+            }
+
             // Check if clinic with this code already exists
             Optional<Clinic> existingClinic = clinicService.getClinicByCode(registrationRequest.getCode());
             if (existingClinic.isPresent()) {
@@ -226,8 +238,9 @@ public class ClinicRegistrationServlet extends HttpServlet {
         adminUser.setUsername(request.getEmail());
         adminUser.setEmail(request.getEmail());
 
-        // Use apiKey as password, hashed with BCrypt
-        String hashedPassword = PasswordUtil.hashPassword(request.getApiKey());
+        // Use the dedicated password field, hashed with BCrypt
+        // Note: API key is used for API authentication, not for user login
+        String hashedPassword = PasswordUtil.hashPassword(request.getPassword());
         adminUser.setPassword(hashedPassword);
 
         // Set name

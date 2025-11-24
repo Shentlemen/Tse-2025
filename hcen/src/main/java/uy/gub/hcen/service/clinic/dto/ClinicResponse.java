@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
  * - Clinic lookup (GET /api/admin/clinics/{clinicId})
  * - Clinic update (PUT /api/admin/clinics/{clinicId})
  * <p>
- * Note: API key is masked for security (not exposed in responses).
+ * Security Notes:
+ * - API key is masked for security (not exposed in responses after initial registration)
+ * - Admin password is only populated during registration and is NOT stored in HCEN database
+ * - Admin password is transient - only shown once during registration for clinic service setup
  *
  * @author TSE 2025 Group 9
  * @version 1.0
@@ -30,6 +33,7 @@ public class ClinicResponse {
     private String email;
     private String peripheralNodeUrl;
     private String apiKey; // Masked (e.g., "****...1234")
+    private String adminPassword; // Transient - only returned during registration, not stored in database
     private ClinicStatus status;
     private LocalDateTime onboardedAt;
     private LocalDateTime createdAt;
@@ -181,6 +185,14 @@ public class ClinicResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAdminPassword() {
+        return adminPassword;
+    }
+
+    public void setAdminPassword(String adminPassword) {
+        this.adminPassword = adminPassword;
     }
 
     // ================================================================

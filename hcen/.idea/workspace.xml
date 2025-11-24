@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="061ca6ed-76ec-4d17-819b-902dc8b7c256" name="Changes" comment="feat: use the fhir endpoint to pull the clinical documents from hcen">
-      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/service/AccessRequestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/ClinicRegistrationServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/ClinicRegistrationServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/dto/ClinicRegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/java/uy/gub/clinic/web/api/dto/ClinicRegistrationRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/../clinic/src/main/webapp/professional/patient-documents.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/dto/ClinicServiceRegistrationRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/dto/ClinicServiceRegistrationRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/ClinicManagementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/dto/ClinicResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uy/gub/hcen/service/clinic/dto/ClinicResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/clinic-register.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/admin/clinic-register.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,55 +114,55 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Attach to process.localhost:8787.executor": "ProcessAttachDebug",
-    "Attach to process.pid 49164.executor": "ProcessAttachDebug",
-    "Attach to process.pid 58816.executor": "ProcessAttachDebug",
-    "Attach to process.pid 7764.executor": "ProcessAttachDebug",
-    "Batch.migrate.executor": "Run",
-    "Batch.run-migrations.executor": "Run",
-    "Docker.docker-compose-postgres.yml: Compose Deployment.executor": "Run",
-    "Gradle.Build hcen.executor": "Run",
-    "Gradle.Download Sources.executor": "Run",
-    "Gradle.hcen [buildDependents].executor": "Run",
-    "Gradle.hcen [build].executor": "Run",
-    "Gradle.hcen [clean].executor": "Run",
-    "Gradle.hcen [flywayInfo].executor": "Run",
-    "Gradle.hcen [flywayMigrate].executor": "Run",
-    "HTTP Request.generated-requests | #1.executor": "Run",
-    "JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
-    "database.data.extractors.current.id": "Comma-separated (CSV)_id",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/agust/fing/tse/tse-2025/hcen/src/main/resources/db/migration",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.26436782",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Attach to process.localhost:8787.executor&quot;: &quot;ProcessAttachDebug&quot;,
+    &quot;Attach to process.pid 49164.executor&quot;: &quot;ProcessAttachDebug&quot;,
+    &quot;Attach to process.pid 58816.executor&quot;: &quot;ProcessAttachDebug&quot;,
+    &quot;Attach to process.pid 7764.executor&quot;: &quot;ProcessAttachDebug&quot;,
+    &quot;Batch.migrate.executor&quot;: &quot;Run&quot;,
+    &quot;Batch.run-migrations.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.docker-compose-postgres.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build hcen.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [buildDependents].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [flywayInfo].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.hcen [flywayMigrate].executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.generated-requests | #1.executor&quot;: &quot;Run&quot;,
+    &quot;JBoss/WildFly Server.JBoss/WildFly 37.0.0.Final.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
+    &quot;database.data.extractors.current.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/agust/fing/tse/tse-2025/hcen/src/main/resources/db/migration&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.26436782&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql",
-      "mongo"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;,
+      &quot;mongo&quot;
     ],
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
-      "PostgreSQL"
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
+      &quot;PostgreSQL&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\agust\fing\tse\tse-2025\hcen\src\main\resources\db\migration" />
@@ -431,7 +438,7 @@
       <workItem from="1763416028699" duration="81659000" />
       <workItem from="1763671489670" duration="26599000" />
       <workItem from="1763862461244" duration="4080000" />
-      <workItem from="1763906630660" duration="10931000" />
+      <workItem from="1763906630660" duration="14585000" />
     </task>
     <task id="LOCAL-00001" summary="feat: add two factor login">
       <option name="closed" value="true" />
@@ -817,7 +824,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763935085562</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="feat: use the fhir endpoint to pull the clinical documents from hcen">
+      <option name="closed" value="true" />
+      <created>1763936891258</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1763936891258</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -928,17 +943,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java</url>
-          <line>179</line>
+          <line>182</line>
           <option name="timeStamp" value="54" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java</url>
-          <line>176</line>
+          <line>179</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/uy/gub/hcen/integration/clinic/ClinicServiceClient.java</url>
-          <line>163</line>
+          <line>166</line>
           <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

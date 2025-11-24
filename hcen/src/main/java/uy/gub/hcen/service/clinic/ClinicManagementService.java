@@ -129,6 +129,11 @@ public class ClinicManagementService {
             // Generate secure API key
             String apiKey = generateApiKey();
 
+            // Generate admin password (transient - not stored in HCEN database)
+            String adminPassword = generateAdminPassword();
+
+            logger.info("Generated admin password for clinic: {} (password will not be stored in HCEN database)", clinicId);
+
             // Create new clinic entity
             Clinic newClinic = new Clinic(
                     clinicId,
@@ -150,7 +155,7 @@ public class ClinicManagementService {
 
             // Register clinic in Clinic Service (peripheral multi-tenant component)
             try {
-                ClinicServiceRegistrationRequest clinicServiceRequest = buildClinicServiceRequest(savedClinic);
+                ClinicServiceRegistrationRequest clinicServiceRequest = buildClinicServiceRequest(savedClinic, adminPassword);
                 boolean clinicServiceConfirmed = clinicServiceClient.registerClinic(clinicServiceRequest);
 
                 if (clinicServiceConfirmed) {
@@ -178,12 +183,16 @@ public class ClinicManagementService {
                     java.util.Map.of(
                             "clinicName", request.getClinicName(),
                             "city", request.getCity(),
-                            "action", "CLINIC_REGISTRATION"
+                            "action", "CLINIC_REGISTRATION",
+                            "adminPasswordGenerated", "true",  // Log that password was generated (never log actual password)
+                            "apiKeyGenerated", "true"
                     )
             );
 
-            // Return response with UNMASKED API key (only shown once at registration)
-            return new ClinicResponse(savedClinic, false);
+            // Return response with admin password (transient) and masked API key
+            ClinicResponse response = new ClinicResponse(savedClinic, true);  // true = mask API key
+            response.setAdminPassword(adminPassword);  // Add password to response (transient, not stored)
+            return response;
 
         } catch (IllegalArgumentException e) {
             logger.error("Invalid clinic registration data: {}", e.getMessage());
@@ -623,12 +632,57 @@ public class ClinicManagementService {
     }
 
     /**
+     * Generates a strong random password for clinic admin account.
+     * Password format: 16 characters with uppercase, lowercase, numbers, and special symbols.
+     * <p>
+     * Security Note: This password is transient and should NEVER be stored in HCEN database.
+     * It is generated only during registration, displayed once to the admin, and sent to the
+     * clinic service for account creation. The clinic service is responsible for hashing and
+     * storing the password securely.
+     *
+     * @return Secure random password string (16 characters)
+     */
+    private String generateAdminPassword() {
+        // Character sets for password generation
+        String uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowercase = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String symbols = "!@#$%&*";
+        String allChars = uppercase + lowercase + numbers + symbols;
+
+        StringBuilder password = new StringBuilder(16);
+
+        // Ensure at least one character from each set
+        password.append(uppercase.charAt(secureRandom.nextInt(uppercase.length())));
+        password.append(lowercase.charAt(secureRandom.nextInt(lowercase.length())));
+        password.append(numbers.charAt(secureRandom.nextInt(numbers.length())));
+        password.append(symbols.charAt(secureRandom.nextInt(symbols.length())));
+
+        // Fill remaining 12 characters randomly
+        for (int i = 4; i < 16; i++) {
+            password.append(allChars.charAt(secureRandom.nextInt(allChars.length())));
+        }
+
+        // Shuffle the password to randomize position of guaranteed characters
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = secureRandom.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+
+        return new String(passwordArray);
+    }
+
+    /**
      * Build clinic service registration request from clinic entity
      *
      * @param clinic Clinic entity
+     * @param adminPassword Admin password for clinic user creation (transient, not stored in HCEN)
      * @return Clinic service registration request
      */
-    private ClinicServiceRegistrationRequest buildClinicServiceRequest(Clinic clinic) {
+    private ClinicServiceRegistrationRequest buildClinicServiceRequest(Clinic clinic, String adminPassword) {
         String description = String.format("Healthcare facility located in %s", clinic.getCity());
 
         return new ClinicServiceRegistrationRequest(
@@ -640,7 +694,8 @@ public class ClinicManagementService {
                 clinic.getEmail(),              // email
                 hcenConfiguration.getHcenApiUrl(), // hcen_endpoint (from configuration)
                 true,                            // active
-                clinic.getApiKey()              //apiKey
+                clinic.getApiKey(),             // apiKey
+                adminPassword                    // password (for admin account creation)
         );
     }
 }

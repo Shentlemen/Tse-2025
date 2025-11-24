@@ -354,16 +354,6 @@
                                                         </span>
                                                     </div>
                                                     <div class="mb-2">
-                                                        <span class="badge ${remoteDoc.hasContent ? 'bg-success' : 'bg-warning text-dark'}">
-                                                            <c:choose>
-                                                                <c:when test="${remoteDoc.hasContent}">
-                                                                    Acceso concedido
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    Permiso requerido
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </span>
                                                         <c:if test="${not empty remoteDoc.status}">
                                                             <span class="badge bg-light text-muted ms-1">${remoteDoc.status}</span>
                                                         </c:if>

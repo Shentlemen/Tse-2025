@@ -257,7 +257,7 @@
             display: flex;
         }
 
-        .api-key-section {
+        .password-section {
             background: rgba(255, 193, 7, 0.1);
             border: 2px solid rgba(255, 193, 7, 0.3);
             padding: 25px;
@@ -266,11 +266,11 @@
             display: none;
         }
 
-        .api-key-section.show {
+        .password-section.show {
             display: block;
         }
 
-        .api-key-title {
+        .password-title {
             font-size: 16px;
             font-weight: 600;
             color: #ffc107;
@@ -280,7 +280,7 @@
             gap: 10px;
         }
 
-        .api-key-value {
+        .password-value {
             background: rgba(0, 0, 0, 0.3);
             padding: 15px;
             border-radius: 8px;
@@ -291,7 +291,7 @@
             color: #00d4ff;
         }
 
-        .api-key-warning {
+        .password-warning {
             color: #ffc107;
             font-size: 13px;
             line-height: 1.6;
@@ -488,19 +488,19 @@
                 </div>
             </form>
 
-            <div id="apiKeySection" class="api-key-section">
-                <div class="api-key-title">
-                    🔑 API Key Generada - ¡IMPORTANTE!
+            <div id="passwordSection" class="password-section">
+                <div class="password-title">
+                    🔑 Contraseña de Administrador - ¡IMPORTANTE!
                 </div>
-                <div class="api-key-value" id="apiKeyValue"></div>
-                <div class="api-key-warning">
-                    ⚠️ <strong>Esta es la ÚNICA vez que verá esta API key completa.</strong><br>
-                    Por favor, cópiela y guárdela en un lugar seguro. Necesitará esta clave para configurar el nodo periférico de la clínica.<br>
-                    En consultas posteriores, la clave aparecerá enmascarada por seguridad.
+                <div class="password-value" id="passwordValue"></div>
+                <div class="password-warning">
+                    ⚠️ <strong>Esta es la ÚNICA vez que verá esta contraseña.</strong><br>
+                    Por favor, cópiela y guárdela en un lugar seguro. Esta contraseña se utilizará para crear la cuenta de administrador de la clínica.<br>
+                    La contraseña no se almacena en HCEN y debe ser entregada al administrador de la clínica.
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button class="copy-btn" onclick="copyApiKey()">
-                        📋 Copiar API Key
+                    <button class="copy-btn" onclick="copyPassword()">
+                        📋 Copiar Contraseña
                     </button>
                     <button class="btn" onclick="goToClinics()">
                         📋 Ir a Lista de Clínicas
@@ -691,7 +691,7 @@
             // Hide previous messages
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('apiKeySection').classList.remove('show');
+            document.getElementById('passwordSection').classList.remove('show');
 
             // Validate form
             if (!validateForm()) {
@@ -729,16 +729,16 @@
                     // Show success message
                     showSuccess(`Clínica "${response.clinicName}" registrada exitosamente con ID: ${response.clinicId}`);
 
-                    // Display API key (only shown once!)
-                    document.getElementById('apiKeyValue').textContent = response.apiKey;
-                    document.getElementById('apiKeySection').classList.add('show');
+                    // Display admin password (only shown once!)
+                    document.getElementById('passwordValue').textContent = response.adminPassword;
+                    document.getElementById('passwordSection').classList.add('show');
 
                     // Clear form
                     document.getElementById('clinicRegistrationForm').reset();
 
-                    // Scroll to API key section
+                    // Scroll to password section
                     setTimeout(() => {
-                        document.getElementById('apiKeySection').scrollIntoView({
+                        document.getElementById('passwordSection').scrollIntoView({
                             behavior: 'smooth',
                             block: 'center'
                         });
@@ -756,20 +756,20 @@
         }
 
         /**
-         * Copy API key to clipboard
+         * Copy password to clipboard
          */
-        function copyApiKey() {
-            const apiKey = document.getElementById('apiKeyValue').textContent;
+        function copyPassword() {
+            const password = document.getElementById('passwordValue').textContent;
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(apiKey).then(() => {
-                    alert('API Key copiada al portapapeles');
+                navigator.clipboard.writeText(password).then(() => {
+                    alert('Contraseña copiada al portapapeles');
                 }).catch(err => {
                     console.error('Error copying to clipboard:', err);
-                    fallbackCopyToClipboard(apiKey);
+                    fallbackCopyToClipboard(password);
                 });
             } else {
-                fallbackCopyToClipboard(apiKey);
+                fallbackCopyToClipboard(password);
             }
         }
 
@@ -789,7 +789,7 @@
 
             try {
                 document.execCommand('copy');
-                alert('API Key copiada al portapapeles');
+                alert('Contraseña copiada al portapapeles');
             } catch (err) {
                 console.error('Error copying to clipboard:', err);
                 alert('No se pudo copiar automáticamente. Por favor, copie manualmente.');

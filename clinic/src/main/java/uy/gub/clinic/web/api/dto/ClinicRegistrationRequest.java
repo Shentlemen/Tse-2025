@@ -21,6 +21,8 @@ import jakarta.validation.constraints.Size;
  *   "phone": "024123456",
  *   "email": "contacto@clinicasanjose.com.uy",
  *   "hcen_endpoint": "https://hcen.uy/api",
+ *   "api_key": "abc123...",
+ *   "password": "securePassword123",
  *   "active": true
  * }
  * </pre>
@@ -103,6 +105,15 @@ public class ClinicRegistrationRequest {
     @JsonProperty("api_key")
     private String apiKey;
 
+    /**
+     * Password for the clinic admin account
+     * This password will be used for admin authentication instead of the API key
+     */
+    @NotBlank(message = "Admin password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    @JsonProperty("password")
+    private String password;
+
     // ================================================================
     // Constructors
     // ================================================================
@@ -126,10 +137,12 @@ public class ClinicRegistrationRequest {
      * @param hcenEndpoint HCEN central API URL
      * @param active       Active status
      * @param apiKey       API key for clinic authentication
+     * @param password     Admin account password
      */
     public ClinicRegistrationRequest(String code, String name, String description,
                                      String address, String phone, String email,
-                                     String hcenEndpoint, Boolean active, String apiKey) {
+                                     String hcenEndpoint, Boolean active, String apiKey,
+                                     String password) {
         this.code = code;
         this.name = name;
         this.description = description;
@@ -139,6 +152,7 @@ public class ClinicRegistrationRequest {
         this.hcenEndpoint = hcenEndpoint;
         this.active = active != null ? active : true;
         this.apiKey = apiKey;
+        this.password = password;
     }
 
     // ================================================================
@@ -223,6 +237,14 @@ public class ClinicRegistrationRequest {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     // ================================================================
