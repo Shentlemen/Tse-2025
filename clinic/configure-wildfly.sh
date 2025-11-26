@@ -79,8 +79,16 @@ if [ -f "$STANDALONE_XML" ]; then
     # Esto se hará en start-wildfly.sh con -Djboss.http.port
     echo "Puerto se configurará vía variable de sistema: ${RENDER_PORT}"
     
+    # Eliminar ExampleDS si existe (no lo necesitamos)
+    if grep -q "datasource.*jndi-name=\"java:jboss/datasources/ExampleDS\"" "$STANDALONE_XML"; then
+        echo "Eliminando datasource ExampleDS (no necesario)..."
+        # Eliminar el datasource ExampleDS completo
+        sed -i '/<datasource.*jndi-name="java:jboss\/datasources\/ExampleDS"/,/<\/datasource>/d' "$STANDALONE_XML"
+        echo "Datasource ExampleDS eliminado"
+    fi
+    
     # Verificar si el datasource ya existe y actualizarlo
-    if grep -q "data-source name=\"ClinicDS\"" "$STANDALONE_XML"; then
+    if grep -q "data-source name=\"ClinicDS\"" "$STANDALONE_XML" || grep -q "datasource.*jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo "Actualizando datasource ClinicDS existente..."
         # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
         sed -i "/data-source name=\"ClinicDS\"/,/<\/data-source>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
@@ -94,11 +102,11 @@ if [ -f "$STANDALONE_XML" ]; then
         echo "Datasource ClinicDS actualizado en standalone.xml"
     else
         echo "Datasource ClinicDS no encontrado. Creándolo en standalone.xml..."
-        # Buscar el cierre de ExampleDS y insertar ClinicDS después
-        if grep -q "data-source name=\"ExampleDS\"" "$STANDALONE_XML"; then
-            # Insertar después del cierre de ExampleDS
-            sed -i '/data-source name="ExampleDS"/,/<\/data-source>/{
-                /<\/data-source>/a\
+        # Buscar la sección de datasources e insertar ClinicDS antes de la sección de drivers
+        if grep -q "<datasources>" "$STANDALONE_XML"; then
+            # Insertar antes de la sección <drivers>
+            if grep -q "<drivers>" "$STANDALONE_XML"; then
+                sed -i '/<drivers>/i\
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
                     <driver>postgresql</driver>\
@@ -106,11 +114,22 @@ if [ -f "$STANDALONE_XML" ]; then
                         <user-name>'${DB_USER}'</user-name>\
                         <password>'${DB_PASS_ESC}'</password>\
                     </security>\
-                </datasource>
-            }' "$STANDALONE_XML"
+                </datasource>' "$STANDALONE_XML"
+            else
+                # Si no hay drivers, insertar antes del cierre de datasources
+                sed -i '/<\/datasources>/i\
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
+                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
+                    <driver>postgresql</driver>\
+                    <security>\
+                        <user-name>'${DB_USER}'</user-name>\
+                        <password>'${DB_PASS_ESC}'</password>\
+                    </security>\
+                </datasource>' "$STANDALONE_XML"
+            fi
             echo "Datasource ClinicDS creado en standalone.xml"
         else
-            echo "Advertencia: No se encontró ExampleDS. El datasource ClinicDS no se pudo crear automáticamente."
+            echo "Error: No se encontró la sección <datasources> en standalone.xml"
         fi
     fi
     
