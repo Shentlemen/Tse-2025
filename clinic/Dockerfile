@@ -37,8 +37,8 @@ RUN mkdir -p $WILDFLY_HOME/modules/org/postgresql/main && \
     echo '    <resource-root path="postgresql-42.7.0.jar"/>' >> module.xml && \
     echo '  </resources>' >> module.xml && \
     echo '  <dependencies>' >> module.xml && \
-    echo '    <module name="jakarta.api"/>' >> module.xml && \
-    echo '    <module name="jakarta.transaction.api"/>' >> module.xml && \
+    echo '    <module name="javax.api"/>' >> module.xml && \
+    echo '    <module name="javax.transaction.api"/>' >> module.xml && \
     echo '  </dependencies>' >> module.xml && \
     echo '</module>' >> module.xml && \
     chown -R jboss:jboss $WILDFLY_HOME/modules
