@@ -98,15 +98,27 @@ if [ -f "$STANDALONE_XML" ]; then
     
     # Configurar logging para suprimir warnings de CORBA
     if grep -q "logger category=\"javax.enterprise.resource.corba\"" "$STANDALONE_XML"; then
-        echo "Logger de CORBA ya existe, actualizando nivel..."
-        sed -i 's|<logger category="javax.enterprise.resource.corba.*level=".*"/>|<logger category="javax.enterprise.resource.corba" level="ERROR"/>|g' "$STANDALONE_XML"
+        echo "Logger de CORBA ya existe, actualizando nivel a ERROR..."
+        sed -i 's|<logger category="javax.enterprise.resource.corba".*level="[^"]*".*/>|<logger category="javax.enterprise.resource.corba" level="ERROR"/>|g' "$STANDALONE_XML"
     else
         echo "Agregando logger para suprimir warnings de CORBA..."
-        # Buscar la sección de loggers y agregar el nuestro
+        # Buscar la sección de loggers dentro del subsystem de logging
+        # Insertar después de la etiqueta de apertura del subsystem o después del último logger
         if grep -q "<subsystem xmlns=\"urn:jboss:domain:logging:" "$STANDALONE_XML"; then
-            # Insertar después del último logger o al final del subsystem
-            sed -i '/<subsystem xmlns="urn:jboss:domain:logging:/a\
-                <logger category="javax.enterprise.resource.corba" level="ERROR"/>' "$STANDALONE_XML"
+            # Buscar la línea que contiene <loggers> o insertar antes de </subsystem>
+            if grep -q "<loggers>" "$STANDALONE_XML"; then
+                # Insertar después de <loggers>
+                sed -i '/<loggers>/a\
+            <logger category="javax.enterprise.resource.corba" level="ERROR"/>' "$STANDALONE_XML"
+            else
+                # Si no hay <loggers>, insertar antes de </subsystem> del logging
+                sed -i '/<subsystem xmlns="urn:jboss:domain:logging:/,/<\/subsystem>/{
+                    /<\/subsystem>/i\
+            <loggers>\
+                <logger category="javax.enterprise.resource.corba" level="ERROR"/>\
+            </loggers>
+                }' "$STANDALONE_XML"
+            fi
         fi
     fi
     

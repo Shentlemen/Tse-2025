@@ -51,16 +51,11 @@ $WILDFLY_HOME/bin/configure-wildfly.sh || echo "Advertencia: Configuración prev
 # Configurar variables de entorno de Java para Render
 export JAVA_OPTS="${JAVA_OPTS} -Xmx512m -Xms256m -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
 
-# Suprimir warnings de CORBA mediante variables de sistema
-export JAVA_OPTS="${JAVA_OPTS} -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-export JAVA_OPTS="${JAVA_OPTS} -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager"
-
 # Iniciar WildFly
 echo "Iniciando WildFly..."
 exec $WILDFLY_HOME/bin/standalone.sh \
     -b 0.0.0.0 \
     -bmanagement 0.0.0.0 \
     -Djboss.http.port=${RENDER_PORT} \
-    -Dorg.jboss.logging.Logger.level=INFO \
     -c standalone-full.xml
 
