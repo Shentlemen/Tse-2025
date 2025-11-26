@@ -93,7 +93,25 @@ if [ -f "$STANDALONE_XML" ]; then
         
         echo "Datasource ClinicDS actualizado en standalone.xml"
     else
-        echo "Datasource ClinicDS no encontrado. Se creará vía CLI al iniciar WildFly."
+        echo "Datasource ClinicDS no encontrado. Creándolo en standalone.xml..."
+        # Buscar el cierre de ExampleDS y insertar ClinicDS después
+        if grep -q "data-source name=\"ExampleDS\"" "$STANDALONE_XML"; then
+            # Insertar después del cierre de ExampleDS
+            sed -i '/data-source name="ExampleDS"/,/<\/data-source>/{
+                /<\/data-source>/a\
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
+                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
+                    <driver>postgresql</driver>\
+                    <security>\
+                        <user-name>'${DB_USER}'</user-name>\
+                        <password>'${DB_PASS_ESC}'</password>\
+                    </security>\
+                </datasource>
+            }' "$STANDALONE_XML"
+            echo "Datasource ClinicDS creado en standalone.xml"
+        else
+            echo "Advertencia: No se encontró ExampleDS. El datasource ClinicDS no se pudo crear automáticamente."
+        fi
     fi
     
     # Configurar logging para suprimir warnings de CORBA
