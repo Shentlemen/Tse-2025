@@ -1,5 +1,6 @@
 # Dockerfile para desplegar Clinic en Render
-FROM quay.io/wildfly/wildfly:30.0.1.Final-jdk21
+# Usar la imagen oficial de WildFly desde Docker Hub
+FROM jboss/wildfly:30.0.1.Final
 
 # Usuario para ejecutar WildFly
 USER root
