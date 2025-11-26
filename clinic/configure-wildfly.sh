@@ -35,15 +35,16 @@ if [ -n "$DATABASE_URL" ]; then
 else
     # Usar variables individuales si DATABASE_URL no está disponible
     # Render configura estas variables automáticamente cuando se vincula una base de datos
+    # Para desarrollo local, usar valores por defecto
     DB_HOST=${PGHOST:-localhost}
     DB_PORT=${PGPORT:-5432}
     DB_NAME=${PGDATABASE:-clinic_db}
     DB_USER=${PGUSER:-postgres}
-    DB_PASS=${PGPASSWORD:-}
+    DB_PASS=${PGPASSWORD:-sora}  # Password por defecto para desarrollo local
     
-    # Si no hay contraseña configurada, mostrar error
-    if [ -z "$DB_PASS" ]; then
-        echo "ERROR: No se encontró DATABASE_URL ni PGPASSWORD. Verifica la configuración en Render."
+    # Solo mostrar error si estamos en Render (detectado por PORT variable) y no hay password
+    if [ -n "$PORT" ] && [ -z "$PGPASSWORD" ] && [ "$DB_PASS" = "sora" ]; then
+        echo "ERROR: En Render, se requiere DATABASE_URL o PGPASSWORD. Verifica la configuración."
         exit 1
     fi
 fi
@@ -118,32 +119,28 @@ if [ -f "$STANDALONE_XML" ]; then
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo "Actualizando datasource ClinicDS existente..."
-        # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
-        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
         
-        # Asegurar que use <driver>postgresql</driver> (no driver-class)
-        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
-            s|<driver-class>org.postgresql.Driver</driver-class>|<driver>postgresql</driver>|g
-        }" "$STANDALONE_XML"
+        # Eliminar el datasource existente completamente para recrearlo con las credenciales correctas
+        perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ClinicDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
         
-        # Actualizar security con atributos (formato correcto para WildFly 30)
-        # Reemplazar el elemento security completo con el formato de atributos
-        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
-            /<security.*\/>/ s|user-name=\"[^\"]*\"|user-name=\"${DB_USER}\"|g
-            /<security.*\/>/ s|password=\"[^\"]*\"|password=\"${DB_PASS_ESC}\"|g
-            # Si está en formato antiguo (elementos), reemplazarlo por formato de atributos
-            /<security>/,/<\/security>/ {
-                /<security>/ {
-                    s|<security>|<security user-name=\"${DB_USER}\" password=\"${DB_PASS_ESC}\"/>|
-                    d
-                }
-                /<user-name>/d
-                /<password>/d
-                /<\/security>/d
-            }
-        }" "$STANDALONE_XML"
+        # Recrear el datasource con las credenciales correctas
+        if grep -q "<drivers>" "$STANDALONE_XML"; then
+            sed -i '/<drivers>/i\
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
+                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
+                    <driver>postgresql</driver>\
+                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
+                </datasource>' "$STANDALONE_XML"
+        else
+            sed -i '/<\/datasources>/i\
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
+                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
+                    <driver>postgresql</driver>\
+                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
+                </datasource>' "$STANDALONE_XML"
+        fi
         
-        echo "Datasource ClinicDS actualizado en standalone.xml"
+        echo "Datasource ClinicDS recreado con credenciales actualizadas en standalone.xml"
     else
         echo "Datasource ClinicDS no encontrado. Creándolo en standalone.xml..."
         # Buscar la sección de datasources e insertar ClinicDS antes de la sección de drivers
