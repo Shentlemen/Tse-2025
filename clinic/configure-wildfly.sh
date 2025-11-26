@@ -87,22 +87,9 @@ if [ -f "$STANDALONE_XML" ]; then
         echo "ExampleDS eliminado"
     fi
     
-    # Asegurar que el driver PostgreSQL esté registrado ANTES de crear/actualizar ClinicDS
-    if ! grep -q 'driver name="postgresql"' "$STANDALONE_XML"; then
-        echo "Registrando driver PostgreSQL..."
-        if grep -q "<drivers>" "$STANDALONE_XML"; then
-            sed -i '/<\/drivers>/i\
-                <driver name="postgresql" module="org.postgresql">\
-                    <driver-class>org.postgresql.Driver</driver-class>\
-                </driver>' "$STANDALONE_XML"
-            echo "Driver PostgreSQL registrado"
-        else
-            echo "ERROR: No se encontró la sección <drivers> para registrar el driver PostgreSQL"
-            exit 1
-        fi
-    else
-        echo "Driver PostgreSQL ya está registrado"
-    fi
+    # El driver PostgreSQL se despliega automáticamente desde el WAR
+    # Usaremos driver-class directamente en el datasource en lugar de referenciar un driver por nombre
+    echo "Usando driver-class directamente (el driver se despliega desde el WAR)"
     
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
@@ -137,7 +124,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 sed -i '/<drivers>/i\
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
+                    <driver-class>org.postgresql.Driver</driver-class>\
                     <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             else
@@ -145,7 +132,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 sed -i '/<\/datasources>/i\
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
+                    <driver-class>org.postgresql.Driver</driver-class>\
                     <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             fi
