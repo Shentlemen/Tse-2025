@@ -107,12 +107,17 @@ if [ -f "$STANDALONE_XML" ]; then
         echo "Agregando logger para suprimir warnings de CORBA..."
         # Insertar después del cierre del logger sun.rmi
         if grep -q "logger category=\"sun.rmi\"" "$STANDALONE_XML"; then
-            # Reemplazar el cierre </logger> de sun.rmi con el cierre seguido del nuevo logger
-            # Esto asegura que se inserte después del cierre, no dentro
-            sed -i 's|\(<logger category="sun.rmi">.*<\/logger>\)|\1\
+            # Buscar la línea </logger> que viene después de sun.rmi y antes de root-logger
+            # e insertar el nuevo logger después de esa línea
+            sed -i '/<logger category="sun.rmi">/,/<\/logger>/{
+                /<\/logger>/{
+                    a\
             <logger category="javax.enterprise.resource.corba">\
                 <level name="ERROR"/>\
-            </logger>|' "$STANDALONE_XML"
+            </logger>
+                    q
+                }
+            }' "$STANDALONE_XML"
         elif grep -q "<subsystem xmlns=\"urn:jboss:domain:logging:" "$STANDALONE_XML"; then
             # Si no hay sun.rmi, insertar antes de root-logger
             sed -i '/<root-logger>/i\
