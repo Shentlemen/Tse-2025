@@ -99,26 +99,23 @@ if [ -f "$STANDALONE_XML" ]; then
     # Configurar logging para suprimir warnings de CORBA
     if grep -q "logger category=\"javax.enterprise.resource.corba\"" "$STANDALONE_XML"; then
         echo "Logger de CORBA ya existe, actualizando nivel a ERROR..."
-        sed -i 's|<logger category="javax.enterprise.resource.corba".*level="[^"]*".*/>|<logger category="javax.enterprise.resource.corba" level="ERROR"/>|g' "$STANDALONE_XML"
+        sed -i 's|<logger category="javax.enterprise.resource.corba".*level="[^"]*".*/>|<logger category="javax.enterprise.resource.corba"><level name="ERROR"/></logger>|g' "$STANDALONE_XML"
+        sed -i 's|<logger category="javax.enterprise.resource.corba".*level="[^"]*".*></logger>|<logger category="javax.enterprise.resource.corba"><level name="ERROR"/></logger>|g' "$STANDALONE_XML"
     else
         echo "Agregando logger para suprimir warnings de CORBA..."
-        # Buscar la sección de loggers dentro del subsystem de logging
-        # Insertar después de la etiqueta de apertura del subsystem o después del último logger
-        if grep -q "<subsystem xmlns=\"urn:jboss:domain:logging:" "$STANDALONE_XML"; then
-            # Buscar la línea que contiene <loggers> o insertar antes de </subsystem>
-            if grep -q "<loggers>" "$STANDALONE_XML"; then
-                # Insertar después de <loggers>
-                sed -i '/<loggers>/a\
-            <logger category="javax.enterprise.resource.corba" level="ERROR"/>' "$STANDALONE_XML"
-            else
-                # Si no hay <loggers>, insertar antes de </subsystem> del logging
-                sed -i '/<subsystem xmlns="urn:jboss:domain:logging:/,/<\/subsystem>/{
-                    /<\/subsystem>/i\
-            <loggers>\
-                <logger category="javax.enterprise.resource.corba" level="ERROR"/>\
-            </loggers>
-                }' "$STANDALONE_XML"
-            fi
+        # Insertar después del último logger existente (sun.rmi) dentro del subsystem de logging
+        if grep -q "logger category=\"sun.rmi\"" "$STANDALONE_XML"; then
+            # Insertar después de sun.rmi logger
+            sed -i '/logger category="sun.rmi"/a\
+            <logger category="javax.enterprise.resource.corba">\
+                <level name="ERROR"/>\
+            </logger>' "$STANDALONE_XML"
+        elif grep -q "<subsystem xmlns=\"urn:jboss:domain:logging:" "$STANDALONE_XML"; then
+            # Si no hay sun.rmi, insertar antes de root-logger
+            sed -i '/<root-logger>/i\
+            <logger category="javax.enterprise.resource.corba">\
+                <level name="ERROR"/>\
+            </logger>' "$STANDALONE_XML"
         fi
     fi
     
