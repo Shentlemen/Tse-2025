@@ -26,11 +26,30 @@ RUN cd /opt/jboss && \
     rm wildfly-${WILDFLY_VERSION}.tar.gz && \
     chown -R jboss:jboss $WILDFLY_HOME
 
-# Crear directorio para el driver PostgreSQL
-RUN mkdir -p $WILDFLY_HOME/modules/org/postgresql/main
+# Modificar standalone-full.xml directamente para eliminar ExampleDS y registrar driver PostgreSQL
+# Esto se hace en el build de la imagen, antes de ejecutar los scripts
+RUN STANDALONE_XML="$WILDFLY_HOME/standalone/configuration/standalone-full.xml" && \
+    if [ -f "$STANDALONE_XML" ]; then \
+        # Eliminar ExampleDS completamente (usando perl para manejar múltiples líneas) \
+        perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ExampleDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML" && \
+        # Cambiar default-bindings para usar ClinicDS en lugar de ExampleDS \
+        sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML" && \
+        # Registrar driver PostgreSQL ANTES de que se intente usar \
+        if ! grep -q 'driver name="postgresql"' "$STANDALONE_XML"; then \
+            # Insertar driver PostgreSQL en la sección <drivers> \
+            sed -i '/<\/drivers>/i\
+                <driver name="postgresql" module="org.postgresql">\
+                    <driver-class>org.postgresql.Driver</driver-class>\
+                </driver>' "$STANDALONE_XML"; \
+        fi && \
+        echo "standalone-full.xml configurado: ExampleDS eliminado, driver PostgreSQL registrado, default-bindings actualizado"; \
+    fi && \
+    chown -R jboss:jboss $WILDFLY_HOME
 
-# Descargar e instalar driver PostgreSQL
-RUN cd $WILDFLY_HOME/modules/org/postgresql/main && \
+# Crear directorio para el driver PostgreSQL e instalarlo
+# IMPORTANTE: Esto debe hacerse ANTES de modificar standalone-full.xml para que el módulo exista
+RUN mkdir -p $WILDFLY_HOME/modules/org/postgresql/main && \
+    cd $WILDFLY_HOME/modules/org/postgresql/main && \
     wget -q https://jdbc.postgresql.org/download/postgresql-42.7.0.jar && \
     echo '<?xml version="1.0" encoding="UTF-8"?>' > module.xml && \
     echo '<module xmlns="urn:jboss:module:1.9" name="org.postgresql">' >> module.xml && \
