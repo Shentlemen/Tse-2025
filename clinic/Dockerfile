@@ -13,8 +13,10 @@ ENV WILDFLY_VERSION=30.0.1.Final
 ENV WILDFLY_HOME=/opt/jboss/wildfly
 ENV JBOSS_HOME=$WILDFLY_HOME
 
-# Crear usuario jboss
-RUN groupadd -r jboss && useradd -r -g jboss -d $WILDFLY_HOME -s /sbin/nologin jboss
+# Crear directorio para WildFly y usuario jboss
+RUN mkdir -p /opt/jboss && \
+    groupadd -r jboss && \
+    useradd -r -g jboss -d $WILDFLY_HOME -s /sbin/nologin jboss
 
 # Descargar e instalar WildFly
 RUN cd /opt/jboss && \
