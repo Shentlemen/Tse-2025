@@ -96,6 +96,20 @@ if [ -f "$STANDALONE_XML" ]; then
         echo "Datasource ClinicDS no encontrado. Se creará vía CLI al iniciar WildFly."
     fi
     
+    # Configurar logging para suprimir warnings de CORBA
+    if grep -q "logger category=\"javax.enterprise.resource.corba\"" "$STANDALONE_XML"; then
+        echo "Logger de CORBA ya existe, actualizando nivel..."
+        sed -i 's|<logger category="javax.enterprise.resource.corba.*level=".*"/>|<logger category="javax.enterprise.resource.corba" level="ERROR"/>|g' "$STANDALONE_XML"
+    else
+        echo "Agregando logger para suprimir warnings de CORBA..."
+        # Buscar la sección de loggers y agregar el nuestro
+        if grep -q "<subsystem xmlns=\"urn:jboss:domain:logging:" "$STANDALONE_XML"; then
+            # Insertar después del último logger o al final del subsystem
+            sed -i '/<subsystem xmlns="urn:jboss:domain:logging:/a\
+                <logger category="javax.enterprise.resource.corba" level="ERROR"/>' "$STANDALONE_XML"
+        fi
+    fi
+    
     echo "Configuración de standalone.xml completada"
 else
     echo "Advertencia: standalone.xml no encontrado. Se generará al iniciar WildFly."

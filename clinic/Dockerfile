@@ -44,9 +44,11 @@ RUN cd $WILDFLY_HOME/modules/org/postgresql/main && \
     echo '</module>' >> module.xml && \
     chown -R jboss:jboss $WILDFLY_HOME/modules
 
-# Copiar el WAR compilado
+# Copiar el WAR compilado y crear marcador de despliegue
 COPY build/libs/clinic.war $WILDFLY_HOME/standalone/deployments/
-RUN chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war
+RUN chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war && \
+    touch $WILDFLY_HOME/standalone/deployments/clinic.war.dodeploy && \
+    chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war.dodeploy
 
 # Script para configurar WildFly con variables de entorno
 COPY configure-wildfly.sh $WILDFLY_HOME/bin/
