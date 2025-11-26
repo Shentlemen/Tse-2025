@@ -110,10 +110,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
                     <driver>postgresql</driver>\
-                    <security>\
-                        <user-name>'${DB_USER}'</user-name>\
-                        <password>'${DB_PASS_ESC}'</password>\
-                    </security>\
+                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             else
                 # Si no hay drivers, insertar antes del cierre de datasources
@@ -121,10 +118,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
                     <driver>postgresql</driver>\
-                    <security>\
-                        <user-name>'${DB_USER}'</user-name>\
-                        <password>'${DB_PASS_ESC}'</password>\
-                    </security>\
+                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             fi
             echo "Datasource ClinicDS creado en standalone.xml"
