@@ -154,9 +154,9 @@ tasks.withType(JavaCompile) {
 // Flyway database migration configuration
 flyway {
     // Database connection properties (use environment variables or gradle.properties)
-    url = System.getenv('FLYWAY_URL') ?: findProperty('flyway.url') ?: 'jdbc:postgresql://localhost:5432/clinic'
+    url = System.getenv('FLYWAY_URL') ?: findProperty('flyway.url') ?: 'jdbc:postgresql://localhost:5432/clinic_db'
     user = System.getenv('FLYWAY_USER') ?: findProperty('flyway.user') ?: 'postgres'
-    password = System.getenv('FLYWAY_PASSWORD') ?: findProperty('flyway.password') ?: 'postgres'
+    password = System.getenv('FLYWAY_PASSWORD') ?: findProperty('flyway.password') ?: 'sora'
 
     // Migration scripts location
     locations = ['filesystem:src/main/resources/db/migration']

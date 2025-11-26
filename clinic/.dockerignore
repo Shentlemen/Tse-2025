@@ -1,0 +1,46 @@
+# Gradle
+.gradle/
+build/
+!build/libs/*.war
+gradle/
+gradlew
+gradlew.bat
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Uploads
+uploads/
+
+# Backups
+backups/
+
+# Test files
+test-*.sql
+insert-*.sql
+

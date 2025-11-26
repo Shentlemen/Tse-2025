@@ -10,7 +10,7 @@
     driver-name=postgresql,
     connection-url=jdbc:postgresql://localhost:5432/clinic_db,
     user-name=postgres,
-    password=postgres,
+    password=sora,
     min-pool-size=5,
     max-pool-size=20,
     pool-prefill=true,
