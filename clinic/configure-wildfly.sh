@@ -35,17 +35,32 @@ if [ -n "$DATABASE_URL" ]; then
 else
     # Usar variables individuales si DATABASE_URL no está disponible
     # Render configura estas variables automáticamente cuando se vincula una base de datos
-    # Para desarrollo local, usar valores por defecto
-    DB_HOST=${PGHOST:-localhost}
-    DB_PORT=${PGPORT:-5432}
-    DB_NAME=${PGDATABASE:-clinic_db}
-    DB_USER=${PGUSER:-postgres}
-    DB_PASS=${PGPASSWORD:-sora}  # Password por defecto para desarrollo local
-    
-    # Solo mostrar error si estamos en Render (detectado por PORT variable) y no hay password
-    if [ -n "$PORT" ] && [ -z "$PGPASSWORD" ] && [ "$DB_PASS" = "sora" ]; then
-        echo "ERROR: En Render, se requiere DATABASE_URL o PGPASSWORD. Verifica la configuración."
-        exit 1
+    if [ -n "$PORT" ]; then
+        # Estamos en Render - usar variables PG* que Render configura automáticamente
+        DB_HOST=${PGHOST}
+        DB_PORT=${PGPORT:-5432}
+        DB_NAME=${PGDATABASE}
+        DB_USER=${PGUSER}
+        DB_PASS=${PGPASSWORD}
+        
+        # Validar que todas las variables estén configuradas
+        if [ -z "$DB_HOST" ] || [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ]; then
+            echo "ERROR: En Render, se requieren todas las variables PG* o DATABASE_URL. Variables disponibles:"
+            echo "  PGHOST: ${PGHOST:-no configurado}"
+            echo "  PGDATABASE: ${PGDATABASE:-no configurado}"
+            echo "  PGUSER: ${PGUSER:-no configurado}"
+            echo "  PGPASSWORD: ${PGPASSWORD:+configurado (oculto)}"
+            exit 1
+        fi
+        echo ">>> Usando variables PG* de Render (no DATABASE_URL)"
+    else
+        # Desarrollo local - usar valores por defecto
+        DB_HOST=${PGHOST:-localhost}
+        DB_PORT=${PGPORT:-5432}
+        DB_NAME=${PGDATABASE:-clinic_db}
+        DB_USER=${PGUSER:-postgres}
+        DB_PASS=${PGPASSWORD:-sora}
+        echo ">>> Usando valores por defecto para desarrollo local"
     fi
 fi
 
@@ -55,13 +70,18 @@ RENDER_PORT=${PORT:-8080}
 # Escapar caracteres especiales para XML
 DB_PASS_ESC=$(echo "$DB_PASS" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&apos;/g')
 
-echo "Configurando WildFly con:"
+echo "=== Configurando WildFly con variables de entorno ==="
+echo "  DATABASE_URL presente: $([ -n "$DATABASE_URL" ] && echo 'SÍ' || echo 'NO')"
+echo "  PGHOST: ${PGHOST:-no configurado}"
+echo "  PGUSER: ${PGUSER:-no configurado}"
+echo "  PGPASSWORD: ${PGPASSWORD:+configurado (oculto)}"
 echo "  DB_HOST: $DB_HOST"
 echo "  DB_PORT: $DB_PORT"
 echo "  DB_NAME: $DB_NAME"
 echo "  DB_USER: $DB_USER"
 echo "  DB_PASS: ${DB_PASS:0:3}*** (oculto por seguridad)"
 echo "  PORT: $RENDER_PORT"
+echo "======================================================"
 
 # Esperar a que el archivo standalone.xml esté disponible
 if [ ! -f "$STANDALONE_XML" ]; then
@@ -118,10 +138,16 @@ if [ -f "$STANDALONE_XML" ]; then
     
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
-        echo "Actualizando datasource ClinicDS existente..."
+        echo ">>> Datasource ClinicDS encontrado. Eliminando para recrearlo con credenciales correctas..."
         
         # Eliminar el datasource existente completamente para recrearlo con las credenciales correctas
         perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ClinicDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
+        
+        echo ">>> Datasource eliminado. Recreando con:"
+        echo "    Host: $DB_HOST"
+        echo "    Port: $DB_PORT"
+        echo "    Database: $DB_NAME"
+        echo "    User: $DB_USER"
         
         # Recrear el datasource con las credenciales correctas
         if grep -q "<drivers>" "$STANDALONE_XML"; then
@@ -140,7 +166,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 </datasource>' "$STANDALONE_XML"
         fi
         
-        echo "Datasource ClinicDS recreado con credenciales actualizadas en standalone.xml"
+        echo ">>> Datasource ClinicDS recreado exitosamente"
     else
         echo "Datasource ClinicDS no encontrado. Creándolo en standalone.xml..."
         # Buscar la sección de datasources e insertar ClinicDS antes de la sección de drivers
