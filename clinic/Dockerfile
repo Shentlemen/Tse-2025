@@ -24,7 +24,10 @@ RUN cd /opt/jboss/wildfly/modules/org/postgresql/main && \
     echo '  </dependencies>' >> module.xml && \
     echo '</module>' >> module.xml
 
-# Copiar el WAR compilado
+# Copiar el WAR compilado (debe estar en build/libs/clinic.war)
+# IMPORTANTE: El proyecto debe compilarse ANTES de construir la imagen Docker
+# Opción 1: Compilar localmente y hacer commit del WAR
+# Opción 2: Usar un build step en Render que compile antes del Docker build
 COPY build/libs/clinic.war /opt/jboss/wildfly/standalone/deployments/
 
 # Script para configurar WildFly con variables de entorno
@@ -54,4 +57,3 @@ EXPOSE 8080
 
 # Comando de inicio
 CMD ["/opt/jboss/wildfly/bin/start-wildfly.sh"]
-
