@@ -93,11 +93,22 @@ if [ -f "$STANDALONE_XML" ]; then
         # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
         sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
         
-        # Actualizar user-name (dentro del bloque ClinicDS)
-        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|<user-name>[^<]*</user-name>|<user-name>${DB_USER}</user-name>|g" "$STANDALONE_XML"
-        
-        # Actualizar password (dentro del bloque ClinicDS)
-        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|<password>[^<]*</password>|<password>${DB_PASS_ESC}</password>|g" "$STANDALONE_XML"
+        # Actualizar security con atributos (formato correcto para WildFly 30)
+        # Reemplazar el elemento security completo con el formato de atributos
+        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
+            /<security.*\/>/ s|user-name=\"[^\"]*\"|user-name=\"${DB_USER}\"|g
+            /<security.*\/>/ s|password=\"[^\"]*\"|password=\"${DB_PASS_ESC}\"|g
+            # Si está en formato antiguo (elementos), reemplazarlo por formato de atributos
+            /<security>/,/<\/security>/ {
+                /<security>/ {
+                    s|<security>|<security user-name=\"${DB_USER}\" password=\"${DB_PASS_ESC}\"/>|
+                    d
+                }
+                /<user-name>/d
+                /<password>/d
+                /<\/security>/d
+            }
+        }" "$STANDALONE_XML"
         
         echo "Datasource ClinicDS actualizado en standalone.xml"
     else
