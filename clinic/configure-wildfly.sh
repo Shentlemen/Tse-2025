@@ -80,24 +80,24 @@ if [ -f "$STANDALONE_XML" ]; then
     echo "Puerto se configurará vía variable de sistema: ${RENDER_PORT}"
     
     # Eliminar ExampleDS si existe (no lo necesitamos)
-    if grep -q "datasource.*jndi-name=\"java:jboss/datasources/ExampleDS\"" "$STANDALONE_XML"; then
+    if grep -q "jndi-name=\"java:jboss/datasources/ExampleDS\"" "$STANDALONE_XML"; then
         echo "Eliminando datasource ExampleDS (no necesario)..."
-        # Eliminar el datasource ExampleDS completo
+        # Eliminar el datasource ExampleDS completo (puede estar en una o múltiples líneas)
         sed -i '/<datasource.*jndi-name="java:jboss\/datasources\/ExampleDS"/,/<\/datasource>/d' "$STANDALONE_XML"
         echo "Datasource ExampleDS eliminado"
     fi
     
-    # Verificar si el datasource ya existe y actualizarlo
-    if grep -q "data-source name=\"ClinicDS\"" "$STANDALONE_XML" || grep -q "datasource.*jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
+    # Verificar si el datasource ClinicDS ya existe y actualizarlo
+    if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo "Actualizando datasource ClinicDS existente..."
         # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
-        sed -i "/data-source name=\"ClinicDS\"/,/<\/data-source>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
+        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
         
         # Actualizar user-name (dentro del bloque ClinicDS)
-        sed -i "/data-source name=\"ClinicDS\"/,/<\/data-source>/ s|<user-name>[^<]*</user-name>|<user-name>${DB_USER}</user-name>|g" "$STANDALONE_XML"
+        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|<user-name>[^<]*</user-name>|<user-name>${DB_USER}</user-name>|g" "$STANDALONE_XML"
         
         # Actualizar password (dentro del bloque ClinicDS)
-        sed -i "/data-source name=\"ClinicDS\"/,/<\/data-source>/ s|<password>[^<]*</password>|<password>${DB_PASS_ESC}</password>|g" "$STANDALONE_XML"
+        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|<password>[^<]*</password>|<password>${DB_PASS_ESC}</password>|g" "$STANDALONE_XML"
         
         echo "Datasource ClinicDS actualizado en standalone.xml"
     else
