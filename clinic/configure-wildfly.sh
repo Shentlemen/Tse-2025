@@ -79,13 +79,8 @@ if [ -f "$STANDALONE_XML" ]; then
     # Esto se hará en start-wildfly.sh con -Djboss.http.port
     echo "Puerto se configurará vía variable de sistema: ${RENDER_PORT}"
     
-    # Cambiar default-bindings para usar ClinicDS (ExampleDS ya fue eliminado en el Dockerfile)
-    # Solo actualizar si todavía apunta a ExampleDS (por si acaso)
-    if grep -q 'datasource="java:jboss/datasources/ExampleDS"' "$STANDALONE_XML"; then
-        echo "Actualizando default-bindings para usar ClinicDS..."
-        sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML"
-        echo "Default datasource cambiado a ClinicDS"
-    fi
+    # ExampleDS ya fue eliminado y default-bindings ya fue cambiado a ClinicDS en el Dockerfile
+    # No es necesario verificar nada relacionado con ExampleDS aquí
     
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
