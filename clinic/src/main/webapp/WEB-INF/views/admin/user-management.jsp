@@ -307,11 +307,11 @@
                             <a class="nav-link" href="<c:url value='/admin/patients-list'/>">
                                 <i class="fas fa-users me-2"></i>Pacientes
                             </a>
-                            <a class="nav-link" href="<c:url value='/admin/specialties-list'/>">
-                                <i class="fas fa-stethoscope me-2"></i>Especialidades
-                            </a>
                             <a class="nav-link" href="<c:url value='/admin/documents'/>">
                                 <i class="fas fa-file-medical me-2"></i>Documentos
+                            </a>
+                            <a class="nav-link" href="<c:url value='/admin/specialties-list'/>">
+                                <i class="fas fa-stethoscope me-2"></i>Especialidades
                             </a>
                             <c:if test="${sessionScope.role == 'ADMIN_CLINIC' or sessionScope.role == 'SUPER_ADMIN'}">
                                 <a class="nav-link active" href="<c:url value='/admin/users'/>">
@@ -556,13 +556,16 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="editUsername" class="form-label">Usuario</label>
-                                    <input type="text" class="form-control" id="editUsername" name="username" readonly>
+                                    <input type="text" class="form-control" id="editUsername" name="username" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="editRole" class="form-label">Rol</label>
-                                    <input type="text" class="form-control" id="editRole" name="role" readonly>
+                                    <select class="form-select" id="editRole" name="role" required>
+                                        <option value="ADMIN_CLINIC">Administrador</option>
+                                        <option value="PROFESSIONAL">Profesional</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -695,18 +698,25 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="createClinicId" class="form-label">Clínica *</label>
-                                    <select class="form-select" id="createClinicId" name="clinicId" required ${sessionScope.role == 'ADMIN_CLINIC' ? 'disabled' : ''}>
-                                        <option value="">Seleccionar...</option>
-                                        <c:forEach var="clinic" items="${clinics}">
-                                            <option value="${clinic.id}" ${sessionScope.role == 'ADMIN_CLINIC' and sessionScope.clinicId == clinic.id ? 'selected' : ''}>
-                                                ${clinic.name}
-                                            </option>
-                                        </c:forEach>
-                                    </select>
-                                    <c:if test="${sessionScope.role == 'ADMIN_CLINIC'}">
-                                        <input type="hidden" name="clinicId" value="${sessionScope.clinicId}">
-                                        <small class="form-text text-muted">Solo puedes crear usuarios para tu propia clínica</small>
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${sessionScope.role == 'ADMIN_CLINIC'}">
+                                            <%-- Para ADMIN_CLINIC, usar solo hidden input (no select) --%>
+                                            <input type="hidden" name="clinicId" id="createClinicId" value="${sessionScope.clinicId}">
+                                            <input type="text" class="form-control" value="${sessionScope.clinicName}" readonly>
+                                            <small class="form-text text-muted">Solo puedes crear usuarios para tu propia clínica</small>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <%-- Para SUPER_ADMIN, mostrar select --%>
+                                            <select class="form-select" id="createClinicId" name="clinicId" required>
+                                                <option value="">Seleccionar...</option>
+                                                <c:forEach var="clinic" items="${clinics}">
+                                                    <option value="${clinic.id}">
+                                                        ${clinic.name}
+                                                    </option>
+                                                </c:forEach>
+                                            </select>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </div>
                         </div>
@@ -869,9 +879,10 @@
                     let actualRole = 'PROFESSIONAL';
                     if (role.includes('Administrador')) {
                         actualRole = 'ADMIN_CLINIC';
-                    } else if (role.includes('Super Admin')) {
-                        actualRole = 'SUPER_ADMIN';
+                    } else if (role.includes('Profesional')) {
+                        actualRole = 'PROFESSIONAL';
                     }
+                    // Nota: SUPER_ADMIN no se puede editar desde este formulario
                     
                     // Determinar estado
                     const isActive = status.includes('Activo');
@@ -879,7 +890,11 @@
                     // Llenar el modal
                     document.getElementById('editUserId').value = userId;
                     document.getElementById('editUsername').value = username;
-                    document.getElementById('editRole').value = actualRole;
+                    // Solo establecer el role si es ADMIN_CLINIC o PROFESSIONAL
+                    const roleSelect = document.getElementById('editRole');
+                    if (roleSelect && (actualRole === 'ADMIN_CLINIC' || actualRole === 'PROFESSIONAL')) {
+                        roleSelect.value = actualRole;
+                    }
                     document.getElementById('editFirstName').value = firstName;
                     document.getElementById('editLastName').value = lastName;
                     document.getElementById('editEmail').value = email;

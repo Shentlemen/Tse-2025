@@ -1473,24 +1473,11 @@
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
                             Solicita acceso a documentos del paciente <strong>${patient.fullName}</strong> (CI: ${patient.documentNumber}) 
-                            en otras clínicas a través del HCEN.
+                            en otras clínicas a través del HCEN. Se solicitará acceso a <strong>todas las especialidades</strong>.
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Especialidad solicitada *</label>
-                            <select class="form-select" name="specialtySelection" id="specialtySelectionDropdown" required>
-                                <option value="ALL" selected>Todas las especialidades</option>
-                                <c:forEach var="specialty" items="${specialties}">
-                                    <option value="${specialty.id}">
-                                        ${specialty.name}
-                                        <c:if test="${not empty specialty.code}">
-                                            (${specialty.code})
-                                        </c:if>
-                                    </option>
-                                </c:forEach>
-                            </select>
-                            <small class="text-muted">Elija “Todas las especialidades” o seleccione una en particular.</small>
-                        </div>
+                        <!-- Campo hidden: siempre se solicita acceso a todas las especialidades -->
+                        <input type="hidden" name="specialtySelection" value="ALL">
                         
                         <div class="mb-3">
                             <label class="form-label">Motivo de la Solicitud *</label>
@@ -1623,11 +1610,6 @@
             const form = document.getElementById('requestAccessForm');
             if (form) {
                 form.reset();
-            }
-
-            const specialtyDropdown = document.getElementById('specialtySelectionDropdown');
-            if (specialtyDropdown) {
-                specialtyDropdown.value = 'ALL';
             }
 
             const documentIdInput = document.getElementById('documentIdInput');

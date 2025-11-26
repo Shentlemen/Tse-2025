@@ -35,7 +35,7 @@ public class PatientServlet extends HttpServlet {
         if (patientService == null) {
             System.out.println("ERROR: PatientService es NULL - problema de inyección de dependencias");
             request.setAttribute("error", "Error de configuración: PatientService no disponible");
-            request.getRequestDispatcher("/admin/patients.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/patients.jsp").forward(request, response);
             return;
         }
 
@@ -45,7 +45,7 @@ public class PatientServlet extends HttpServlet {
             if (clinicId == null) {
                 System.out.println("ERROR: No se encontró clinicId en la sesión");
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/admin/patients.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/patients.jsp").forward(request, response);
                 return;
             }
             
@@ -75,7 +75,7 @@ public class PatientServlet extends HttpServlet {
         }
 
         // Redirigir a la página de gestión de pacientes
-        request.getRequestDispatcher("/admin/patients.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/patients.jsp").forward(request, response);
     }
 
     @Override

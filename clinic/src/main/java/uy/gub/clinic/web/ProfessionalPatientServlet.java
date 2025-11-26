@@ -36,7 +36,7 @@ public class ProfessionalPatientServlet extends HttpServlet {
             String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/professional/patients.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/patients.jsp").forward(request, response);
                 return;
             }
             
@@ -75,7 +75,7 @@ public class ProfessionalPatientServlet extends HttpServlet {
         }
 
         // Redirigir a la página de pacientes
-        request.getRequestDispatcher("/professional/patients.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/professional/patients.jsp").forward(request, response);
     }
 }
 

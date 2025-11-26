@@ -93,7 +93,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/patient-documents.jsp").forward(request, response);
                 return;
             }
 
@@ -104,7 +104,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             String patientIdStr = request.getParameter("patientId");
             if (patientIdStr == null || patientIdStr.trim().isEmpty()) {
                 request.setAttribute("error", "ID de paciente no proporcionado");
-                request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/patient-documents.jsp").forward(request, response);
                 return;
             }
             
@@ -114,7 +114,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             Optional<Patient> patientOpt = patientService.getPatientById(patientId);
             if (patientOpt.isEmpty()) {
                 request.setAttribute("error", "Paciente no encontrado");
-                request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/patient-documents.jsp").forward(request, response);
                 return;
             }
             
@@ -123,7 +123,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             // Verificar que el paciente pertenece a la clínica del profesional
             if (patient.getClinic() == null || !patient.getClinic().getId().equals(clinicId)) {
                 request.setAttribute("error", "El paciente no pertenece a su clínica");
-                request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/patient-documents.jsp").forward(request, response);
                 return;
             }
             
@@ -225,7 +225,7 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             request.setAttribute("error", "Error al cargar documentos: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("/professional/patient-documents.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/professional/patient-documents.jsp").forward(request, response);
     }
     
     @Override
@@ -887,22 +887,12 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
             Clinic clinic = clinicService.getClinicById(clinicId)
                 .orElseThrow(() -> new ServletException("Clínica no encontrada"));
             
-            // Construir string de especialidades
-            String specialtiesStr = null;
+            // Siempre solicitar acceso a todas las especialidades (no se permite seleccionar especialidades específicas)
+            String specialtiesStr = null; // null significa todas las especialidades
             if (specialtySelection != null && !"ALL".equalsIgnoreCase(specialtySelection)) {
-                try {
-                    Long specialtyId = Long.parseLong(specialtySelection);
-                    Optional<Specialty> specialtyOpt = specialtyService.getSpecialtyById(specialtyId);
-                    if (specialtyOpt.isPresent()) {
-                        specialtiesStr = specialtyOpt.get().getName();
-                    } else {
-                        logger.warn("Especialidad no encontrada para ID {}", specialtySelection);
-                    }
-                } catch (NumberFormatException e) {
-                    logger.warn("Invalid specialty ID: {}", specialtySelection);
-                }
+                // Si por alguna razón se envía un valor diferente a "ALL", lo ignoramos y solicitamos todas
+                logger.warn("Se recibió specialtySelection={} pero solo se permite 'ALL'. Se solicitará acceso a todas las especialidades.", specialtySelection);
             }
-            // Si se selecciona "ALL" o es inválida, specialtiesStr queda null (solicitar todas las especialidades)
             
             // Parsear documentId si existe
             Long documentId = null;
@@ -1000,4 +990,6 @@ public class ProfessionalPatientDocumentsServlet extends HttpServlet {
         return null;
     }
 }
+
+
 

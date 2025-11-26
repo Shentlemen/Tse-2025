@@ -10,10 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.User;
 import uy.gub.clinic.entity.Clinic;
-import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.service.UserService;
 import uy.gub.clinic.service.ClinicService;
-import uy.gub.clinic.service.ProfessionalService;
 import uy.gub.clinic.util.PasswordUtil;
 
 import java.io.IOException;
@@ -33,9 +31,6 @@ public class UserManagementServlet extends HttpServlet {
     
     @Inject
     private ClinicService clinicService;
-    
-    @Inject
-    private ProfessionalService professionalService;
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -99,35 +94,20 @@ public class UserManagementServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             String clinicId = null;
-            String role = null;
 
             if (session != null) {
                 clinicId = (String) session.getAttribute("clinicId");
-                role = (String) session.getAttribute("role");
             }
-            
-            System.out.println("=== UserManagementServlet.handleListUsers ===");
-            System.out.println("ClinicId desde sesión: " + clinicId);
-            System.out.println("Role desde sesión: " + role);
             
             // Validar que clinicId esté presente
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/user-management.jsp").forward(request, response);
                 return;
             }
             
             // Filtrar usuarios por clínica
-            System.out.println("Filtrando usuarios por clínica: " + clinicId);
             List<User> users = userService.findByClinic(clinicId);
-            
-            System.out.println("Usuarios obtenidos: " + users.size());
-            
-            // Debug de usuarios (las relaciones ya están cargadas con JOIN FETCH)
-            for (User user : users) {
-                System.out.println("  - " + user.getUsername() + " (" + user.getRole() + ", Clínica: " + 
-                                 (user.getClinic() != null ? user.getClinic().getName() : "NULL") + ")");
-            }
             
             request.setAttribute("users", users);
             
@@ -135,12 +115,12 @@ public class UserManagementServlet extends HttpServlet {
             List<Clinic> clinics = clinicService.getAllClinics();
             request.setAttribute("clinics", clinics);
             
-            request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-management.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al obtener lista de usuarios", e);
             request.setAttribute("error", "Error al cargar la lista de usuarios");
-            request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-management.jsp").forward(request, response);
         }
     }
     
@@ -151,12 +131,12 @@ public class UserManagementServlet extends HttpServlet {
             List<Clinic> clinics = clinicService.getAllClinics();
             request.setAttribute("clinics", clinics);
             
-            request.getRequestDispatcher("/admin/create-user.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/create-user.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al cargar formulario de creación de usuario", e);
             request.setAttribute("error", "Error al cargar el formulario");
-            request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-management.jsp").forward(request, response);
         }
     }
     
@@ -183,14 +163,14 @@ public class UserManagementServlet extends HttpServlet {
             List<Clinic> clinics = clinicService.getAllClinics();
             request.setAttribute("clinics", clinics);
             
-            request.getRequestDispatcher("/admin/edit-user.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/edit-user.jsp").forward(request, response);
             
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de usuario inválido");
         } catch (Exception e) {
             logger.error("Error al cargar formulario de edición de usuario", e);
             request.setAttribute("error", "Error al cargar el formulario");
-            request.getRequestDispatcher("/admin/user-management.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-management.jsp").forward(request, response);
         }
     }
     
@@ -202,7 +182,7 @@ public class UserManagementServlet extends HttpServlet {
             boolean hasSuperAdmin = userService.hasSuperAdmin();
             request.setAttribute("hasSuperAdmin", hasSuperAdmin);
             
-            request.getRequestDispatcher("/admin/setup.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/setup.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al cargar formulario de configuración", e);
@@ -282,8 +262,20 @@ public class UserManagementServlet extends HttpServlet {
             
             // Verificar que la clínica existe
             Optional<Clinic> clinicOpt = clinicService.getClinicById(clinicId);
+            
             if (clinicOpt.isEmpty()) {
-                request.setAttribute("error", "Clínica no encontrada");
+                logger.warn("Clínica no encontrada con ID: '{}'", clinicId);
+                request.setAttribute("error", "Clínica no encontrada con ID: " + clinicId);
+                handleListUsers(request, response);
+                return;
+            }
+            
+            Clinic clinic = clinicOpt.get();
+            
+            // Verificar que la clínica esté activa
+            if (!clinic.getActive()) {
+                logger.warn("Intento de crear usuario en clínica inactiva: {}", clinicId);
+                request.setAttribute("error", "La clínica seleccionada está inactiva");
                 handleListUsers(request, response);
                 return;
             }
@@ -297,13 +289,13 @@ public class UserManagementServlet extends HttpServlet {
             user.setLastName(lastName != null ? lastName.trim() : null);
             user.setRole(role);
             user.setActive(true);
-            user.setClinic(clinicOpt.get());
+            user.setClinic(clinic);
             // No establecer professional - los usuarios profesionales no requieren estar vinculados a un Professional entity
             
             userService.createUser(user);
             
             logger.info("Usuario creado: {} con rol {} para clínica {} por usuario {}", 
-                       username, role, clinicOpt.get().getName(), session.getAttribute("user"));
+                       username, role, clinic.getName(), session.getAttribute("user"));
             
             request.setAttribute("success", "Usuario creado exitosamente: " + username);
             response.sendRedirect(request.getContextPath() + "/admin/users?success=created");
@@ -324,19 +316,13 @@ public class UserManagementServlet extends HttpServlet {
         
         try {
             String userIdStr = request.getParameter("id"); // Cambiar de "userId" a "id"
+            String username = request.getParameter("username");
+            String role = request.getParameter("role");
             String email = request.getParameter("email");
             String firstName = request.getParameter("firstName");
             String lastName = request.getParameter("lastName");
             String password = request.getParameter("password");
             String activeStr = request.getParameter("active");
-            
-            System.out.println("=== handleUpdateUser ===");
-            System.out.println("ID: " + userIdStr);
-            System.out.println("Email: " + email);
-            System.out.println("FirstName: " + firstName);
-            System.out.println("LastName: " + lastName);
-            System.out.println("Password provided: " + (password != null && !password.isEmpty()));
-            System.out.println("Active: " + activeStr);
             
             if (userIdStr == null || userIdStr.trim().isEmpty()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de usuario requerido");
@@ -353,6 +339,30 @@ public class UserManagementServlet extends HttpServlet {
             
             User user = userOpt.get();
             
+            // Actualizar username si se proporcionó
+            if (username != null && !username.trim().isEmpty()) {
+                String newUsername = username.trim();
+                // Verificar que el nuevo username no esté en uso por otro usuario
+                Optional<User> existingUser = userService.findByUsername(newUsername);
+                if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                    request.setAttribute("error", "El nombre de usuario ya está en uso");
+                    handleListUsers(request, response);
+                    return;
+                }
+                user.setUsername(newUsername);
+            }
+            
+            // Actualizar rol si se proporcionó
+            if (role != null && !role.trim().isEmpty()) {
+                String newRole = role.trim();
+                // Validar que el rol sea válido
+                if ("ADMIN_CLINIC".equals(newRole) || "PROFESSIONAL".equals(newRole)) {
+                    user.setRole(newRole);
+                } else {
+                    logger.warn("Intento de asignar rol inválido: {}", newRole);
+                }
+            }
+            
             // Actualizar datos básicos
             if (email != null && !email.trim().isEmpty()) {
                 user.setEmail(email.trim());
@@ -368,20 +378,18 @@ public class UserManagementServlet extends HttpServlet {
             if (password != null && !password.trim().isEmpty()) {
                 String hashedPassword = PasswordUtil.hashPassword(password);
                 user.setPassword(hashedPassword);
-                System.out.println("Password actualizada para usuario: " + user.getUsername());
             }
             
             // Actualizar estado
             if (activeStr != null) {
                 boolean active = Boolean.parseBoolean(activeStr);
                 user.setActive(active);
-                System.out.println("Estado actualizado para usuario: " + user.getUsername() + " -> " + active);
             }
             
             user.setUpdatedAt(LocalDateTime.now());
             userService.updateUser(user);
             
-            System.out.println("Usuario actualizado exitosamente: " + user.getUsername());
+            logger.info("Usuario actualizado: {} (username: {}, role: {})", user.getId(), user.getUsername(), user.getRole());
             request.setAttribute("success", "Usuario actualizado exitosamente: " + user.getUsername());
             response.sendRedirect(request.getContextPath() + "/admin/users?success=updated");
             
@@ -402,10 +410,6 @@ public class UserManagementServlet extends HttpServlet {
             String userIdStr = request.getParameter("userId");
             String activeStr = request.getParameter("active");
             
-            System.out.println("=== handleToggleUserStatus ===");
-            System.out.println("UserID: " + userIdStr);
-            System.out.println("Active: " + activeStr);
-            
             if (userIdStr == null || userIdStr.trim().isEmpty()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID de usuario requerido");
                 return;
@@ -425,9 +429,7 @@ public class UserManagementServlet extends HttpServlet {
             user.setUpdatedAt(LocalDateTime.now());
             userService.updateUser(user);
             
-            System.out.println("Usuario " + (active ? "activado" : "desactivado") + " exitosamente: " + user.getUsername());
-            
-            String successMessage = active ? "Usuario activado exitosamente" : "Usuario desactivado exitosamente";
+            logger.info("Usuario {}: {}", user.getUsername(), active ? "activado" : "desactivado");
             response.sendRedirect(request.getContextPath() + "/admin/users?success=toggle");
             
         } catch (NumberFormatException e) {

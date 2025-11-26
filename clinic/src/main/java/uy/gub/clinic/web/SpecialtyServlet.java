@@ -37,7 +37,7 @@ public class SpecialtyServlet extends HttpServlet {
         if (specialtyService == null) {
             System.out.println("ERROR: SpecialtyService es NULL - problema de inyección de dependencias");
             request.setAttribute("error", "Error de configuración: SpecialtyService no disponible");
-            request.getRequestDispatcher("/admin/specialties.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/specialties.jsp").forward(request, response);
             return;
         }
 
@@ -76,7 +76,7 @@ public class SpecialtyServlet extends HttpServlet {
         }
 
         // Redirigir a la página de gestión de especialidades
-        request.getRequestDispatcher("/admin/specialties.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/specialties.jsp").forward(request, response);
     }
 
     @Override

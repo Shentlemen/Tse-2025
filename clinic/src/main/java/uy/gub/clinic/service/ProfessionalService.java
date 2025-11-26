@@ -6,6 +6,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.entity.Professional;
 import uy.gub.clinic.entity.Specialty;
@@ -18,6 +20,8 @@ import java.util.Optional;
  */
 @Stateless
 public class ProfessionalService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProfessionalService.class);
 
     @PersistenceContext(unitName = "clinicPU")
     private EntityManager entityManager;
@@ -140,17 +144,21 @@ public class ProfessionalService {
      * Obtiene un profesional por ID
      */
     public Optional<Professional> getProfessionalById(Long id) {
-        Professional professional = entityManager.find(Professional.class, id);
-        if (professional != null) {
-            // Cargar relaciones lazy para evitar LazyInitializationException
-            if (professional.getClinic() != null) {
-                professional.getClinic().getName(); // Forzar carga
-            }
-            if (professional.getSpecialty() != null) {
-                professional.getSpecialty().getName(); // Forzar carga
-            }
+        try {
+            // Usar JOIN FETCH para cargar las relaciones de una vez
+            TypedQuery<Professional> query = entityManager.createQuery(
+                "SELECT p FROM Professional p " +
+                "LEFT JOIN FETCH p.clinic " +
+                "LEFT JOIN FETCH p.specialty " +
+                "WHERE p.id = :id",
+                Professional.class);
+            query.setParameter("id", id);
+            Professional professional = query.getResultList().stream().findFirst().orElse(null);
+            return Optional.ofNullable(professional);
+        } catch (Exception e) {
+            logger.error("Error al obtener profesional por ID: {}", id, e);
+            return Optional.empty();
         }
-        return Optional.ofNullable(professional);
     }
     
     /**

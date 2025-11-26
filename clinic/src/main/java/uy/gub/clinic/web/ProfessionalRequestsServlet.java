@@ -49,7 +49,7 @@ public class ProfessionalRequestsServlet extends HttpServlet {
             Long professionalId = (Long) request.getSession().getAttribute("professionalId");
             if (professionalId == null) {
                 request.setAttribute("error", "Error de sesión: Profesional no identificado");
-                request.getRequestDispatcher("/professional/requests.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/requests.jsp").forward(request, response);
                 return;
             }
 
@@ -71,7 +71,7 @@ public class ProfessionalRequestsServlet extends HttpServlet {
             request.setAttribute("error", "Error al cargar solicitudes: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("/professional/requests.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/professional/requests.jsp").forward(request, response);
     }
     
     @Override

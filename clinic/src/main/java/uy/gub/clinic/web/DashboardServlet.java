@@ -65,7 +65,7 @@ public class DashboardServlet extends HttpServlet {
             // Validar que clinicId esté presente
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
                 return;
             }
 
@@ -106,12 +106,12 @@ public class DashboardServlet extends HttpServlet {
                         professionalsCount, patientsCount, specialtiesCount, documentsCount);
 
             // Forward a dashboard.jsp
-            request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
 
         } catch (Exception e) {
             logger.error("Error al cargar dashboard", e);
             request.setAttribute("error", "Error al cargar el dashboard: " + e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
         }
     }
 }

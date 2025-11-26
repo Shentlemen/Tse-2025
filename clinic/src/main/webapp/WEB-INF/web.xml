@@ -56,6 +56,24 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
+    <!-- Filtro de Autenticación - Debe estar antes de los servlets -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>uy.gub.clinic.auth.AuthenticationFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+        <url-pattern>/professional/*</url-pattern>
+        <url-pattern>/super-admin/*</url-pattern>
+        <!-- IMPORTANTE: Interceptar todos los JSPs para proteger acceso directo -->
+        <url-pattern>*.jsp</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
+
     <!-- Configuración de sesión -->
     <session-config>
         <session-timeout>30</session-timeout>

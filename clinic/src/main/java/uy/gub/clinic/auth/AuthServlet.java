@@ -9,9 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uy.gub.clinic.entity.User;
-import uy.gub.clinic.entity.Clinic;
 import uy.gub.clinic.service.UserService;
-import uy.gub.clinic.service.ClinicService;
 import uy.gub.clinic.util.PasswordUtil;
 
 import java.io.IOException;
@@ -26,24 +24,6 @@ public class AuthServlet extends HttpServlet {
     
     @Inject
     private UserService userService;
-
-    @Inject
-    private ClinicService clinicService;
-    
-    // Usuarios hardcodeados para desarrollo (TEMPORAL)
-    // Estos se usarán hasta que el sistema interno de gestión esté listo
-    private static final String SUPER_ADMIN_USER = "superadmin";
-    private static final String SUPER_ADMIN_PASS = "super123";
-    
-    private static final String ADMIN_USER_CLINIC1 = "admin";
-    private static final String ADMIN_PASS_CLINIC1 = "admin123";
-    private static final String PROF_USER_CLINIC1 = "prof";
-    private static final String PROF_PASS_CLINIC1 = "prof123";
-    
-    private static final String ADMIN_USER_CLINIC2 = "admin2";
-    private static final String ADMIN_PASS_CLINIC2 = "admin456";
-    private static final String PROF_USER_CLINIC2 = "prof2";
-    private static final String PROF_PASS_CLINIC2 = "prof456";
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -56,33 +36,6 @@ public class AuthServlet extends HttpServlet {
         }
     }
 
-    private String resolveClinicId(String clinicName, String fallbackId) {
-        if (clinicService != null && clinicName != null) {
-            try {
-                return clinicService.getAllClinics().stream()
-                        .filter(c -> clinicName.equalsIgnoreCase(c.getName()))
-                        .map(Clinic::getId)
-                        .findFirst()
-                        .orElse(fallbackId);
-            } catch (Exception ex) {
-                logger.warn("No se pudo resolver la clínica '{}' desde la BD, usando fallback {}", clinicName, fallbackId, ex);
-            }
-        }
-        return fallbackId;
-    }
-
-    private String getClinicName(String clinicId, String fallbackName) {
-        if (clinicService != null && clinicId != null) {
-            try {
-                return clinicService.getClinicById(clinicId)
-                        .map(Clinic::getName)
-                        .orElse(fallbackName);
-            } catch (Exception ex) {
-                logger.warn("No se pudo obtener el nombre para la clínica {}, usando fallback {}", clinicId, fallbackName, ex);
-            }
-        }
-        return fallbackName;
-    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -127,110 +80,58 @@ public class AuthServlet extends HttpServlet {
         logger.info("Sesión preparada con ID: {}", session.getId());
         
         try {
-            // SISTEMA HÍBRIDO: Primero verificar usuarios hardcodeados (TEMPORAL)
-            // Luego verificar base de datos para usuarios creados internamente
-            
             boolean loginExitoso = false;
             String role = null;
             String clinicId = null;
             String clinicName = null;
             Long professionalId = null;
-
-            // Verificar usuarios hardcodeados primero
-            if (SUPER_ADMIN_USER.equals(username) && SUPER_ADMIN_PASS.equals(password)) {
-                loginExitoso = true;
-                role = "SUPER_ADMIN";
-                clinicId = "clinic-00000000-0000-0000-0000-000000000000"; // ID especial para super admin (acceso completo)
-                clinicName = "Super Administrador - Acceso Completo";
-                professionalId = null;
-                logger.info("Login exitoso con super administrador: {}", username);
-
-            } else if (ADMIN_USER_CLINIC1.equals(username) && ADMIN_PASS_CLINIC1.equals(password)) {
-                loginExitoso = true;
-                role = "ADMIN_CLINIC";
-                clinicId = resolveClinicId("Clínica del Corazón", "clinic-00000000-0000-0000-0000-000000000004");
-                clinicName = getClinicName(clinicId, "Clínica del Corazón");
-                professionalId = null;
-                logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
-
-            } else if (PROF_USER_CLINIC1.equals(username) && PROF_PASS_CLINIC1.equals(password)) {
-                loginExitoso = true;
-                role = "PROFESSIONAL";
-                clinicId = resolveClinicId("Clínica del Corazón", "clinic-00000000-0000-0000-0000-000000000004");
-                clinicName = getClinicName(clinicId, "Clínica del Corazón");
-                professionalId = 1L;
-                logger.info("Login exitoso con usuario hardcodeado: {} (Clínica del Corazón)", username);
-
-            } else if (ADMIN_USER_CLINIC2.equals(username) && ADMIN_PASS_CLINIC2.equals(password)) {
-                loginExitoso = true;
-                role = "ADMIN_CLINIC";
-                clinicId = resolveClinicId("Centro Neurológico", "clinic-00000000-0000-0000-0000-000000000005");
-                clinicName = getClinicName(clinicId, "Centro Neurológico");
-                professionalId = null;
-                logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
-
-            } else if (PROF_USER_CLINIC2.equals(username) && PROF_PASS_CLINIC2.equals(password)) {
-                loginExitoso = true;
-                role = "PROFESSIONAL";
-                clinicId = resolveClinicId("Centro Neurológico", "clinic-00000000-0000-0000-0000-000000000005");
-                clinicName = getClinicName(clinicId, "Centro Neurológico");
-                professionalId = 2L;
-                logger.info("Login exitoso con usuario hardcodeado: {} (Centro Neurológico)", username);
+            
+            Optional<User> userOpt = userService.findByUsername(username);
+            
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
                 
-            } else {
-                // Si no es usuario hardcodeado, verificar en base de datos
-                System.out.println("=== DEBUG LOGIN ===");
-                System.out.println("Username ingresado: " + username);
-                System.out.println("Password ingresado: " + password);
+                // Verificar si el usuario está activo
+                if (!user.getActive()) {
+                    logger.warn("Intento de login con usuario inactivo: {}", username);
+                    request.setAttribute("error", "Usuario desactivado. Contacte al administrador.");
+                    request.getRequestDispatcher("/index.jsp").forward(request, response);
+                    return;
+                }
                 
-                Optional<User> userOpt = userService.findByUsername(username);
+                // Verificar contraseña con BCrypt
+                boolean passwordMatch = false;
                 
-                if (userOpt.isPresent()) {
-                    User user = userOpt.get();
-                    System.out.println("Usuario encontrado en BD:");
-                    System.out.println("  - ID: " + user.getId());
-                    System.out.println("  - Username: " + user.getUsername());
-                    System.out.println("  - Role: " + user.getRole());
-                    System.out.println("  - Active: " + user.getActive());
-                    System.out.println("  - Email: " + user.getEmail());
-                    System.out.println("  - Password hash: " + user.getPassword());
-                    System.out.println("  - Clinic: " + (user.getClinic() != null ? user.getClinic().getName() : "NULL"));
-                    System.out.println("  - Professional: " + (user.getProfessional() != null ? user.getProfessional().getFullName() : "NULL"));
-                    
-                    // Verificar si el usuario está activo
-                    if (!user.getActive()) {
-                        System.out.println("ERROR: Usuario inactivo");
-                        logger.warn("Intento de login con usuario inactivo: {}", username);
-                        request.setAttribute("error", "Usuario desactivado. Contacte al administrador.");
-                        request.getRequestDispatcher("/index.jsp").forward(request, response);
-                        return;
-                    }
-                    
-                    // Verificar contraseña con BCrypt
-                    System.out.println("Verificando contraseña...");
-                    boolean passwordMatch = PasswordUtil.verifyPassword(password, user.getPassword());
-                    System.out.println("Password match: " + passwordMatch);
-                    
-                    if (passwordMatch) {
-                        loginExitoso = true;
-                        role = user.getRole();
-                        clinicId = user.getClinic() != null ? user.getClinic().getId() : null;
-                        clinicName = user.getClinic() != null ? user.getClinic().getName() : "Sistema";
-                        professionalId = user.getProfessional() != null ? user.getProfessional().getId() : null;
-                        logger.info("Login exitoso con usuario de BD: {} ({})", username, role);
-                        
-                        // Actualizar último login
-                        userService.updateLastLogin(username);
-                    } else {
-                        System.out.println("ERROR: Contraseña incorrecta");
-                    }
+                // Permitir password vacío si el hash en BD está vacío o es NULL
+                if ((user.getPassword() == null || user.getPassword().trim().isEmpty()) && 
+                    (password == null || password.trim().isEmpty())) {
+                    passwordMatch = true;
+                } else if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                    logger.warn("Usuario sin password configurado en BD: {}", username);
+                    passwordMatch = false;
                 } else {
-                    System.out.println("ERROR: Usuario no encontrado en BD");
+                    passwordMatch = PasswordUtil.verifyPassword(password, user.getPassword());
+                }
+                
+                if (passwordMatch) {
+                    loginExitoso = true;
+                    role = user.getRole();
+                    clinicId = user.getClinic() != null ? user.getClinic().getId() : null;
+                    clinicName = user.getClinic() != null ? user.getClinic().getName() : "Sistema";
+                    professionalId = user.getProfessional() != null ? user.getProfessional().getId() : null;
+                    
+                    if (clinicId == null) {
+                        logger.warn("Usuario {} logueado sin clínica asignada", username);
+                    }
+                    
+                    logger.info("Login exitoso con usuario de BD: {} ({}) - Clínica: {}", username, role, clinicName);
+                    
+                    // Actualizar último login
+                    userService.updateLastLogin(username);
                 }
             }
             
             if (!loginExitoso) {
-                System.out.println("=== LOGIN FALLIDO ===");
                 logger.warn("Intento de login fallido para usuario: {}", username);
                 request.setAttribute("error", "Usuario o contraseña incorrectos");
                 request.getRequestDispatcher("/index.jsp").forward(request, response);

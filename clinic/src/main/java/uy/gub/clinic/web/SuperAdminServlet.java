@@ -83,12 +83,12 @@ public class SuperAdminServlet extends HttpServlet {
             int activePatients = (int) patients.stream().filter(p -> p.getActive()).count();
             request.setAttribute("activePatients", activePatients);
             
-            request.getRequestDispatcher("/admin/super-admin.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/super-admin.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al cargar página de super administrador", e);
             request.setAttribute("error", "Error al cargar la información del sistema");
-            request.getRequestDispatcher("/admin/super-admin.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/super-admin.jsp").forward(request, response);
         }
     }
     
@@ -320,12 +320,12 @@ public class SuperAdminServlet extends HttpServlet {
             int activePatients = (int) patients.stream().filter(p -> p.getActive()).count();
             request.setAttribute("activePatients", activePatients);
             
-            request.getRequestDispatcher("/admin/super-admin.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/super-admin.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al recargar datos", e);
             request.setAttribute("error", "Error al recargar la información del sistema");
-            request.getRequestDispatcher("/admin/super-admin.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/super-admin.jsp").forward(request, response);
         }
     }
 }

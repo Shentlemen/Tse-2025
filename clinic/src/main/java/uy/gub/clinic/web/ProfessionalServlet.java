@@ -52,7 +52,7 @@ public class ProfessionalServlet extends HttpServlet {
             if (clinicId == null) {
                 System.out.println("ERROR: No se encontró clinicId en la sesión");
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/admin/professionals.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/professionals.jsp").forward(request, response);
                 return;
             }
             
@@ -86,7 +86,7 @@ public class ProfessionalServlet extends HttpServlet {
         }
 
         // Redirigir a la página de gestión de profesionales
-        request.getRequestDispatcher("/admin/professionals.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/professionals.jsp").forward(request, response);
     }
 
     @Override

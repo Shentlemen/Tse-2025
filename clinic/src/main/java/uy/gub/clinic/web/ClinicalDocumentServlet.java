@@ -124,7 +124,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
             String clinicId = (String) request.getSession().getAttribute("clinicId");
             if (clinicId == null) {
                 request.setAttribute("error", "Error de sesión: Clínica no identificada");
-                request.getRequestDispatcher("/admin/documents.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/documents.jsp").forward(request, response);
                 return;
             }
 
@@ -200,7 +200,7 @@ public class ClinicalDocumentServlet extends HttpServlet {
             request.setAttribute("error", "Error al cargar documentos: " + e.getMessage());
         }
         
-        request.getRequestDispatcher("/admin/documents.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/documents.jsp").forward(request, response);
     }
     
     @Override

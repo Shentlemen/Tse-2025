@@ -43,12 +43,12 @@ public class ClinicSelectorServlet extends HttpServlet {
         try {
             List<Clinic> clinics = clinicService.getAllClinics();
             request.setAttribute("clinics", clinics);
-            request.getRequestDispatcher("/admin/clinic-selector.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/clinic-selector.jsp").forward(request, response);
             
         } catch (Exception e) {
             logger.error("Error al cargar selector de clínica", e);
             request.setAttribute("error", "Error al cargar las clínicas");
-            request.getRequestDispatcher("/admin/clinic-selector.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/clinic-selector.jsp").forward(request, response);
         }
     }
     

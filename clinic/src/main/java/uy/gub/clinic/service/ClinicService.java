@@ -41,10 +41,39 @@ public class ClinicService {
 
     public Optional<Clinic> getClinicById(String id) {
         try {
-            Clinic clinic = entityManager.find(Clinic.class, id);
+            if (id == null || id.trim().isEmpty()) {
+                logger.warn("Intento de buscar clínica con ID nulo o vacío");
+                return Optional.empty();
+            }
+            
+            String trimmedId = id.trim();
+            logger.debug("Buscando clínica con ID: '{}'", trimmedId);
+            
+            // Intentar con find primero
+            Clinic clinic = entityManager.find(Clinic.class, trimmedId);
+            
+            if (clinic == null) {
+                // Si no se encuentra con find, intentar con query (puede haber problemas de cache)
+                logger.debug("Clínica no encontrada con find, intentando con query");
+                TypedQuery<Clinic> query = entityManager.createQuery(
+                    "SELECT c FROM Clinic c WHERE c.id = :id",
+                    Clinic.class);
+                query.setParameter("id", trimmedId);
+                query.setMaxResults(1);
+                List<Clinic> results = query.getResultList();
+                clinic = results.isEmpty() ? null : results.get(0);
+            }
+            
+            if (clinic != null) {
+                logger.debug("Clínica encontrada: ID='{}', Name='{}', Active={}", 
+                    clinic.getId(), clinic.getName(), clinic.getActive());
+            } else {
+                logger.warn("Clínica no encontrada con ID: '{}'", trimmedId);
+            }
+            
             return Optional.ofNullable(clinic);
         } catch (Exception e) {
-            logger.error("Error al obtener clínica {} de la BD", id, e);
+            logger.error("Error al obtener clínica '{}' de la BD", id, e);
             return Optional.empty();
         }
     }

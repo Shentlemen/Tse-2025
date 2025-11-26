@@ -69,13 +69,49 @@ public class UserService {
      */
     public List<User> findByClinic(String clinicId) {
         try {
+            if (clinicId == null || clinicId.trim().isEmpty()) {
+                logger.warn("Intento de buscar usuarios con clinicId nulo o vacío");
+                return List.of();
+            }
+            
+            String trimmedClinicId = clinicId.trim();
+            logger.debug("Buscando usuarios para clínica: '{}'", trimmedClinicId);
+            
+            // Primero verificar que la clínica existe
+            TypedQuery<Long> clinicCheck = entityManager.createQuery(
+                "SELECT COUNT(c) FROM Clinic c WHERE c.id = :clinicId",
+                Long.class);
+            clinicCheck.setParameter("clinicId", trimmedClinicId);
+            Long clinicCount = clinicCheck.getSingleResult();
+            logger.debug("Clínicas encontradas con ID '{}': {}", trimmedClinicId, clinicCount);
+            
+            // Verificar usuarios directamente por clinic_id (sin JOIN)
+            TypedQuery<Object[]> directQuery = entityManager.createQuery(
+                "SELECT u.id, u.username, u.clinic.id FROM User u WHERE u.clinic.id = :clinicId",
+                Object[].class);
+            directQuery.setParameter("clinicId", trimmedClinicId);
+            List<Object[]> directResults = directQuery.getResultList();
+            logger.debug("Usuarios encontrados directamente (sin JOIN): {}", directResults.size());
+            for (Object[] row : directResults) {
+                logger.debug("  - User ID: {}, Username: {}, Clinic ID: {}", row[0], row[1], row[2]);
+            }
+            
             // Usar JOIN FETCH para cargar las relaciones lazy de una vez
             // NO filtrar por active = true para mostrar todos los usuarios (activos e inactivos)
             TypedQuery<User> query = entityManager.createQuery(
                 "SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.clinic LEFT JOIN FETCH u.professional WHERE u.clinic.id = :clinicId ORDER BY u.username", 
                 User.class);
-            query.setParameter("clinicId", clinicId);
-            return query.getResultList();
+            query.setParameter("clinicId", trimmedClinicId);
+            List<User> users = query.getResultList();
+            
+            logger.info("Usuarios encontrados para clínica '{}': {}", trimmedClinicId, users.size());
+            for (User user : users) {
+                logger.debug("  - Usuario: {} (ID: {}, Role: {}, Clinic: {})", 
+                    user.getUsername(), user.getId(), user.getRole(),
+                    user.getClinic() != null ? user.getClinic().getId() : "NULL");
+            }
+            
+            return users;
         } catch (Exception e) {
             logger.error("Error al buscar usuarios por clínica: {}", clinicId, e);
             return List.of();
@@ -165,6 +201,12 @@ public class UserService {
             }
             
             // Actualizar campos permitidos
+            if (user.getUsername() != null && !user.getUsername().trim().isEmpty()) {
+                existingUser.setUsername(user.getUsername().trim());
+            }
+            if (user.getRole() != null && !user.getRole().trim().isEmpty()) {
+                existingUser.setRole(user.getRole().trim());
+            }
             existingUser.setEmail(user.getEmail());
             existingUser.setFirstName(user.getFirstName());
             existingUser.setLastName(user.getLastName());

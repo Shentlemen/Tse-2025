@@ -65,7 +65,7 @@ public class ProfessionalDashboardServlet extends HttpServlet {
                 request.setAttribute("totalDocuments", totalDocuments);
                 request.setAttribute("pendingRequests", pendingRequests);
                 request.setAttribute("pendingRequestsList", pendingRequestsList);
-                request.getRequestDispatcher("/professional/dashboard.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/professional/dashboard.jsp").forward(request, response);
                 return;
             }
 
@@ -123,7 +123,7 @@ public class ProfessionalDashboardServlet extends HttpServlet {
             request.setAttribute("pendingRequestsList", pendingRequestsList);
         }
 
-        request.getRequestDispatcher("/professional/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/professional/dashboard.jsp").forward(request, response);
     }
 }
 
