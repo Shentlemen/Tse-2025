@@ -97,6 +97,11 @@ if [ -f "$STANDALONE_XML" ]; then
         # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
         sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
         
+        # Cambiar de <driver>postgresql</driver> a <driver-class>org.postgresql.Driver</driver-class> si es necesario
+        sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
+            s|<driver>postgresql</driver>|<driver-class>org.postgresql.Driver</driver-class>|g
+        }" "$STANDALONE_XML"
+        
         # Actualizar security con atributos (formato correcto para WildFly 30)
         # Reemplazar el elemento security completo con el formato de atributos
         sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
