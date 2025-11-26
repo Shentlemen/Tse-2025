@@ -6,7 +6,7 @@ FROM eclipse-temurin:21-jdk-ubi9-minimal
 USER root
 
 # Instalar herramientas necesarias
-RUN microdnf install -y wget unzip tar gzip && microdnf clean all
+RUN microdnf install -y wget unzip tar gzip perl && microdnf clean all
 
 # Variables de entorno
 ENV WILDFLY_VERSION=30.0.1.Final
