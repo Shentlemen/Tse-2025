@@ -79,12 +79,12 @@ if [ -f "$STANDALONE_XML" ]; then
     # Esto se hará en start-wildfly.sh con -Djboss.http.port
     echo "Puerto se configurará vía variable de sistema: ${RENDER_PORT}"
     
-    # Eliminar ExampleDS si existe (no lo necesitamos)
-    if grep -q "jndi-name=\"java:jboss/datasources/ExampleDS\"" "$STANDALONE_XML"; then
-        echo "Eliminando datasource ExampleDS (no necesario)..."
-        # Eliminar el datasource ExampleDS completo (puede estar en una o múltiples líneas)
-        sed -i '/<datasource.*jndi-name="java:jboss\/datasources\/ExampleDS"/,/<\/datasource>/d' "$STANDALONE_XML"
-        echo "Datasource ExampleDS eliminado"
+    # Cambiar default-bindings para usar ClinicDS (ExampleDS ya fue eliminado en el Dockerfile)
+    # Solo actualizar si todavía apunta a ExampleDS (por si acaso)
+    if grep -q 'datasource="java:jboss/datasources/ExampleDS"' "$STANDALONE_XML"; then
+        echo "Actualizando default-bindings para usar ClinicDS..."
+        sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML"
+        echo "Default datasource cambiado a ClinicDS"
     fi
     
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
@@ -135,6 +135,21 @@ if [ -f "$STANDALONE_XML" ]; then
             echo "Datasource ClinicDS creado en standalone.xml"
         else
             echo "Error: No se encontró la sección <datasources> en standalone.xml"
+        fi
+        
+        # Asegurar que el driver PostgreSQL esté registrado
+        if ! grep -q "driver name=\"postgresql\"" "$STANDALONE_XML"; then
+            echo "Registrando driver PostgreSQL..."
+            if grep -q "<drivers>" "$STANDALONE_XML"; then
+                # Insertar driver antes del cierre de drivers
+                sed -i '/<\/drivers>/i\
+                <driver name="postgresql" module="org.postgresql">\
+                    <driver-class>org.postgresql.Driver</driver-class>\
+                </driver>' "$STANDALONE_XML"
+                echo "Driver PostgreSQL registrado"
+            else
+                echo "Advertencia: No se encontró la sección <drivers> para registrar el driver PostgreSQL"
+            fi
         fi
     fi
     
