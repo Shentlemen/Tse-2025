@@ -51,9 +51,13 @@ RUN STANDALONE_XML="$WILDFLY_HOME/standalone/configuration/standalone-full.xml" 
         perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ExampleDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML" && \
         # Cambiar default-bindings para usar ClinicDS en lugar de ExampleDS \
         sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML" && \
-        # Nota: El driver PostgreSQL se despliega automáticamente desde el WAR \
-        # No es necesario registrarlo manualmente en el XML si usamos driver-class directamente \
-        echo "Driver PostgreSQL se desplegará automáticamente desde el WAR" && \
+        # Registrar driver PostgreSQL en la sección <drivers> para que pueda ser usado por el datasource \
+        if ! grep -q 'driver name="postgresql"' "$STANDALONE_XML"; then \
+            sed -i '/<\/drivers>/i\
+                <driver name="postgresql" module="org.postgresql">\
+                    <driver-class>org.postgresql.Driver</driver-class>\
+                </driver>' "$STANDALONE_XML"; \
+        fi && \
         echo "standalone-full.xml configurado: ExampleDS eliminado, driver PostgreSQL registrado, default-bindings actualizado"; \
     fi && \
     chown -R jboss:jboss $WILDFLY_HOME

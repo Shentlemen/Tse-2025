@@ -88,8 +88,24 @@ if [ -f "$STANDALONE_XML" ]; then
     fi
     
     # El driver PostgreSQL se despliega automáticamente desde el WAR
-    # Usaremos driver-class directamente en el datasource en lugar de referenciar un driver por nombre
-    echo "Usando driver-class directamente (el driver se despliega desde el WAR)"
+    # Necesitamos registrar el driver en la sección <drivers> para que pueda ser usado por el datasource
+    # El driver se despliega como "clinic.war_org.postgresql.Driver_42_7" pero podemos registrarlo como "postgresql"
+    if ! grep -q 'driver name="postgresql"' "$STANDALONE_XML"; then
+        echo "Registrando driver PostgreSQL para uso con datasource..."
+        if grep -q "<drivers>" "$STANDALONE_XML"; then
+            # Registrar el driver usando el módulo que instalamos
+            sed -i '/<\/drivers>/i\
+                <driver name="postgresql" module="org.postgresql">\
+                    <driver-class>org.postgresql.Driver</driver-class>\
+                </driver>' "$STANDALONE_XML"
+            echo "Driver PostgreSQL registrado"
+        else
+            echo "ERROR: No se encontró la sección <drivers> para registrar el driver PostgreSQL"
+            exit 1
+        fi
+    else
+        echo "Driver PostgreSQL ya está registrado"
+    fi
     
     # Verificar si el datasource ClinicDS ya existe y actualizarlo
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
@@ -97,9 +113,9 @@ if [ -f "$STANDALONE_XML" ]; then
         # Actualizar connection-url (más específico para evitar reemplazos incorrectos)
         sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ s|connection-url>jdbc:postgresql://[^<]*<|connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}<|g" "$STANDALONE_XML"
         
-        # Cambiar de <driver>postgresql</driver> a <driver-class>org.postgresql.Driver</driver-class> si es necesario
+        # Asegurar que use <driver>postgresql</driver> (no driver-class)
         sed -i "/jndi-name=\"java:jboss\/datasources\/ClinicDS\"/,/<\/datasource>/ {
-            s|<driver>postgresql</driver>|<driver-class>org.postgresql.Driver</driver-class>|g
+            s|<driver-class>org.postgresql.Driver</driver-class>|<driver>postgresql</driver>|g
         }" "$STANDALONE_XML"
         
         # Actualizar security con atributos (formato correcto para WildFly 30)
@@ -123,13 +139,15 @@ if [ -f "$STANDALONE_XML" ]; then
     else
         echo "Datasource ClinicDS no encontrado. Creándolo en standalone.xml..."
         # Buscar la sección de datasources e insertar ClinicDS antes de la sección de drivers
+        # Usaremos el driver que se despliega automáticamente desde el WAR
+        # El nombre del driver será detectado automáticamente por WildFly
         if grep -q "<datasources>" "$STANDALONE_XML"; then
             # Insertar antes de la sección <drivers>
             if grep -q "<drivers>" "$STANDALONE_XML"; then
                 sed -i '/<drivers>/i\
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver-class>org.postgresql.Driver</driver-class>\
+                    <driver>postgresql</driver>\
                     <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             else
@@ -137,7 +155,7 @@ if [ -f "$STANDALONE_XML" ]; then
                 sed -i '/<\/datasources>/i\
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
                     <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver-class>org.postgresql.Driver</driver-class>\
+                    <driver>postgresql</driver>\
                     <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
                 </datasource>' "$STANDALONE_XML"
             fi
