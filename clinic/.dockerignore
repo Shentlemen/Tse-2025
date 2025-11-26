@@ -2,9 +2,7 @@
 .gradle/
 build/
 !build/libs/*.war
-gradle/
-gradlew
-gradlew.bat
+# Nota: gradlew y gradle/ se necesitan para migraciones, pero se pueden omitir si no se usan
 
 # IDE
 .idea/

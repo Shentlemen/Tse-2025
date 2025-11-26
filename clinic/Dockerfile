@@ -61,13 +61,10 @@ COPY run-migrations.sh $WILDFLY_HOME/bin/
 RUN chmod +x $WILDFLY_HOME/bin/run-migrations.sh && \
     chown jboss:jboss $WILDFLY_HOME/bin/run-migrations.sh
 
-# Copiar Gradle wrapper para ejecutar migraciones (si es necesario)
-COPY gradlew $WILDFLY_HOME/bin/
-COPY gradle/ $WILDFLY_HOME/bin/gradle/
-COPY build.gradle $WILDFLY_HOME/bin/
-COPY gradle.properties $WILDFLY_HOME/bin/ 2>/dev/null || true
-COPY src/main/resources/db/migration/ $WILDFLY_HOME/bin/migrations/
-RUN chown -R jboss:jboss $WILDFLY_HOME/bin
+# Copiar migraciones de base de datos (opcional, para ejecutar manualmente)
+# Nota: Las migraciones se pueden ejecutar desde fuera del contenedor o manualmente
+RUN mkdir -p $WILDFLY_HOME/bin/migrations && \
+    chown -R jboss:jboss $WILDFLY_HOME/bin
 
 # Volver al usuario jboss
 USER jboss
