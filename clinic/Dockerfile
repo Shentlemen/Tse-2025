@@ -88,6 +88,10 @@ RUN chmod +x $WILDFLY_HOME/bin/run-migrations.sh && \
 RUN mkdir -p $WILDFLY_HOME/bin/migrations && \
     chown -R jboss:jboss $WILDFLY_HOME/bin
 
+# Crear usuario de administración para la consola de WildFly (opcional)
+# Nota: En Render, el puerto 9990 no está expuesto, pero esto es útil para debugging local
+RUN echo -e "admin\nadmin\nadmin\nManagementRealm\nyes\nyes\n" | $WILDFLY_HOME/bin/add-user.sh --silent || true
+
 # Volver al usuario jboss
 USER jboss
 

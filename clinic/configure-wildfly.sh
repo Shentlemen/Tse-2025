@@ -34,11 +34,18 @@ if [ -n "$DATABASE_URL" ]; then
     fi
 else
     # Usar variables individuales si DATABASE_URL no está disponible
+    # Render configura estas variables automáticamente cuando se vincula una base de datos
     DB_HOST=${PGHOST:-localhost}
     DB_PORT=${PGPORT:-5432}
     DB_NAME=${PGDATABASE:-clinic_db}
     DB_USER=${PGUSER:-postgres}
-    DB_PASS=${PGPASSWORD:-sora}
+    DB_PASS=${PGPASSWORD:-}
+    
+    # Si no hay contraseña configurada, mostrar error
+    if [ -z "$DB_PASS" ]; then
+        echo "ERROR: No se encontró DATABASE_URL ni PGPASSWORD. Verifica la configuración en Render."
+        exit 1
+    fi
 fi
 
 # Obtener puerto de Render (default 8080)
@@ -52,6 +59,7 @@ echo "  DB_HOST: $DB_HOST"
 echo "  DB_PORT: $DB_PORT"
 echo "  DB_NAME: $DB_NAME"
 echo "  DB_USER: $DB_USER"
+echo "  DB_PASS: ${DB_PASS:0:3}*** (oculto por seguridad)"
 echo "  PORT: $RENDER_PORT"
 
 # Esperar a que el archivo standalone.xml esté disponible
