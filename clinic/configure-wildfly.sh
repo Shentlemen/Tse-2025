@@ -160,6 +160,9 @@ if [ -f "$STANDALONE_XML" ]; then
                 </datasource>
 EOF
         
+        echo ">>> Contenido del archivo temporal antes de insertar:"
+        cat "$TEMP_XML" | sed 's/password="[^"]*"/password="***"/g'
+        
         if grep -q "<drivers>" "$STANDALONE_XML"; then
             # Insertar antes de <drivers>
             sed -i "/<drivers>/r $TEMP_XML" "$STANDALONE_XML" || {
@@ -182,6 +185,11 @@ EOF
             echo "ERROR: El datasource ClinicDS no se encontró en standalone-full.xml después de la inserción"
             exit 1
         fi
+        
+        # Mostrar el bloque completo del datasource insertado para verificación
+        echo ">>> Bloque del datasource insertado (ocultando password):"
+        grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | head -5 | sed 's/password="[^"]*"/password="***"/g'
+        
         echo ">>> Verificado: Datasource ClinicDS presente en standalone-full.xml"
         
         echo ">>> Datasource ClinicDS recreado exitosamente"
@@ -200,6 +208,9 @@ EOF
                     <security user-name="${DB_USER}" password="${DB_PASS_ESC}"/>
                 </datasource>
 EOF
+            
+            echo ">>> Contenido del archivo temporal antes de insertar:"
+            cat "$TEMP_XML" | sed 's/password="[^"]*"/password="***"/g'
             
             # Insertar antes de la sección <drivers> o antes del cierre de datasources
             if grep -q "<drivers>" "$STANDALONE_XML"; then
@@ -224,6 +235,11 @@ EOF
                 echo "ERROR: El datasource ClinicDS no se encontró en standalone-full.xml después de la inserción"
                 exit 1
             fi
+            
+            # Mostrar el bloque completo del datasource insertado para verificación
+            echo ">>> Bloque del datasource insertado (ocultando password):"
+            grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | head -5 | sed 's/password="[^"]*"/password="***"/g'
+            
             echo ">>> Verificado: Datasource ClinicDS creado y presente en standalone-full.xml"
         else
             echo "Error: No se encontró la sección <datasources> en standalone.xml"
@@ -266,19 +282,40 @@ EOF
     echo ">>> Verificando configuración final del datasource..."
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo ">>> Datasource ClinicDS encontrado en standalone-full.xml"
-        # Extraer y mostrar el usuario configurado (sin mostrar la contraseña completa)
-        DS_USER=$(grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "user-name" | sed -n 's/.*user-name="\([^"]*\)".*/\1/p')
-        DS_HOST=$(grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p')
-        echo ">>> Usuario configurado en datasource: ${DS_USER}"
-        echo ">>> Host configurado en datasource: ${DS_HOST}"
+        
+        # Extraer el bloque completo del datasource para verificación
+        DS_BLOCK=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | head -10)
+        echo ">>> Bloque completo del datasource:"
+        echo "$DS_BLOCK" | sed 's/password="[^"]*"/password="***"/g'
+        
+        # Extraer y mostrar el usuario configurado
+        DS_USER=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "user-name" | sed -n 's/.*user-name="\([^"]*\)".*/\1/p' | head -1)
+        DS_HOST=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p' | head -1)
+        DS_URL=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*connection-url>\([^<]*\)<.*/\1/p' | head -1)
+        
+        echo ">>> Usuario configurado en datasource: '${DS_USER}'"
+        echo ">>> Host configurado en datasource: '${DS_HOST}'"
+        echo ">>> URL completa: '${DS_URL}'"
+        echo ">>> Usuario esperado: '${DB_USER}'"
+        
+        if [ -z "$DS_USER" ]; then
+            echo "ERROR: No se pudo extraer el usuario del datasource. El XML podría estar mal formado."
+            echo ">>> Buscando todas las ocurrencias de ClinicDS:"
+            grep -n "ClinicDS" "$STANDALONE_XML" | head -20
+            exit 1
+        fi
         
         if [ "$DS_USER" != "$DB_USER" ]; then
-            echo "ERROR: El usuario en el datasource (${DS_USER}) no coincide con el esperado (${DB_USER})"
+            echo "ERROR: El usuario en el datasource ('${DS_USER}') no coincide con el esperado ('${DB_USER}')"
+            echo ">>> Mostrando el bloque completo del datasource para debug:"
+            grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | head -15
             exit 1
         fi
         echo ">>> Verificación exitosa: Usuario correcto en datasource"
     else
         echo "ERROR: Datasource ClinicDS no encontrado en standalone-full.xml después de la configuración"
+        echo ">>> Buscando datasources en el archivo:"
+        grep -n "jndi-name.*datasources" "$STANDALONE_XML" | head -10
         exit 1
     fi
 else
