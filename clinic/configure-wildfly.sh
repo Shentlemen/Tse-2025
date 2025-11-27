@@ -183,7 +183,7 @@ if [ -f "$STANDALONE_XML" ]; then
 EOF
         
         echo ">>> Contenido del archivo temporal antes de insertar:"
-        cat "$TEMP_XML" | sed 's/password="[^"]*"/password="***"/g'
+        cat "$TEMP_XML" | sed 's/<connection-property name="password">[^<]*<\/connection-property>/<connection-property name="password">***<\/connection-property>/g'
         
         if grep -q "<drivers>" "$STANDALONE_XML"; then
             # Insertar antes de <drivers>
@@ -233,7 +233,7 @@ EOF
 EOF
             
             echo ">>> Contenido del archivo temporal antes de insertar:"
-            cat "$TEMP_XML" | sed 's/password="[^"]*"/password="***"/g'
+            cat "$TEMP_XML" | sed 's/<connection-property name="password">[^<]*<\/connection-property>/<connection-property name="password">***<\/connection-property>/g'
             
             # Insertar antes de la sección <drivers> o antes del cierre de datasources
             if grep -q "<drivers>" "$STANDALONE_XML"; then
