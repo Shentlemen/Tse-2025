@@ -129,9 +129,17 @@ if clinicds_match:
             flags=re.DOTALL
         )
     
+    # Habilitar el datasource después de actualizar las credenciales
+    clinicds_block = re.sub(
+        r'enabled="false"',
+        'enabled="true"',
+        clinicds_block,
+        count=1
+    )
+    
     # Reemplazar el bloque completo en el contenido
     content = content.replace(clinicds_match.group(0), clinicds_block)
-    print("Python: ClinicDS actualizado correctamente")
+    print("Python: ClinicDS actualizado y habilitado correctamente")
 else:
     print("Python: ERROR: No se encontró el datasource ClinicDS en el XML")
     sys.exit(1)

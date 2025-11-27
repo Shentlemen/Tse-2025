@@ -129,7 +129,7 @@
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:7.1">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true" use-java-context="true" statistics-enabled="true">
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="false" use-java-context="true" statistics-enabled="true">
                     <connection-url>jdbc:postgresql://dpg-d4j7u7mr433s7396nvjg-a.oregon-postgres.render.com:5432/clinic_db_v34u</connection-url>
                     <driver>postgresql</driver>
                     <security user-name="clinic_user" password="VBYtmu9JzvGDMhy2XnilIFekyeg1pX6W"/>
@@ -159,7 +159,7 @@
             </datasources>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
-            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}" auto-deploy-zipped="true" auto-deploy-exploded="false"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:discovery:1.0"/>
         <subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
