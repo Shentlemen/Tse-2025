@@ -134,13 +134,19 @@
                     <driver>postgresql</driver>
                     <security user-name="clinic_user" password="VBYtmu9JzvGDMhy2XnilIFekyeg1pX6W"/>
                     <pool>
-                        <min-pool-size>5</min-pool-size>
+                        <min-pool-size>1</min-pool-size>
                         <max-pool-size>20</max-pool-size>
+                        <prefill>false</prefill>
                     </pool>
                     <validation>
                         <check-valid-connection-sql>SELECT 1</check-valid-connection-sql>
-                        <validate-on-match>true</validate-on-match>
+                        <validate-on-match>false</validate-on-match>
+                        <background-validation>true</background-validation>
+                        <background-validation-millis>60000</background-validation-millis>
                     </validation>
+                    <timeout>
+                        <idle-timeout-minutes>15</idle-timeout-minutes>
+                    </timeout>
                 </datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
