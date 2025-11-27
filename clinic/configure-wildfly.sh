@@ -175,9 +175,10 @@ if [ -f "$STANDALONE_XML" ]; then
         TEMP_XML=$(mktemp)
         cat > "$TEMP_XML" <<EOF
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">
-                    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
+                    <connection-property name="url">jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-property>
+                    <connection-property name="user-name">${DB_USER}</connection-property>
+                    <connection-property name="password">${DB_PASS_ESC}</connection-property>
                     <driver>postgresql</driver>
-                    <security user-name="${DB_USER}" password="${DB_PASS_ESC}"/>
                 </datasource>
 EOF
         
