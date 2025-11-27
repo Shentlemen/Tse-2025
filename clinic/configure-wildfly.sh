@@ -261,6 +261,26 @@ EOF
     fi
     
     echo "Configuración de standalone.xml completada"
+    
+    # Verificar que el datasource existe y tiene las credenciales correctas
+    echo ">>> Verificando configuración final del datasource..."
+    if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
+        echo ">>> Datasource ClinicDS encontrado en standalone-full.xml"
+        # Extraer y mostrar el usuario configurado (sin mostrar la contraseña completa)
+        DS_USER=$(grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "user-name" | sed -n 's/.*user-name="\([^"]*\)".*/\1/p')
+        DS_HOST=$(grep -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p')
+        echo ">>> Usuario configurado en datasource: ${DS_USER}"
+        echo ">>> Host configurado en datasource: ${DS_HOST}"
+        
+        if [ "$DS_USER" != "$DB_USER" ]; then
+            echo "ERROR: El usuario en el datasource (${DS_USER}) no coincide con el esperado (${DB_USER})"
+            exit 1
+        fi
+        echo ">>> Verificación exitosa: Usuario correcto en datasource"
+    else
+        echo "ERROR: Datasource ClinicDS no encontrado en standalone-full.xml después de la configuración"
+        exit 1
+    fi
 else
     echo "Advertencia: standalone.xml no encontrado. Se generará al iniciar WildFly."
 fi
