@@ -47,34 +47,17 @@ echo "    Base: $DB_NAME"
 echo "    Usuario: $DB_USER"
 echo "    Puerto: $DB_PORT"
 
-# Borrar ExampleDS si existe
-perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ExampleDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
-sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML"
-
-# Eliminar ClinicDS existente si existe
-perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ClinicDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
-
-# Insertar ClinicDS con formato correcto para WildFly 30
-# IMPORTANTE: En WildFly 30, <security> usa atributos, NO elementos anidados
-TEMP_XML=$(mktemp)
-cat > "$TEMP_XML" <<EOF
-<datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true" use-java-context="true" statistics-enabled="true">
-    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
-    <driver>postgresql</driver>
-    <security user-name="${DB_USER}" password="${DB_PASSWORD_ESC}"/>
-</datasource>
-EOF
-
-# Insertar antes de </datasources>
-perl -0777 -i -pe "s|</datasources>|$(cat $TEMP_XML)\n</datasources>|" "$STANDALONE_XML"
-rm -f "$TEMP_XML"
-
-# Agregar driver si falta
-if ! grep -q "driver name=\"postgresql\"" "$STANDALONE_XML"; then
-    sed -i '/<\/drivers>/ i \
-            <driver name="postgresql" module="org.postgresql"> \
-                <driver-class>org.postgresql.Driver</driver-class> \
-            </driver>' "$STANDALONE_XML"
+# Actualizar credenciales en ClinicDS si hay DATABASE_URL (para Render)
+# Si no hay DATABASE_URL, se usan las credenciales que ya están en standalone-full.xml
+if [ -n "$DATABASE_URL" ]; then
+    echo ">>> Actualizando credenciales desde DATABASE_URL..."
+    # Reemplazar valores en el datasource ClinicDS
+    sed -i "s|jdbc:postgresql://[^:]*:[0-9]*/[^<]*|jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}|g" "$STANDALONE_XML"
+    sed -i "s|user-name=\"[^\"]*\"|user-name=\"${DB_USER}\"|g" "$STANDALONE_XML"
+    sed -i "s|password=\"[^\"]*\"|password=\"${DB_PASSWORD_ESC}\"|g" "$STANDALONE_XML"
+    echo ">>> Credenciales actualizadas desde DATABASE_URL"
+else
+    echo ">>> Usando credenciales configuradas en standalone-full.xml"
 fi
 
-echo ">>> DataSource configurado correctamente"
+echo ">>> DataSource ClinicDS listo"
