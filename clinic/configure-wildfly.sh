@@ -181,11 +181,64 @@ if clinicds_final:
         if clinicds_user.group(1) == "postgres":
             print("  ERROR: ClinicDS todavía tiene usuario 'postgres'!")
             sys.exit(1)
+    
+    # Verificar que el datasource esté habilitado
+    if 'enabled="false"' in clinicds_final.group(0):
+        print("  ADVERTENCIA: ClinicDS todavía está deshabilitado, habilitándolo...")
+        content = content.replace(clinicds_final.group(0), clinicds_final.group(0).replace('enabled="false"', 'enabled="true"', 1))
+        clinicds_final = re.search(r'<datasource[^>]*jndi-name="java:jboss/datasources/ClinicDS"[^>]*>(.*?)</datasource>', content, flags=re.DOTALL)
+
+# Verificación final: buscar TODOS los datasources con "postgres" y deshabilitarlos
+all_datasources = re.findall(r'<datasource[^>]*>(.*?)</datasource>', content, flags=re.DOTALL)
+for ds in all_datasources:
+    if 'user-name="postgres"' in ds and 'ClinicDS' not in ds:
+        print(f"Python: ADVERTENCIA CRÍTICA: Encontrado datasource con 'postgres' que no es ClinicDS")
+        # Deshabilitar este datasource
+        ds_full = re.search(r'<datasource[^>]*>.*?</datasource>', content, flags=re.DOTALL)
+        if ds_full and 'user-name="postgres"' in ds_full.group(0) and 'ClinicDS' not in ds_full.group(0):
+            content = content.replace(ds_full.group(0), re.sub(r'enabled="true"', 'enabled="false"', ds_full.group(0), count=1))
+            print(f"Python: Datasource con 'postgres' deshabilitado")
+
+# Verificación final exhaustiva: buscar TODAS las referencias a "postgres" en datasources
+all_postgres_refs = []
+for match in re.finditer(r'<datasource[^>]*>(.*?)</datasource>', content, flags=re.DOTALL):
+    ds_block = match.group(0)
+    if 'user-name="postgres"' in ds_block:
+        jndi_match = re.search(r'jndi-name="([^"]+)"', ds_block)
+        jndi_name = jndi_match.group(1) if jndi_match else "desconocido"
+        all_postgres_refs.append(jndi_name)
+        if 'ClinicDS' not in jndi_name:
+            print(f"Python: ERROR CRÍTICO: Datasource {jndi_name} tiene usuario 'postgres'")
+            # Deshabilitar este datasource
+            content = re.sub(
+                f'(<datasource[^>]*jndi-name="{re.escape(jndi_name)}"[^>]*)enabled="true"',
+                r'\1enabled="false"',
+                content,
+                flags=re.DOTALL
+            )
+            print(f"Python: Datasource {jndi_name} deshabilitado")
+
+if all_postgres_refs:
+    print(f"Python: ADVERTENCIA: Se encontraron {len(all_postgres_refs)} datasources con 'postgres': {all_postgres_refs}")
+else:
+    print("Python: Verificación OK: No hay datasources con usuario 'postgres'")
 
 # Escribir el archivo
 with open(xml_file, 'w', encoding='utf-8') as f:
     f.write(content)
 print("Python: Archivo XML actualizado correctamente")
+
+# Verificación final: leer el archivo de nuevo para confirmar
+with open(xml_file, 'r', encoding='utf-8') as f:
+    final_content = f.read()
+    if 'user-name="postgres"' in final_content:
+        print("Python: ERROR: Después de escribir, todavía hay 'postgres' en el archivo!")
+        # Mostrar qué datasources tienen postgres
+        for match in re.finditer(r'<datasource[^>]*jndi-name="([^"]+)"[^>]*>.*?<security[^>]*user-name="postgres"', final_content, flags=re.DOTALL):
+            print(f"Python: Datasource con postgres encontrado: {match.group(1)}")
+        sys.exit(1)
+    else:
+        print("Python: Verificación final OK: No hay 'postgres' en el XML final")
 PYTHON_SCRIPT
 
 if [ $? -ne 0 ]; then
@@ -194,5 +247,18 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ">>> Credenciales actualizadas desde DATABASE_URL"
+
+# Habilitar el despliegue del WAR después de configurar el datasource
+WAR_FILE="/opt/jboss/wildfly/standalone/deployments/clinic.war"
+SKIPDEPLOY_FILE="${WAR_FILE}.skipdeploy"
+DODEPLOY_FILE="${WAR_FILE}.dodeploy"
+
+if [ -f "$SKIPDEPLOY_FILE" ]; then
+    echo ">>> Habilitando despliegue del WAR..."
+    rm -f "$SKIPDEPLOY_FILE"
+    touch "$DODEPLOY_FILE"
+    chown jboss:jboss "$DODEPLOY_FILE" 2>/dev/null || true
+    echo ">>> WAR listo para desplegarse"
+fi
 
 echo ">>> DataSource ClinicDS listo"

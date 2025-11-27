@@ -47,11 +47,11 @@ RUN chown -R jboss:jboss $WILDFLY_HOME/modules
 COPY wildfly-config/standalone-full.xml $WILDFLY_HOME/standalone/configuration/standalone-full.xml
 RUN chown jboss:jboss $WILDFLY_HOME/standalone/configuration/standalone-full.xml
 
-# Copiar WAR
+# Copiar WAR con .skipdeploy para evitar auto-deploy hasta que configure-wildfly.sh termine
 COPY build/libs/clinic.war $WILDFLY_HOME/standalone/deployments/
 RUN chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war && \
-    touch $WILDFLY_HOME/standalone/deployments/clinic.war.dodeploy && \
-    chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war.dodeploy
+    touch $WILDFLY_HOME/standalone/deployments/clinic.war.skipdeploy && \
+    chown jboss:jboss $WILDFLY_HOME/standalone/deployments/clinic.war.skipdeploy
 
 # Copiar scripts
 COPY configure-wildfly.sh $WILDFLY_HOME/bin/
