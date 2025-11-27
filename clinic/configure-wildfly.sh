@@ -280,6 +280,8 @@ EOF
     
     # Verificar que el datasource existe y tiene las credenciales correctas
     echo ">>> Verificando configuración final del datasource..."
+    echo ">>> Buscando TODOS los datasources en standalone-full.xml:"
+    grep -n "jndi-name.*datasources" "$STANDALONE_XML" | head -10
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo ">>> Datasource ClinicDS encontrado en standalone-full.xml"
         
