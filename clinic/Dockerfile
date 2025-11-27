@@ -89,8 +89,16 @@ RUN mkdir -p $WILDFLY_HOME/bin/migrations && \
     chown -R jboss:jboss $WILDFLY_HOME/bin
 
 # Crear usuario de administración para la consola de WildFly (opcional)
-# Nota: En Render, el puerto 9990 no está expuesto, pero esto es útil para debugging local
-RUN echo -e "admin\nadmin\nadmin\nManagementRealm\nyes\nyes\n" | $WILDFLY_HOME/bin/add-user.sh --silent || true
+# Nota: En Render, el puerto 9990 no está expuesto públicamente, así que la consola no es accesible
+# Este usuario es solo útil para debugging local o si se expone el puerto 9990
+# Usar --silent con todas las opciones para evitar problemas con la consola en Docker
+RUN $WILDFLY_HOME/bin/add-user.sh \
+    --silent \
+    --user admin \
+    --password admin \
+    --realm ManagementRealm \
+    --enable \
+    --group SuperUser || echo "Usuario admin no creado (puede fallar sin consola, no es crítico)"
 
 # Volver al usuario jboss
 USER jboss
