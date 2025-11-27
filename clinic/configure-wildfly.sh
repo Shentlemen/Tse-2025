@@ -140,8 +140,29 @@ if [ -f "$STANDALONE_XML" ]; then
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo ">>> Datasource ClinicDS encontrado. Eliminando para recrearlo con credenciales correctas..."
         
+        # Contar cuántos datasources ClinicDS hay antes de eliminar
+        BEFORE_COUNT=$(grep -c "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" || echo "0")
+        echo ">>> Número de datasources ClinicDS antes de eliminar: ${BEFORE_COUNT}"
+        
+        if [ "$BEFORE_COUNT" -gt 1 ]; then
+            echo ">>> ADVERTENCIA: Se encontraron ${BEFORE_COUNT} datasources ClinicDS. Eliminando todos..."
+            echo ">>> Mostrando todas las ocurrencias antes de eliminar:"
+            grep -B 2 -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"
+        fi
+        
         # Eliminar el datasource existente completamente para recrearlo con las credenciales correctas
         perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ClinicDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
+        
+        # Verificar que se eliminaron todos
+        AFTER_COUNT=$(grep -c "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" || echo "0")
+        echo ">>> Número de datasources ClinicDS después de eliminar: ${AFTER_COUNT}"
+        
+        if [ "$AFTER_COUNT" -gt 0 ]; then
+            echo "ERROR: No se pudieron eliminar todos los datasources ClinicDS. Quedan ${AFTER_COUNT}."
+            echo ">>> Mostrando las ocurrencias restantes:"
+            grep -B 2 -A 5 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"
+            exit 1
+        fi
         
         echo ">>> Datasource eliminado. Recreando con:"
         echo "    Host: $DB_HOST"
@@ -282,6 +303,17 @@ EOF
     echo ">>> Verificando configuración final del datasource..."
     echo ">>> Buscando TODOS los datasources en standalone-full.xml:"
     grep -n "jndi-name.*datasources" "$STANDALONE_XML" | head -10
+    echo ">>> Contando cuántos datasources ClinicDS hay:"
+    CLINIC_DS_COUNT=$(grep -c "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" || echo "0")
+    echo ">>> Número de datasources ClinicDS encontrados: ${CLINIC_DS_COUNT}"
+    
+    if [ "$CLINIC_DS_COUNT" -gt 1 ]; then
+        echo "ERROR: Se encontraron ${CLINIC_DS_COUNT} datasources ClinicDS. Esto causará problemas."
+        echo ">>> Mostrando todas las ocurrencias:"
+        grep -B 2 -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"
+        exit 1
+    fi
+    
     if grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
         echo ">>> Datasource ClinicDS encontrado en standalone-full.xml"
         
