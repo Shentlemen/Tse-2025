@@ -326,7 +326,13 @@ EOF
         echo "$DS_BLOCK" | sed 's/password="[^"]*"/password="***"/g'
         
         # Extraer y mostrar el usuario configurado
+        # Intentar primero con formato de atributos: user-name="..."
         DS_USER=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "user-name" | sed -n 's/.*user-name="\([^"]*\)".*/\1/p' | head -1)
+        
+        # Si no se encontró, intentar con formato de elementos: <user-name>...</user-name>
+        if [ -z "$DS_USER" ]; then
+            DS_USER=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -o '<user-name>[^<]*</user-name>' | sed 's/<user-name>\([^<]*\)<\/user-name>/\1/' | head -1)
+        fi
         DS_HOST=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p' | head -1)
         DS_URL=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*connection-url>\([^<]*\)<.*/\1/p' | head -1)
         
