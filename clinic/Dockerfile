@@ -36,26 +36,16 @@ RUN mkdir -p $WILDFLY_HOME/modules/org/postgresql/main && \
     <resource-root path="postgresql-42.7.0.jar"/>
   </resources>
   <dependencies>
-    <module name="jakarta.api"/>
-    <module name="javaee.api" optional="true"/>
+    <module name="javax.api"/>
+    <module name="javax.transaction.api"/>
   </dependencies>
 </module>
 EOF
 RUN chown -R jboss:jboss $WILDFLY_HOME/modules
 
-# Modificar standalone-full.xml (eliminar ExampleDS y registrar driver PostgreSQL)
-RUN STANDALONE_XML="$WILDFLY_HOME/standalone/configuration/standalone-full.xml" && \
-    if [ -f "$STANDALONE_XML" ]; then \
-        perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ExampleDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML" && \
-        sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/datasources/ClinicDS"|g' "$STANDALONE_XML" && \
-        if ! grep -q 'driver name="postgresql"' "$STANDALONE_XML"; then \
-            sed -i '/<\/drivers>/i\
-                <driver name="postgresql" module="org.postgresql">\
-                    <driver-class>org.postgresql.Driver</driver-class>\
-                </driver>' "$STANDALONE_XML"; \
-        fi; \
-    fi && \
-    chown -R jboss:jboss $WILDFLY_HOME
+# Copiar standalone-full.xml modificado (IIOP comentado, ExampleDS eliminado)
+COPY wildfly-config/standalone-full.xml $WILDFLY_HOME/standalone/configuration/standalone-full.xml
+RUN chown jboss:jboss $WILDFLY_HOME/standalone/configuration/standalone-full.xml
 
 # Copiar WAR
 COPY build/libs/clinic.war $WILDFLY_HOME/standalone/deployments/
@@ -75,13 +65,14 @@ RUN chmod +x $WILDFLY_HOME/bin/*.sh && \
 RUN mkdir -p $WILDFLY_HOME/bin/migrations && \
     chown -R jboss:jboss $WILDFLY_HOME/bin/migrations
 
-# Crear usuario admin (si falla, no rompe el build)
+# Crear usuario admin con rol SuperUser (si falla, no rompe el build)
 # Nota: Usar espacios en lugar de = para los parámetros
 RUN $WILDFLY_HOME/bin/add-user.sh \
     --silent \
     --user admin \
     --password admin \
-    --realm ManagementRealm || true
+    --realm ManagementRealm \
+    --group SuperUser || true
 
 # Cambiar a usuario jboss
 USER jboss
