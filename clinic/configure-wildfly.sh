@@ -226,7 +226,10 @@ EOF
                 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">
                     <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
                     <driver>postgresql</driver>
-                    <security user-name="${DB_USER}" password="${DB_PASS_ESC}"/>
+                    <security>
+                        <user-name>${DB_USER}</user-name>
+                        <password>${DB_PASS_ESC}</password>
+                    </security>
                 </datasource>
 EOF
             
@@ -346,6 +349,10 @@ EOF
             exit 1
         fi
         echo ">>> Verificación exitosa: Usuario correcto en datasource"
+        
+        # Verificación final: mostrar el XML completo del datasource tal como está en el archivo
+        echo ">>> Verificación final: XML completo del datasource ClinicDS en standalone-full.xml:"
+        awk '/jndi-name="java:jboss\/datasources\/ClinicDS"/,/<\/datasource>/' "$STANDALONE_XML" | sed 's/password="[^"]*"/password="***"/g'
     else
         echo "ERROR: Datasource ClinicDS no encontrado en standalone-full.xml después de la configuración"
         echo ">>> Buscando datasources en el archivo:"
