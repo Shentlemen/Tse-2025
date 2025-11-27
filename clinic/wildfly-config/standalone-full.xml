@@ -39,7 +39,7 @@
         <extension module="org.wildfly.extension.request-controller"/>
         <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
-        <extension module="org.wildfly.iiop-openjdk"/>
+        <!-- <extension module="org.wildfly.iiop-openjdk"/> -->
     </extensions>
     <management>
         <audit-log>
@@ -133,6 +133,14 @@
                     <connection-url>jdbc:postgresql://dpg-d4j7u7mr433s7396nvjg-a.oregon-postgres.render.com:5432/clinic_db_v34u</connection-url>
                     <driver>postgresql</driver>
                     <security user-name="clinic_user" password="VBYtmu9JzvGDMhy2XnilIFekyeg1pX6W"/>
+                    <pool>
+                        <min-pool-size>5</min-pool-size>
+                        <max-pool-size>20</max-pool-size>
+                    </pool>
+                    <validation>
+                        <check-valid-connection-sql>SELECT 1</check-valid-connection-sql>
+                        <validate-on-match>true</validate-on-match>
+                    </validation>
                 </datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
@@ -220,7 +228,7 @@
                     <keepalive-time time="60" unit="seconds"/>
                 </thread-pool>
             </thread-pools>
-            <iiop enable-by-default="false" use-qualified-name="false"/>
+            <!-- <iiop enable-by-default="false" use-qualified-name="false"/> -->
             <default-security-domain value="other"/>
             <application-security-domains>
                 <application-security-domain name="other" security-domain="ApplicationDomain"/>
@@ -564,8 +572,8 @@
         <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
         <socket-binding name="http" port="${jboss.http.port:8080}"/>
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
-        <socket-binding name="iiop" interface="unsecure" port="3528"/>
-        <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/>
+        <!-- <socket-binding name="iiop" interface="unsecure" port="3528"/> -->
+        <!-- <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/> -->
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
