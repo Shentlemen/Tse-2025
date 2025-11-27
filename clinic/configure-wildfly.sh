@@ -174,16 +174,18 @@ if [ -f "$STANDALONE_XML" ]; then
         # Usar un archivo temporal para evitar problemas con comillas y caracteres especiales
         TEMP_XML=$(mktemp)
         cat > "$TEMP_XML" <<EOF
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">
-                    <connection-property name="url">jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-property>
-                    <connection-property name="user-name">${DB_USER}</connection-property>
-                    <connection-property name="password">${DB_PASS_ESC}</connection-property>
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true" use-java-context="true" statistics-enabled="true">
+                    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
                     <driver>postgresql</driver>
+                    <security>
+                        <user-name>${DB_USER}</user-name>
+                        <password>${DB_PASS_ESC}</password>
+                    </security>
                 </datasource>
 EOF
         
         echo ">>> Contenido del archivo temporal antes de insertar:"
-        cat "$TEMP_XML" | sed 's/<connection-property name="password">[^<]*<\/connection-property>/<connection-property name="password">***<\/connection-property>/g'
+        cat "$TEMP_XML" | sed 's/<password>[^<]*<\/password>/<password>***<\/password>/g'
         
         if grep -q "<drivers>" "$STANDALONE_XML"; then
             # Insertar antes de <drivers>
@@ -224,11 +226,13 @@ EOF
             # Crear el XML del datasource usando un archivo temporal
             TEMP_XML=$(mktemp)
             cat > "$TEMP_XML" <<EOF
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">
-                    <connection-property name="url">jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-property>
-                    <connection-property name="user-name">${DB_USER}</connection-property>
-                    <connection-property name="password">${DB_PASS_ESC}</connection-property>
+                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true" use-java-context="true" statistics-enabled="true">
+                    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
                     <driver>postgresql</driver>
+                    <security>
+                        <user-name>${DB_USER}</user-name>
+                        <password>${DB_PASS_ESC}</password>
+                    </security>
                 </datasource>
 EOF
             
@@ -325,22 +329,17 @@ EOF
         echo "$DS_BLOCK" | sed 's/password="[^"]*"/password="***"/g'
         
         # Extraer y mostrar el usuario configurado
-        # Intentar primero con connection-property (nuevo formato)
-        DS_USER=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -A 2 'connection-property name="user-name"' | grep -o '>.*<' | sed 's/[<>]//g' | head -1)
+        # Intentar primero con formato de elementos: <user-name>...</user-name>
+        DS_USER=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -o '<user-name>[^<]*</user-name>' | sed 's/<user-name>\([^<]*\)<\/user-name>/\1/' | head -1)
         
         # Si no se encontró, intentar con formato de atributos: user-name="..."
         if [ -z "$DS_USER" ]; then
             DS_USER=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "user-name" | sed -n 's/.*user-name="\([^"]*\)".*/\1/p' | head -1)
         fi
         
-        # Si no se encontró, intentar con formato de elementos: <user-name>...</user-name>
-        if [ -z "$DS_USER" ]; then
-            DS_USER=$(grep -A 10 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -o '<user-name>[^<]*</user-name>' | sed 's/<user-name>\([^<]*\)<\/user-name>/\1/' | head -1)
-        fi
-        
-        # Extraer host y URL (puede estar en connection-url o connection-property)
-        DS_HOST=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -E "(connection-url|connection-property name=\"url\")" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p' | head -1)
-        DS_URL=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep -E "(connection-url|connection-property name=\"url\")" | sed -n 's/.*jdbc:postgresql:\/\/[^<]*\([^<]*\)<.*/\1/p' | head -1)
+        # Extraer host y URL
+        DS_HOST=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*jdbc:postgresql:\/\/\([^:]*\):.*/\1/p' | head -1)
+        DS_URL=$(grep -A 15 "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML" | grep "connection-url" | sed -n 's/.*connection-url>\([^<]*\)<.*/\1/p' | head -1)
         
         echo ">>> Usuario configurado en datasource: '${DS_USER}'"
         echo ">>> Host configurado en datasource: '${DS_HOST}'"
