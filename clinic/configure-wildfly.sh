@@ -57,6 +57,7 @@ echo "    Puerto: $DB_PORT"
 echo ">>> Actualizando credenciales desde DATABASE_URL..."
 
 # Usar Python para hacer el reemplazo de manera precisa
+echo ">>> Ejecutando script Python para actualizar XML..."
 python3 - "$STANDALONE_XML" "$DB_HOST" "$DB_PORT" "$DB_NAME" "$DB_USER" "$DB_PASSWORD_ESC" << 'PYTHON_SCRIPT'
 import re
 import sys
@@ -68,23 +69,121 @@ db_name = sys.argv[4]
 db_user = sys.argv[5]
 db_password = sys.argv[6]
 
+print(f"Python: Leyendo archivo {xml_file}")
+print(f"Python: Host={db_host}, Port={db_port}, DB={db_name}, User={db_user}")
+
 # Leer el archivo
 with open(xml_file, 'r', encoding='utf-8') as f:
     content = f.read()
 
-# Patrón para encontrar el datasource ClinicDS completo
-pattern = r'(<datasource jndi-name="java:jboss/datasources/ClinicDS"[^>]*>.*?<connection-url>)(jdbc:postgresql://[^<]+)(</connection-url>.*?<security user-name=")([^"]+)(" password=")([^"]+)(")'
+# Buscar y deshabilitar cualquier datasource con usuario 'postgres' que no sea ClinicDS
+print("Python: Buscando datasources con usuario 'postgres'...")
+pattern_all_postgres = r'(<datasource[^>]*jndi-name="java:jboss/datasources/(?!ClinicDS)[^"]*"[^>]*>.*?<security user-name=")postgres(")'
+matches_all = re.findall(pattern_all_postgres, content, flags=re.DOTALL)
+if matches_all:
+    print(f"Python: ADVERTENCIA: Se encontraron {len(matches_all)} datasources con usuario 'postgres' que no son ClinicDS")
+    # Deshabilitar estos datasources
+    content = re.sub(
+        r'(<datasource[^>]*jndi-name="java:jboss/datasources/(?!ClinicDS)[^"]*"[^>]*)enabled="true"',
+        r'\1enabled="false"',
+        content,
+        flags=re.DOTALL
+    )
+    print("Python: Datasources no-ClinicDS deshabilitados")
 
-def replace_datasource(match):
-    return f"{match.group(1)}jdbc:postgresql://{db_host}:{db_port}/{db_name}{match.group(3)}{db_user}{match.group(5)}{db_password}{match.group(7)}"
+# Patrón más flexible para encontrar el datasource ClinicDS
+# Buscar el bloque completo del datasource ClinicDS
+clinicds_pattern = r'<datasource[^>]*jndi-name="java:jboss/datasources/ClinicDS"[^>]*>(.*?)</datasource>'
+clinicds_match = re.search(clinicds_pattern, content, flags=re.DOTALL)
 
-# Reemplazar
-content = re.sub(pattern, replace_datasource, content, flags=re.DOTALL)
+if clinicds_match:
+    clinicds_block = clinicds_match.group(0)
+    print("Python: Encontrado datasource ClinicDS")
+    
+    # Reemplazar connection-url
+    clinicds_block = re.sub(
+        r'(<connection-url>)jdbc:postgresql://[^<]+(</connection-url>)',
+        f'\\1jdbc:postgresql://{db_host}:{db_port}/{db_name}\\2',
+        clinicds_block,
+        flags=re.DOTALL
+    )
+    
+    # Reemplazar user-name y password en security
+    # Buscar el usuario actual
+    user_match = re.search(r'<security[^>]*user-name="([^"]+)"[^>]*password="([^"]+)"', clinicds_block)
+    if user_match:
+        old_user = user_match.group(1)
+        print(f"Python: Usuario actual en ClinicDS: {old_user}, cambiando a: {db_user}")
+        clinicds_block = re.sub(
+            r'(<security[^>]*user-name=")[^"]+(".*?password=")[^"]+(")',
+            f'\\1{db_user}\\2{db_password}\\3',
+            clinicds_block,
+            flags=re.DOTALL
+        )
+    else:
+        # Si no encuentra el patrón con atributos, buscar con elementos anidados
+        clinicds_block = re.sub(
+            r'(<security[^>]*>.*?<user-name>)[^<]+(</user-name>.*?<password>)[^<]+(</password>)',
+            f'\\1{db_user}\\2{db_password}\\3',
+            clinicds_block,
+            flags=re.DOTALL
+        )
+    
+    # Reemplazar el bloque completo en el contenido
+    content = content.replace(clinicds_match.group(0), clinicds_block)
+    print("Python: ClinicDS actualizado correctamente")
+else:
+    print("Python: ERROR: No se encontró el datasource ClinicDS en el XML")
+    sys.exit(1)
+
+# Verificar que no quede ningún "postgres" en datasources activos
+if 'user-name="postgres"' in content:
+    print("Python: ADVERTENCIA: Todavía hay referencias a 'postgres' en el XML")
+    # Buscar y mostrar qué datasources tienen postgres y a qué base de datos intentan conectarse
+    postgres_pattern = r'<datasource[^>]*jndi-name="([^"]*)"[^>]*>.*?<connection-url>(jdbc:postgresql://[^<]+)</connection-url>.*?<security user-name="postgres"'
+    postgres_matches = re.findall(postgres_pattern, content, flags=re.DOTALL)
+    if postgres_matches:
+        print(f"Python: Datasources con 'postgres' encontrados:")
+        for jndi_name, connection_url in postgres_matches:
+            print(f"  - JNDI: {jndi_name}")
+            print(f"    URL: {connection_url}")
+            print(f"    Usuario: postgres")
+            print(f"    ESTE DATASOURCE ESTÁ INTENTANDO CONECTARSE CON USUARIO 'postgres'")
+    
+    # Intentar deshabilitar estos datasources
+    for jndi_name, _ in postgres_matches:
+        if 'ClinicDS' not in jndi_name:
+            print(f"Python: Deshabilitando datasource {jndi_name} que usa 'postgres'")
+            content = re.sub(
+                f'(<datasource[^>]*jndi-name="{re.escape(jndi_name)}"[^>]*)enabled="true"',
+                r'\1enabled="false"',
+                content,
+                flags=re.DOTALL
+            )
+
+# Verificar el estado final del ClinicDS
+clinicds_final = re.search(r'<datasource[^>]*jndi-name="java:jboss/datasources/ClinicDS"[^>]*>(.*?)</datasource>', content, flags=re.DOTALL)
+if clinicds_final:
+    clinicds_url = re.search(r'<connection-url>(jdbc:postgresql://[^<]+)</connection-url>', clinicds_final.group(0))
+    clinicds_user = re.search(r'<security[^>]*user-name="([^"]+)"', clinicds_final.group(0))
+    if clinicds_url and clinicds_user:
+        print(f"Python: Estado final de ClinicDS:")
+        print(f"  URL: {clinicds_url.group(1)}")
+        print(f"  Usuario: {clinicds_user.group(1)}")
+        if clinicds_user.group(1) == "postgres":
+            print("  ERROR: ClinicDS todavía tiene usuario 'postgres'!")
+            sys.exit(1)
 
 # Escribir el archivo
 with open(xml_file, 'w', encoding='utf-8') as f:
     f.write(content)
+print("Python: Archivo XML actualizado correctamente")
 PYTHON_SCRIPT
+
+if [ $? -ne 0 ]; then
+    echo ">>> ERROR: El script Python falló"
+    exit 1
+fi
 
 echo ">>> Credenciales actualizadas desde DATABASE_URL"
 

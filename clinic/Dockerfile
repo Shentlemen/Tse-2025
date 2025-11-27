@@ -43,7 +43,7 @@ RUN mkdir -p $WILDFLY_HOME/modules/org/postgresql/main && \
 EOF
 RUN chown -R jboss:jboss $WILDFLY_HOME/modules
 
-# Copiar standalone-full.xml modificado (IIOP comentado, ExampleDS eliminado)
+# Copiar standalone-full.xml modificado (IIOP comentado, ExampleDS eliminado, default-bindings apunta a ClinicDS)
 COPY wildfly-config/standalone-full.xml $WILDFLY_HOME/standalone/configuration/standalone-full.xml
 RUN chown jboss:jboss $WILDFLY_HOME/standalone/configuration/standalone-full.xml
 

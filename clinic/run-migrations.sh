@@ -30,9 +30,17 @@ if [ -n "$DATABASE_URL" ]; then
     export FLYWAY_USER="${DB_USER}"
     export FLYWAY_PASSWORD="${DB_PASS}"
 else
+    # Si no hay DATABASE_URL, usar variables individuales o valores de standalone-full.xml
+    # NO usar "postgres" como default
     export FLYWAY_URL=${FLYWAY_URL:-"jdbc:postgresql://${PGHOST:-localhost}:${PGPORT:-5432}/${PGDATABASE:-clinic_db}"}
-    export FLYWAY_USER=${FLYWAY_USER:-${PGUSER:-postgres}}
-    export FLYWAY_PASSWORD=${FLYWAY_PASSWORD:-${PGPASSWORD:-sora}}
+    export FLYWAY_USER=${FLYWAY_USER:-${PGUSER:-}}
+    export FLYWAY_PASSWORD=${FLYWAY_PASSWORD:-${PGPASSWORD:-}}
+    
+    # Si no hay usuario configurado, no ejecutar migraciones
+    if [ -z "$FLYWAY_USER" ]; then
+        echo "ADVERTENCIA: No se encontró configuración de base de datos. Saltando migraciones."
+        exit 0
+    fi
 fi
 
 echo "Conectando a: ${FLYWAY_URL}"

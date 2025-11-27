@@ -9,7 +9,7 @@
     jndi-name=java:jboss/datasources/ClinicDS,
     driver-name=postgresql,
     connection-url=jdbc:postgresql://localhost:5432/clinic_db,
-    user-name=postgres,
+    user-name=clinic_user,
     password=sora,
     min-pool-size=5,
     max-pool-size=20,
