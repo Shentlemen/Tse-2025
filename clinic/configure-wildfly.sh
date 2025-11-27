@@ -149,21 +149,21 @@ if [ -f "$STANDALONE_XML" ]; then
         echo "    Database: $DB_NAME"
         echo "    User: $DB_USER"
         
-        # Recrear el datasource con las credenciales correctas
+        # Recrear el datasource con las credenciales correctas usando perl para expandir variables
+        DATASOURCE_XML="<datasource jndi-name=\"java:jboss/datasources/ClinicDS\" pool-name=\"ClinicDS\" enabled=\"true\">
+                    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
+                    <driver>postgresql</driver>
+                    <security user-name=\"${DB_USER}\" password=\"${DB_PASS_ESC}\"/>
+                </datasource>"
+        
         if grep -q "<drivers>" "$STANDALONE_XML"; then
-            sed -i '/<drivers>/i\
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
-                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
-                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
-                </datasource>' "$STANDALONE_XML"
+            perl -i -0pe "s/(<datasources>)/\$1\n                ${DATASOURCE_XML}/" "$STANDALONE_XML" || \
+            sed -i "/<drivers>/i\\
+                ${DATASOURCE_XML}" "$STANDALONE_XML"
         else
-            sed -i '/<\/datasources>/i\
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
-                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
-                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
-                </datasource>' "$STANDALONE_XML"
+            perl -i -0pe "s/(<\/datasources>)/                ${DATASOURCE_XML}\n\$1/" "$STANDALONE_XML" || \
+            sed -i "/<\/datasources>/i\\
+                ${DATASOURCE_XML}" "$STANDALONE_XML"
         fi
         
         echo ">>> Datasource ClinicDS recreado exitosamente"
@@ -173,22 +173,23 @@ if [ -f "$STANDALONE_XML" ]; then
         # Usaremos el driver que se despliega automáticamente desde el WAR
         # El nombre del driver será detectado automáticamente por WildFly
         if grep -q "<datasources>" "$STANDALONE_XML"; then
-            # Insertar antes de la sección <drivers>
+            # Crear el XML del datasource con variables expandidas
+            DATASOURCE_XML="<datasource jndi-name=\"java:jboss/datasources/ClinicDS\" pool-name=\"ClinicDS\" enabled=\"true\">
+                    <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
+                    <driver>postgresql</driver>
+                    <security user-name=\"${DB_USER}\" password=\"${DB_PASS_ESC}\"/>
+                </datasource>"
+            
+            # Insertar antes de la sección <drivers> o antes del cierre de datasources
             if grep -q "<drivers>" "$STANDALONE_XML"; then
-                sed -i '/<drivers>/i\
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
-                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
-                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
-                </datasource>' "$STANDALONE_XML"
+                perl -i -0pe "s/(<datasources>)/\$1\n                ${DATASOURCE_XML}/" "$STANDALONE_XML" || \
+                sed -i "/<drivers>/i\\
+                ${DATASOURCE_XML}" "$STANDALONE_XML"
             else
                 # Si no hay drivers, insertar antes del cierre de datasources
-                sed -i '/<\/datasources>/i\
-                <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true">\
-                    <connection-url>jdbc:postgresql://'${DB_HOST}':'${DB_PORT}'/'${DB_NAME}'</connection-url>\
-                    <driver>postgresql</driver>\
-                    <security user-name="'${DB_USER}'" password="'${DB_PASS_ESC}'"/>\
-                </datasource>' "$STANDALONE_XML"
+                perl -i -0pe "s/(<\/datasources>)/                ${DATASOURCE_XML}\n\$1/" "$STANDALONE_XML" || \
+                sed -i "/<\/datasources>/i\\
+                ${DATASOURCE_XML}" "$STANDALONE_XML"
             fi
             echo "Datasource ClinicDS creado en standalone.xml"
         else
