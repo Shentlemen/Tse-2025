@@ -4,7 +4,7 @@ FROM eclipse-temurin:21-jdk-ubi9-minimal
 USER root
 
 # Instalar herramientas necesarias
-RUN microdnf install -y wget unzip tar gzip perl shadow-utils && \
+RUN microdnf install -y wget unzip tar gzip perl shadow-utils python3 && \
     microdnf clean all
 
 # Variables

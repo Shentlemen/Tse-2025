@@ -30,12 +30,18 @@ if [ -n "$DATABASE_URL" ]; then
         [ -z "$DB_PORT" ] && DB_PORT="5432"
     fi
 else
-    # Usar variables individuales si DATABASE_URL no está disponible
-    DB_HOST=${PGHOST:-localhost}
-    DB_PORT=${PGPORT:-5432}
-    DB_NAME=${PGDATABASE:-clinic_db}
-    DB_USER=${PGUSER:-postgres}
-    DB_PASSWORD=${PGPASSWORD:-sora}
+    # Si no hay DATABASE_URL, usar las credenciales que ya están en standalone-full.xml
+    # NO modificar nada si no hay DATABASE_URL
+    echo ">>> DATABASE_URL no encontrado. Usando credenciales de standalone-full.xml"
+    echo ">>> DataSource ClinicDS listo (sin modificaciones)"
+    exit 0
+fi
+
+# Validar que se parsearon correctamente las credenciales
+if [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_HOST" ] || [ -z "$DB_NAME" ]; then
+    echo ">>> ERROR: No se pudieron parsear las credenciales de DATABASE_URL"
+    echo ">>> Usando credenciales de standalone-full.xml"
+    exit 0
 fi
 
 # Escapar caracteres especiales para XML
@@ -47,17 +53,39 @@ echo "    Base: $DB_NAME"
 echo "    Usuario: $DB_USER"
 echo "    Puerto: $DB_PORT"
 
-# Actualizar credenciales en ClinicDS si hay DATABASE_URL (para Render)
-# Si no hay DATABASE_URL, se usan las credenciales que ya están en standalone-full.xml
-if [ -n "$DATABASE_URL" ]; then
-    echo ">>> Actualizando credenciales desde DATABASE_URL..."
-    # Reemplazar valores en el datasource ClinicDS
-    sed -i "s|jdbc:postgresql://[^:]*:[0-9]*/[^<]*|jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}|g" "$STANDALONE_XML"
-    sed -i "s|user-name=\"[^\"]*\"|user-name=\"${DB_USER}\"|g" "$STANDALONE_XML"
-    sed -i "s|password=\"[^\"]*\"|password=\"${DB_PASSWORD_ESC}\"|g" "$STANDALONE_XML"
-    echo ">>> Credenciales actualizadas desde DATABASE_URL"
-else
-    echo ">>> Usando credenciales configuradas en standalone-full.xml"
-fi
+# Actualizar credenciales en ClinicDS específicamente
+echo ">>> Actualizando credenciales desde DATABASE_URL..."
+
+# Usar Python para hacer el reemplazo de manera precisa
+python3 - "$STANDALONE_XML" "$DB_HOST" "$DB_PORT" "$DB_NAME" "$DB_USER" "$DB_PASSWORD_ESC" << 'PYTHON_SCRIPT'
+import re
+import sys
+
+xml_file = sys.argv[1]
+db_host = sys.argv[2]
+db_port = sys.argv[3]
+db_name = sys.argv[4]
+db_user = sys.argv[5]
+db_password = sys.argv[6]
+
+# Leer el archivo
+with open(xml_file, 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Patrón para encontrar el datasource ClinicDS completo
+pattern = r'(<datasource jndi-name="java:jboss/datasources/ClinicDS"[^>]*>.*?<connection-url>)(jdbc:postgresql://[^<]+)(</connection-url>.*?<security user-name=")([^"]+)(" password=")([^"]+)(")'
+
+def replace_datasource(match):
+    return f"{match.group(1)}jdbc:postgresql://{db_host}:{db_port}/{db_name}{match.group(3)}{db_user}{match.group(5)}{db_password}{match.group(7)}"
+
+# Reemplazar
+content = re.sub(pattern, replace_datasource, content, flags=re.DOTALL)
+
+# Escribir el archivo
+with open(xml_file, 'w', encoding='utf-8') as f:
+    f.write(content)
+PYTHON_SCRIPT
+
+echo ">>> Credenciales actualizadas desde DATABASE_URL"
 
 echo ">>> DataSource ClinicDS listo"

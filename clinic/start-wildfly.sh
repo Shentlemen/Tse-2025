@@ -35,8 +35,9 @@ else
     DB_HOST=${PGHOST:-localhost}
     DB_PORT=${PGPORT:-5432}
     DB_NAME=${PGDATABASE:-clinic_db}
-    DB_USER=${PGUSER:-postgres}
-    DB_PASS=${PGPASSWORD:-sora}
+    # NO usar "postgres" como default - usar las credenciales de standalone-full.xml
+    DB_USER=${PGUSER:-}
+    DB_PASS=${PGPASSWORD:-}
 fi
 
 # Puerto HTTP de Render
