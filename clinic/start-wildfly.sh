@@ -46,7 +46,10 @@ echo "  Usuario: ${DB_USER}"
 echo "  Puerto HTTP: ${RENDER_PORT}"
 
 # Configurar standalone.xml antes de iniciar
-$WILDFLY_HOME/bin/configure-wildfly.sh || echo "Advertencia: Configuración previa falló"
+if ! $WILDFLY_HOME/bin/configure-wildfly.sh; then
+    echo "ERROR: La configuración de WildFly falló. Revisa los logs anteriores."
+    exit 1
+fi
 
 # Configurar variables de entorno de Java para Render
 export JAVA_OPTS="${JAVA_OPTS} -Xmx512m -Xms256m -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"

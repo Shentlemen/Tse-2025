@@ -162,12 +162,27 @@ EOF
         
         if grep -q "<drivers>" "$STANDALONE_XML"; then
             # Insertar antes de <drivers>
-            sed -i "/<drivers>/r $TEMP_XML" "$STANDALONE_XML"
+            sed -i "/<drivers>/r $TEMP_XML" "$STANDALONE_XML" || {
+                echo "ERROR: No se pudo insertar el datasource antes de <drivers>"
+                rm -f "$TEMP_XML"
+                exit 1
+            }
         else
             # Insertar antes de </datasources>
-            sed -i "/<\/datasources>/r $TEMP_XML" "$STANDALONE_XML"
+            sed -i "/<\/datasources>/r $TEMP_XML" "$STANDALONE_XML" || {
+                echo "ERROR: No se pudo insertar el datasource antes de </datasources>"
+                rm -f "$TEMP_XML"
+                exit 1
+            }
         fi
         rm -f "$TEMP_XML"
+        
+        # Verificar que el datasource se insertó correctamente
+        if ! grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
+            echo "ERROR: El datasource ClinicDS no se encontró en standalone-full.xml después de la inserción"
+            exit 1
+        fi
+        echo ">>> Verificado: Datasource ClinicDS presente en standalone-full.xml"
         
         echo ">>> Datasource ClinicDS recreado exitosamente"
     else
@@ -189,13 +204,27 @@ EOF
             # Insertar antes de la sección <drivers> o antes del cierre de datasources
             if grep -q "<drivers>" "$STANDALONE_XML"; then
                 # Insertar antes de <drivers>
-                sed -i "/<drivers>/r $TEMP_XML" "$STANDALONE_XML"
+                sed -i "/<drivers>/r $TEMP_XML" "$STANDALONE_XML" || {
+                    echo "ERROR: No se pudo insertar el datasource antes de <drivers>"
+                    rm -f "$TEMP_XML"
+                    exit 1
+                }
             else
                 # Si no hay drivers, insertar antes del cierre de datasources
-                sed -i "/<\/datasources>/r $TEMP_XML" "$STANDALONE_XML"
+                sed -i "/<\/datasources>/r $TEMP_XML" "$STANDALONE_XML" || {
+                    echo "ERROR: No se pudo insertar el datasource antes de </datasources>"
+                    rm -f "$TEMP_XML"
+                    exit 1
+                }
             fi
             rm -f "$TEMP_XML"
-            echo "Datasource ClinicDS creado en standalone.xml"
+            
+            # Verificar que el datasource se insertó correctamente
+            if ! grep -q "jndi-name=\"java:jboss/datasources/ClinicDS\"" "$STANDALONE_XML"; then
+                echo "ERROR: El datasource ClinicDS no se encontró en standalone-full.xml después de la inserción"
+                exit 1
+            fi
+            echo ">>> Verificado: Datasource ClinicDS creado y presente en standalone-full.xml"
         else
             echo "Error: No se encontró la sección <datasources> en standalone.xml"
             exit 1
