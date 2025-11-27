@@ -76,11 +76,12 @@ RUN mkdir -p $WILDFLY_HOME/bin/migrations && \
     chown -R jboss:jboss $WILDFLY_HOME/bin/migrations
 
 # Crear usuario admin (si falla, no rompe el build)
+# Nota: Usar espacios en lugar de = para los parámetros
 RUN $WILDFLY_HOME/bin/add-user.sh \
     --silent \
-    --user=admin \
-    --password=admin \
-    --realm=ManagementRealm || true
+    --user admin \
+    --password admin \
+    --realm ManagementRealm || true
 
 # Cambiar a usuario jboss
 USER jboss

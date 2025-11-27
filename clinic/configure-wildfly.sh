@@ -55,15 +55,13 @@ sed -i 's|datasource="java:jboss/datasources/ExampleDS"|datasource="java:jboss/d
 perl -i -0pe 's/<datasource[^>]*jndi-name="java:jboss\/datasources\/ClinicDS"[^>]*>.*?<\/datasource>//gs' "$STANDALONE_XML"
 
 # Insertar ClinicDS con formato correcto para WildFly 30
+# IMPORTANTE: En WildFly 30, <security> usa atributos, NO elementos anidados
 TEMP_XML=$(mktemp)
 cat > "$TEMP_XML" <<EOF
 <datasource jndi-name="java:jboss/datasources/ClinicDS" pool-name="ClinicDS" enabled="true" use-java-context="true" statistics-enabled="true">
     <connection-url>jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}</connection-url>
     <driver>postgresql</driver>
-    <security>
-        <user-name>${DB_USER}</user-name>
-        <password>${DB_PASSWORD_ESC}</password>
-    </security>
+    <security user-name="${DB_USER}" password="${DB_PASSWORD_ESC}"/>
 </datasource>
 EOF
 
