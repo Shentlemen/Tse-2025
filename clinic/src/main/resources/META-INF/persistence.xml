@@ -19,22 +19,15 @@
         
         <properties>
             <!-- Configuración de Hibernate -->
-            <!-- NOTA: Estas propiedades NO se usan cuando se usa JTA datasource (java:jboss/datasources/ClinicDS) -->
-            <!-- Se mantienen solo como referencia/documentación para desarrollo local -->
-            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/clinic_db"/>
-            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
-            <property name="jakarta.persistence.jdbc.password" value="sora"/>
+            <!-- IMPORTANTE: NO incluir propiedades jakarta.persistence.jdbc.* cuando se usa JTA datasource -->
+            <!-- Estas propiedades harían que Hibernate ignore el datasource JTA y use conexiones directas -->
+            <!-- El datasource se configura en standalone-full.xml y se referencia aquí con <jta-data-source> -->
             
             <!-- Configuración de Hibernate -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="false"/>
-            
-            <!-- Configuración de conexión -->
-            <property name="hibernate.connection.pool_size" value="10"/>
-            <property name="hibernate.connection.autocommit" value="false"/>
             
             <!-- Configuración de codificación UTF-8 -->
             <property name="hibernate.connection.charSet" value="UTF-8"/>
