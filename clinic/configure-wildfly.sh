@@ -76,6 +76,23 @@ print(f"Python: Host={db_host}, Port={db_port}, DB={db_name}, User={db_user}")
 with open(xml_file, 'r', encoding='utf-8') as f:
     content = f.read()
 
+# PRIMERO: Buscar TODOS los datasources y mostrar sus configuraciones
+print("Python: Buscando TODOS los datasources en el XML...")
+all_datasources = re.findall(r'<datasource[^>]*jndi-name="([^"]+)"[^>]*>', content)
+if all_datasources:
+    print(f"Python: Se encontraron {len(all_datasources)} datasources:")
+    for ds_jndi in all_datasources:
+        ds_match = re.search(rf'<datasource[^>]*jndi-name="{re.escape(ds_jndi)}"[^>]*>(.*?)</datasource>', content, flags=re.DOTALL)
+        if ds_match:
+            ds_block = ds_match.group(0)
+            user_match = re.search(r'<security[^>]*user-name="([^"]+)"', ds_block)
+            enabled_match = re.search(r'enabled="([^"]+)"', ds_match.group(0))
+            url_match = re.search(r'<connection-url>(.*?)</connection-url>', ds_block)
+            user = user_match.group(1) if user_match else "NO ENCONTRADO"
+            enabled = enabled_match.group(1) if enabled_match else "NO ENCONTRADO"
+            url = url_match.group(1) if url_match else "NO ENCONTRADO"
+            print(f"  - {ds_jndi}: enabled={enabled}, user={user}, url={url[:60]}...")
+
 # Buscar y deshabilitar cualquier datasource con usuario 'postgres' que no sea ClinicDS
 print("Python: Buscando datasources con usuario 'postgres'...")
 pattern_all_postgres = r'(<datasource[^>]*jndi-name="java:jboss/datasources/(?!ClinicDS)[^"]*"[^>]*>.*?<security user-name=")postgres(")'
@@ -247,6 +264,25 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ">>> Credenciales actualizadas desde DATABASE_URL"
+
+# DUMP FINAL: Mostrar TODOS los datasources en el XML para depuración
+echo ">>> DUMP FINAL: Todos los datasources en el XML:"
+grep -B 2 -A 15 '<datasource' "$STANDALONE_XML" | grep -E '(jndi-name|user-name|enabled|connection-url)' | head -50 || echo ">>> No se encontraron datasources"
+
+echo ""
+echo ">>> DUMP FINAL del datasource ClinicDS específicamente:"
+grep -A 20 'jndi-name="java:jboss/datasources/ClinicDS"' "$STANDALONE_XML" | head -25 || echo ">>> No se encontró ClinicDS en el XML"
+
+echo ""
+echo ">>> Verificando si hay algún 'postgres' en el XML final:"
+if grep -i 'user-name="postgres"' "$STANDALONE_XML" > /dev/null; then
+    echo ">>> ERROR CRÍTICO: Todavía hay 'postgres' en el XML!"
+    echo ">>> Datasources con 'postgres':"
+    grep -B 5 -A 10 'user-name="postgres"' "$STANDALONE_XML" | grep -E '(jndi-name|user-name|enabled)' || true
+    exit 1
+else
+    echo ">>> OK: No hay 'postgres' en el XML final"
+fi
 
 # Habilitar el despliegue del WAR después de configurar el datasource
 WAR_FILE="/opt/jboss/wildfly/standalone/deployments/clinic.war"
